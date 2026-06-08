@@ -686,20 +686,18 @@ function CategoryBlock({
           {cat.dishes}
         </span>
 
-        <motion.p
-          animate={{ opacity: isHovered ? 1 : 0, height: isHovered ? 'auto' : 0, marginBottom: isHovered ? 20 : 0 }}
-          transition={{ duration: 0.28 }}
+        <p
           style={{
             fontFamily: 'var(--font-body)',
             fontSize: 'clamp(15px, 1.4vw, 18px)',
             lineHeight: 1.7,
-            color: 'rgba(245,239,224,0.6)',
-            margin: 0,
-            overflow: 'hidden',
+            color: isHovered ? 'rgba(245,239,224,0.7)' : 'rgba(245,239,224,0.5)',
+            marginBottom: 20,
+            transition: 'color 0.28s',
           }}
         >
           {cat.desc}
-        </motion.p>
+        </p>
 
         <div style={{
           display: 'flex',

@@ -67,6 +67,7 @@ const saveReservation = (r: StoredReservation) => {
 
 export default function ReservationModal({ onClose }: { onClose: () => void }) {
   const [step, setStep]   = useState<Step>(1);
+  const [maxUnlockedStep, setMaxUnlockedStep] = useState<Step>(1);
   const [form, setForm]   = useState<FormData>(defaultForm);
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [confirmationNum, setConfirmationNum] = useState('');
@@ -74,10 +75,25 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
   // Reset form state when modal closes
   const handleClose = () => {
     setStep(1);
+    setMaxUnlockedStep(1);
     setForm(defaultForm);
     setErrors({});
     setConfirmationNum('');
     onClose();
+  };
+
+  const resetReservation = () => {
+    setStep(1);
+    setMaxUnlockedStep(1);
+    setForm(defaultForm);
+    setErrors({});
+    setConfirmationNum('');
+  };
+
+  const goToStep = (targetStep: Step) => {
+    if (targetStep <= maxUnlockedStep) {
+      setStep(targetStep);
+    }
   };
 
   const today = new Date().toISOString().split('T')[0];
@@ -170,7 +186,11 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
       // Record the booking so this guest can't re-book the same slot.
       saveReservation({ email: form.email, date: form.date, time: form.time, ref });
     }
-    setStep(s => (s < 5 ? (s + 1) as Step : s));
+    const newStep = step < 5 ? (step + 1) as Step : step;
+    setStep(newStep);
+    if (newStep > maxUnlockedStep && newStep < 5) {
+      setMaxUnlockedStep(newStep);
+    }
   };
   const back = () => setStep(s => (s > 1 ? (s - 1) as Step : s));
 
@@ -247,11 +267,19 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
             <div style={{ padding: '16px 28px 0', flexShrink: 0 }}>
               <div style={{ display: 'flex', gap: '6px' }}>
                 {[1,2,3,4].map(s => (
-                  <div key={s} style={{
-                    flex: 1, height: '3px', borderRadius: 0,
-                    background: s < step ? 'var(--clr-amber)' : s === step ? 'var(--clr-red)' : 'rgba(245,239,224,0.1)',
-                    transition: 'background 0.3s',
-                  }} />
+                  <button
+                    key={s}
+                    onClick={() => goToStep(s as Step)}
+                    aria-label={`Go to step ${s}`}
+                    disabled={s > maxUnlockedStep}
+                    style={{
+                      flex: 1, height: '3px', borderRadius: 0,
+                      background: s < step ? 'var(--clr-amber)' : s === step ? 'var(--clr-red)' : 'rgba(245,239,224,0.1)',
+                      transition: 'background 0.3s',
+                      border: 'none',
+                      cursor: s <= maxUnlockedStep ? 'pointer' : 'default',
+                    }}
+                  />
                 ))}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
@@ -281,7 +309,7 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
                 {step === 2 && <StepTime form={form} setForm={setForm} />}
                 {step === 3 && <StepGuests form={form} setForm={setForm} />}
                 {step === 4 && <StepInfo form={form} setForm={setForm} errors={errors} />}
-                {step === 5 && <StepConfirm form={form} confirmNum={confirmationNum || 'HT-……'} onClose={handleClose} />}
+                {step === 5 && <StepConfirm form={form} confirmNum={confirmationNum || 'HT-……'} onClose={handleClose} onBookAnother={resetReservation} />}
               </motion.div>
             </AnimatePresence>
           </div>
@@ -299,7 +327,7 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
                   flex: 1,
                   fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', fontWeight: 700, letterSpacing: '0.18em',
                   background: 'transparent', border: '1.5px solid rgba(245,239,224,0.25)',
-                  color: 'rgba(245,239,224,0.85)', padding: '14px', borderRadius: '999px', cursor: 'pointer',
+                  color: 'rgba(245,239,224,0.85)', padding: '14px', borderRadius: 0, cursor: 'pointer',
                   transition: 'border-color 0.2s, color 0.2s, background 0.2s',
                   minHeight: '44px',
                 }}
@@ -313,7 +341,7 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
                 flex: 2,
                 fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', fontWeight: 800, letterSpacing: '0.18em',
                 background: 'var(--clr-amber)', border: 'none',
-                color: 'var(--clr-void)', padding: '14px', borderRadius: '999px', cursor: 'pointer',
+                color: 'var(--clr-void)', padding: '14px', borderRadius: 0, cursor: 'pointer',
                 transition: 'background 0.2s, color 0.2s, transform 0.15s',
                 boxShadow: '0 6px 18px rgba(250,175,63,0.34)',
                 minHeight: '44px',
@@ -457,7 +485,7 @@ function StepInfo({ form, setForm, errors }: {
           {DIETARY.map(d => (
             <button key={d} onClick={() => toggleDietary(d)} style={{
               padding: '6px 12px',
-              borderRadius: '999px',
+              borderRadius: 0,
               fontFamily: 'var(--font-body)',
               fontSize: 'var(--text-micro)',
               letterSpacing: '0.1em',
@@ -520,8 +548,8 @@ function StepInfo({ form, setForm, errors }: {
   );
 }
 
-function StepConfirm({ form, confirmNum, onClose }: {
-  form: FormData; confirmNum: string; onClose: () => void;
+function StepConfirm({ form, confirmNum, onClose, onBookAnother }: {
+  form: FormData; confirmNum: string; onClose: () => void; onBookAnother: () => void;
 }) {
   return (
     <div style={{ textAlign: 'center', padding: '16px 0' }}>
@@ -531,7 +559,7 @@ function StepConfirm({ form, confirmNum, onClose }: {
         transition={{ type: 'spring', stiffness: 200, damping: 16 }}
         style={{
           width: '84px', height: '84px',
-          borderRadius: '50%',
+          borderRadius: 0,
           background: 'rgba(232,52,26,0.15)',
           border: '2px solid var(--clr-red)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -597,20 +625,35 @@ function StepConfirm({ form, confirmNum, onClose }: {
         </a>
       </p>
 
-      <button onClick={onClose} style={{
-        width: '100%',
-        fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', fontWeight: 800, letterSpacing: '0.26em',
-        background: 'var(--clr-amber)', border: 'none',
-        color: 'var(--clr-void)', padding: '16px', borderRadius: '999px', cursor: 'pointer',
-        transition: 'background 0.25s, color 0.25s, box-shadow 0.25s',
-        minHeight: '44px',
-        boxShadow: '0 6px 20px rgba(201,162,39,0.38)',
-      }}
-      onMouseEnter={(e) => { e.currentTarget.style.background = '#0d0d0d'; e.currentTarget.style.color = '#faaf3f'; e.currentTarget.style.boxShadow = '0 0 0 1px rgba(250,175,63,0.5)'; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--clr-amber)'; e.currentTarget.style.color = 'var(--clr-void)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(201,162,39,0.38)'; }}
-      >
-        BACK TO THE TIGER →
-      </button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <button onClick={onBookAnother} style={{
+          width: '100%',
+          fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', fontWeight: 700, letterSpacing: '0.26em',
+          background: 'transparent', border: '1.5px solid var(--clr-amber)',
+          color: 'var(--clr-amber)', padding: '16px', borderRadius: 0, cursor: 'pointer',
+          transition: 'background 0.25s, color 0.25s, border-color 0.25s',
+          minHeight: '44px',
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(250,175,63,0.08)'; e.currentTarget.style.color = 'var(--clr-amber)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--clr-amber)'; }}
+        >
+          BOOK ANOTHER TABLE →
+        </button>
+        <button onClick={onClose} style={{
+          width: '100%',
+          fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', fontWeight: 800, letterSpacing: '0.26em',
+          background: 'var(--clr-amber)', border: 'none',
+          color: 'var(--clr-void)', padding: '16px', borderRadius: 0, cursor: 'pointer',
+          transition: 'background 0.25s, color 0.25s, box-shadow 0.25s',
+          minHeight: '44px',
+          boxShadow: '0 6px 20px rgba(201,162,39,0.38)',
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = '#0d0d0d'; e.currentTarget.style.color = '#faaf3f'; e.currentTarget.style.boxShadow = '0 0 0 1px rgba(250,175,63,0.5)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--clr-amber)'; e.currentTarget.style.color = 'var(--clr-void)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(201,162,39,0.38)'; }}
+        >
+          BACK TO THE TIGER →
+        </button>
+      </div>
     </div>
   );
 }
@@ -649,7 +692,7 @@ function LabeledInput({ label, type, value, onChange, error, placeholder, requir
 /* ── Shared styles — cast to avoid cross-package csstype conflicts ── */
 const stepTitle  = { fontFamily:'var(--font-body)', fontSize:'22px', letterSpacing:'0.06em', color:'var(--clr-cream)', marginBottom:'6px' } as React.CSSProperties;
 const stepSub    = { fontFamily:'var(--font-body)', fontSize:'12px', color:'rgba(245,239,224,0.62)', marginBottom:'20px', lineHeight:1.5 } as React.CSSProperties;
-const inputBase  = { width:'100%', padding:'12px 16px', background:'rgba(245,239,224,0.04)', border:'1px solid rgba(250,175,63,0.2)', borderRadius:'6px', color:'var(--clr-cream)', fontFamily:'var(--font-body)', fontSize:'13px', transition:'border-color 0.2s, box-shadow 0.2s', colorScheme:'dark' } as React.CSSProperties;
+const inputBase  = { width:'100%', padding:'12px 16px', background:'rgba(245,239,224,0.04)', border:'1px solid rgba(250,175,63,0.2)', borderRadius: 0, color:'var(--clr-cream)', fontFamily:'var(--font-body)', fontSize:'13px', transition:'border-color 0.2s, box-shadow 0.2s', colorScheme:'dark' } as React.CSSProperties;
 const fieldLabel = { fontFamily:'var(--font-body)', fontSize:'9px', letterSpacing:'0.2em', color:'rgba(245,239,224,0.62)', marginBottom:'8px', textTransform:'uppercase' as const } as React.CSSProperties;
 const errorText  = { fontFamily:'var(--font-body)', fontSize:'11px', color:'var(--clr-red)', marginTop:'4px' } as React.CSSProperties;
 const guestBtn   = { width:'44px', height:'44px', borderRadius:'50%', border:'1.5px solid rgba(250,175,63,0.3)', background:'transparent', color:'var(--clr-amber)', fontSize:'22px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'var(--font-body)', transition:'border-color 0.2s, background 0.2s' } as React.CSSProperties;

@@ -13,17 +13,17 @@ const SPACES = [
 ];
 
 const PHOTO_STRIP = [
-  { src: '/images/spaces/bar.jpg',          label: 'The Bar'        },
-  { src: '/images/spaces/dining.jpg',       label: 'Dining Room'    },
-  { src: '/images/spaces/rooftop.jpg',      label: 'Rooftop'        },
-  { src: '/images/spaces/den.jpg',          label: "Tiger's Den"    },
-  { src: '/images/spaces/terrace-night.jpg',label: 'Terrace'        },
-  { src: '/images/spaces/corridor.jpg',     label: 'Corridor'       },
-  { src: '/images/spaces/bar-side.jpg',     label: 'Bar Detail'     },
-  { src: '/images/spaces/lobby.jpg',        label: 'Lobby'          },
+  { src: '/images/spaces/bar.jpg',          label: 'The Bar',        spaceIndex: 0 },
+  { src: '/images/spaces/dining.jpg',       label: 'Dining Room',    spaceIndex: 1 },
+  { src: '/images/spaces/rooftop.jpg',      label: 'Rooftop',        spaceIndex: 2 },
+  { src: '/images/spaces/den.jpg',          label: "Tiger's Den",    spaceIndex: 3 },
+  { src: '/images/spaces/terrace-night.jpg',label: 'Terrace',        spaceIndex: 4 },
+  { src: '/images/spaces/corridor.jpg',     label: 'Corridor' },
+  { src: '/images/spaces/bar-side.jpg',     label: 'Bar Detail' },
+  { src: '/images/spaces/lobby.jpg',        label: 'Lobby' },
   { src: '/images/spaces/dining-night.jpg', label: 'Dining · Night' },
-  { src: '/images/spaces/entrance.jpg',     label: 'Entrance'       },
-  { src: '/images/spaces/terrace-day.jpg',  label: 'Terrace · Day'  },
+  { src: '/images/spaces/entrance.jpg',     label: 'Entrance' },
+  { src: '/images/spaces/terrace-day.jpg',  label: 'Terrace · Day' },
   { src: '/images/brand/interiors/p14_039_1143x1714.png', label: 'Interior' },
 ];
 
@@ -322,48 +322,58 @@ export default function SpaceSection({ reduceMotion }: { reduceMotion: boolean }
             <div style={{ height: '1px', flex: 1, marginLeft: '20px', background: 'var(--border-structural)' }} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '10px' }} className="ht-photo-strip">
-            {PHOTO_STRIP.map(({ src, label }, i) => (
-              <motion.div
-                key={src}
-                initial={reduceMotion ? {} : { opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.05 }}
-                whileHover={reduceMotion ? {} : { y: -6, zIndex: 2 }}
-                style={{
-                  position: 'relative', aspectRatio: '3/4', overflow: 'hidden',
-                  cursor: 'pointer', borderRadius: 0,
-                  border: '1px solid var(--border-structural)',
-                  boxShadow: '0 14px 34px rgba(0,0,0,0.4)',
-                  transition: 'border-color 0.3s',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.borderColor = 'var(--clr-red)';
-                  const img = e.currentTarget.querySelector('img');
-                  if (img) (img as HTMLElement).style.filter = 'contrast(1.04) saturate(1) brightness(1)';
-                  const frame = e.currentTarget.querySelector('[data-frame]') as HTMLElement | null;
-                  if (frame) frame.style.opacity = '0.6';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.borderColor = 'var(--border-structural)';
-                  const img = e.currentTarget.querySelector('img');
-                  if (img) (img as HTMLElement).style.filter = 'contrast(1.04) saturate(0.96) brightness(0.82)';
-                  const frame = e.currentTarget.querySelector('[data-frame]') as HTMLElement | null;
-                  if (frame) frame.style.opacity = '0';
-                }}
-              >
-                <Image src={src} alt={`${label} — Hey Tiger, Motor City Dubai`} fill unoptimized sizes="17vw"
-                  style={{ objectFit: 'cover', objectPosition: 'center', filter: 'contrast(1.04) saturate(0.96) brightness(0.82)', transition: 'filter 0.4s' }} />
-                {/* Bottom legibility gradient */}
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(18,13,20,0) 40%, rgba(18,13,20,0.82) 100%)', pointerEvents: 'none' }} />
-                {/* Hover accent frame */}
-                <span data-frame aria-hidden="true" style={{ position: 'absolute', inset: '8px', border: '1px solid var(--clr-red)', opacity: 0, transition: 'opacity 0.3s', pointerEvents: 'none' }} />
-                {/* Index */}
-                <span style={{ position: 'absolute', top: '10px', left: '12px', fontFamily: 'var(--font-body)', fontSize: 'var(--text-micro)', fontWeight: 800, letterSpacing: 'var(--tracking-wide)', color: 'var(--clr-red-80)' }}>{String(i + 1).padStart(2, '0')}</span>
-                {/* Room name */}
-                <span style={{ position: 'absolute', bottom: '12px', left: '12px', right: '12px', fontFamily: 'var(--font-body)', fontSize: 'var(--text-label)', fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--clr-cream)' }}>{label}</span>
-              </motion.div>
-            ))}
+            {PHOTO_STRIP.map(({ src, label, spaceIndex }, i) => {
+              const isActive = spaceIndex === activeIdx;
+              return (
+                <motion.div
+                  key={src}
+                  initial={reduceMotion ? {} : { opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.05 }}
+                  whileHover={reduceMotion ? {} : { y: -6, zIndex: 2 }}
+                  onClick={() => {
+                    if (typeof spaceIndex === 'number') {
+                      setActiveIdx(spaceIndex);
+                    }
+                  }}
+                  style={{
+                    position: 'relative', aspectRatio: '3/4', overflow: 'hidden',
+                    cursor: typeof spaceIndex === 'number' ? 'pointer' : 'default', borderRadius: 0,
+                    border: isActive ? '2px solid var(--clr-red)' : '1px solid var(--border-structural)',
+                    boxShadow: '0 14px 34px rgba(0,0,0,0.4)',
+                    transition: 'border-color 0.3s',
+                  }}
+                  onMouseEnter={e => {
+                    if (isActive) return;
+                    e.currentTarget.style.borderColor = 'var(--clr-red)';
+                    const img = e.currentTarget.querySelector('img');
+                    if (img) (img as HTMLElement).style.filter = 'contrast(1.04) saturate(1) brightness(1)';
+                    const frame = e.currentTarget.querySelector('[data-frame]') as HTMLElement | null;
+                    if (frame) frame.style.opacity = '0.6';
+                  }}
+                  onMouseLeave={e => {
+                    if (isActive) return;
+                    e.currentTarget.style.borderColor = 'var(--border-structural)';
+                    const img = e.currentTarget.querySelector('img');
+                    if (img) (img as HTMLElement).style.filter = 'contrast(1.04) saturate(0.96) brightness(0.82)';
+                    const frame = e.currentTarget.querySelector('[data-frame]') as HTMLElement | null;
+                    if (frame) frame.style.opacity = '0';
+                  }}
+                >
+                  <Image src={src} alt={`${label} — Hey Tiger, Motor City Dubai`} fill unoptimized sizes="17vw"
+                    style={{ objectFit: 'cover', objectPosition: 'center', filter: isActive ? 'contrast(1.04) saturate(1) brightness(1)' : 'contrast(1.04) saturate(0.96) brightness(0.82)', transition: 'filter 0.4s' }} />
+                  {/* Bottom legibility gradient */}
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(18,13,20,0) 40%, rgba(18,13,20,0.82) 100%)', pointerEvents: 'none' }} />
+                  {/* Hover/Active accent frame */}
+                  <span data-frame aria-hidden="true" style={{ position: 'absolute', inset: '8px', border: '1px solid var(--clr-red)', opacity: isActive ? 0.8 : 0, transition: 'opacity 0.3s', pointerEvents: 'none' }} />
+                  {/* Index */}
+                  <span style={{ position: 'absolute', top: '10px', left: '12px', fontFamily: 'var(--font-body)', fontSize: 'var(--text-micro)', fontWeight: 800, letterSpacing: 'var(--tracking-wide)', color: isActive ? 'var(--clr-cream)' : 'var(--clr-red-80)' }}>{String(i + 1).padStart(2, '0')}</span>
+                  {/* Room name */}
+                  <span style={{ position: 'absolute', bottom: '12px', left: '12px', right: '12px', fontFamily: 'var(--font-body)', fontSize: 'var(--text-label)', fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--clr-cream)' }}>{label}</span>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
 
@@ -407,7 +417,7 @@ export default function SpaceSection({ reduceMotion }: { reduceMotion: boolean }
             <a
               href="mailto:hello@heytiger.ae?subject=Tiger%27s%20Den%20%E2%80%94%20%5BDate%5D%20enquiry"
               aria-label="Claim the Tiger's Den for a private event"
-              style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', fontWeight: 700, letterSpacing: '0.18em', color: 'var(--clr-cream)', background: 'var(--clr-void)', border: 'none', padding: '14px 32px', borderRadius: '999px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', minHeight: '52px', whiteSpace: 'nowrap', transition: 'background var(--dur-fast) var(--ease-standard)', textTransform: 'uppercase' }}
+              style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', fontWeight: 700, letterSpacing: '0.18em', color: 'var(--clr-cream)', background: 'var(--clr-void)', border: 'none', padding: '14px 32px', borderRadius: 0, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', minHeight: '52px', whiteSpace: 'nowrap', transition: 'background var(--dur-fast) var(--ease-standard)', textTransform: 'uppercase' }}
               onMouseEnter={e => { e.currentTarget.style.background = 'var(--border-structural)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'var(--clr-void)'; }}
             >CLAIM THE DEN →</a>
