@@ -222,8 +222,9 @@ export default function LandingHero({
           }}
         >
           {/* Primary CTA — single global label */}
-          <button
+          <motion.button
             onClick={onReserve}
+            whileHover={reduceMotion ? {} : { y: -2, scale: 1.02 }}
             style={{
               background: 'var(--clr-red)',
               color: 'var(--clr-void)',
@@ -247,11 +248,12 @@ export default function LandingHero({
             }}
           >
             BOOK TABLE
-          </button>
+          </motion.button>
 
           {/* Secondary — lighter, never competing */}
-          <button
+          <motion.button
             onClick={onExplore}
+            whileHover={reduceMotion ? {} : { y: -2 }}
             style={{
               background: 'transparent',
               color: 'var(--clr-cream-70)',
@@ -278,7 +280,7 @@ export default function LandingHero({
             }}
           >
             EXPLORE
-          </button>
+          </motion.button>
         </div>
 
         {/* Booking scope microcopy */}
