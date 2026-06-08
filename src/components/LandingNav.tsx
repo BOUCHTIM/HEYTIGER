@@ -143,7 +143,7 @@ export default function LandingNav({
             background: 'var(--clr-red)',
             color: 'var(--clr-void)',
             border: 0,
-            borderRadius: '999px',
+            borderRadius: 0,
             padding: '12px 18px',
             minHeight: '44px',
             cursor: 'pointer',
@@ -162,7 +162,7 @@ export default function LandingNav({
             e.currentTarget.style.background = 'var(--clr-red)';
           }}
         >
-          BOOK A TABLE
+          BOOK TABLE
         </button>
 
         {/* Hamburger — mobile only */}
@@ -263,11 +263,11 @@ export default function LandingNav({
               onClick={() => { setMenuOpen(false); onReserve(); }}
               style={{
                 width: '100%', background: 'var(--clr-red)', color: 'var(--clr-void)',
-                border: 0, borderRadius: '999px', padding: '18px', minHeight: '52px',
+                border: 0, borderRadius: 0, padding: '18px', minHeight: '52px',
                 cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)',
                 fontWeight: 900, letterSpacing: '0.28em', textTransform: 'uppercase',
               }}
-            >BOOK A TABLE</button>
+            >BOOK TABLE</button>
             <p lang="ja" style={{ textAlign: 'center', fontFamily: 'var(--font-jp)', fontSize: 'var(--text-body)', color: 'var(--clr-red-80)', margin: '16px 0 0', letterSpacing: '0.1em' }}>おいトラ · RAAAAAAR CULTURE</p>
           </div>
         </div>
