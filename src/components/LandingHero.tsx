@@ -84,6 +84,24 @@ export default function LandingHero({
           paddingBottom: 'clamp(24px, 6vh, 64px)',
         }}
       >
+        <Image
+          src="/heytiger-logo.png"
+          alt=""
+          aria-hidden="true"
+          width={360}
+          height={105}
+          priority
+          unoptimized
+          style={{
+            height: 'clamp(80px, 13vw, 130px)',
+            width: 'auto',
+            objectFit: 'contain',
+            marginBottom: 'clamp(14px, 3vh, 24px)',
+            filter: 'brightness(0) invert(1)',
+            marginInline: 'auto',
+            display: 'block',
+          }}
+        />
         <p
           style={{
             fontFamily: 'var(--font-jp-rough)',

@@ -84,12 +84,12 @@ export default function LandingNav({
         <Image
           src="/heytiger-logo.png"
           alt="Hey Tiger"
-          width={240}
-          height={70}
+          width={280}
+          height={85}
           priority
           unoptimized
           style={{
-            height: '58px',
+            height: '72px',
             width: 'auto',
             objectFit: 'contain',
           }}
