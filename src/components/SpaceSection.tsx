@@ -204,6 +204,7 @@ export default function SpaceSection({ reduceMotion }: { reduceMotion: boolean }
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeIdx}
+                id={`space-${activeIdx}`}
                 initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 1.03, y: 8 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.98 }}
@@ -335,6 +336,9 @@ export default function SpaceSection({ reduceMotion }: { reduceMotion: boolean }
                   onClick={() => {
                     if (typeof spaceIndex === 'number') {
                       setActiveIdx(spaceIndex);
+                      document
+                        .getElementById(`space-${spaceIndex}`)
+                        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                   }}
                   style={{
