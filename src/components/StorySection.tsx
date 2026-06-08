@@ -94,7 +94,7 @@ function ActPanel({ act, index, reduceMotion }: {
         style={{
           objectFit:      'cover',
           objectPosition: 'center',
-          filter:         'contrast(1.1) saturate(0.7) brightness(0.55)',
+          filter:         'contrast(1.12) saturate(0.75) brightness(0.6)',
           zIndex:         0,
         }}
       />
@@ -108,7 +108,7 @@ function ActPanel({ act, index, reduceMotion }: {
       {/* ── Warm amber tint ── */}
       <div aria-hidden="true" style={{
         position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
-        background: '#8B4A1C', mixBlendMode: 'multiply', opacity: 0.22,
+        background: '#8B4A1C', mixBlendMode: 'multiply', opacity: 0.18,
       }} />
 
       {/* ── Ghost numeral — Fix 6: reduced size + bottom-right anchor ── */}

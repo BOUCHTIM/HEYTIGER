@@ -420,7 +420,7 @@ export default function SpaceSection({ reduceMotion }: { reduceMotion: boolean }
               style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', fontWeight: 700, letterSpacing: '0.18em', color: 'var(--clr-cream)', background: 'var(--clr-void)', border: 'none', padding: '14px 32px', borderRadius: 0, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', minHeight: '52px', whiteSpace: 'nowrap', transition: 'background var(--dur-fast) var(--ease-standard)', textTransform: 'uppercase' }}
               onMouseEnter={e => { e.currentTarget.style.background = 'var(--border-structural)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'var(--clr-void)'; }}
-            >CLAIM THE DEN →</a>
+            >BOOK DEN</a>
           </div>
         </motion.div>
       </div>

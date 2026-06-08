@@ -246,7 +246,7 @@ export default function LandingHero({
               e.currentTarget.style.background = 'var(--clr-red)';
             }}
           >
-            BOOK A TABLE
+            BOOK TABLE
           </button>
 
           {/* Secondary — lighter, never competing */}
@@ -277,7 +277,7 @@ export default function LandingHero({
               e.currentTarget.style.color = 'var(--clr-cream-70)';
             }}
           >
-            EXPLORE THE STORY
+            EXPLORE
           </button>
         </div>
 
@@ -291,7 +291,7 @@ export default function LandingHero({
             color: 'var(--clr-cream-30)',
           }}
         >
-          Dinner, drinks &amp; weekend brunch. Private nights in the Tiger&apos;s Den.
+          Dinner, drinks, events.
         </p>
       </motion.div>
 

@@ -334,7 +334,7 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--clr-cream)'; e.currentTarget.style.color = 'var(--clr-cream)'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(245,239,224,0.25)'; e.currentTarget.style.color = 'rgba(245,239,224,0.85)'; }}
                 >
-                  ← BACK
+                  BACK
                 </button>
               )}
               <button onClick={next} style={{
@@ -349,7 +349,7 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
               onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--clr-red)'; e.currentTarget.style.color = 'var(--clr-cream)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--clr-amber)'; e.currentTarget.style.color = 'var(--clr-void)'; e.currentTarget.style.transform = 'none'; }}
               >
-                {step === 4 ? 'SECURE MY TABLE →' : 'CONTINUE →'}
+                {step === 4 ? 'BOOK' : 'NEXT'}
               </button>
             </div>
           )}
@@ -637,7 +637,7 @@ function StepConfirm({ form, confirmNum, onClose, onBookAnother }: {
         onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(250,175,63,0.08)'; e.currentTarget.style.color = 'var(--clr-amber)'; }}
         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--clr-amber)'; }}
         >
-          BOOK ANOTHER TABLE →
+          BOOK AGAIN
         </button>
         <button onClick={onClose} style={{
           width: '100%',
@@ -651,7 +651,7 @@ function StepConfirm({ form, confirmNum, onClose, onBookAnother }: {
         onMouseEnter={(e) => { e.currentTarget.style.background = '#0d0d0d'; e.currentTarget.style.color = '#faaf3f'; e.currentTarget.style.boxShadow = '0 0 0 1px rgba(250,175,63,0.5)'; }}
         onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--clr-amber)'; e.currentTarget.style.color = 'var(--clr-void)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(201,162,39,0.38)'; }}
         >
-          BACK TO THE TIGER →
+          CLOSE
         </button>
       </div>
     </div>

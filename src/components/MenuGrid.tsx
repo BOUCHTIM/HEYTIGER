@@ -461,7 +461,7 @@ export default function MenuGrid() {
           onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.backgroundColor = 'var(--clr-red-dim)'; }}
           onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.backgroundColor = 'var(--clr-red)'; }}
         >
-          VIEW FULL MENU <span>→</span>
+          VIEW MENU <span>→</span>
         </Link>
       </motion.div>
 

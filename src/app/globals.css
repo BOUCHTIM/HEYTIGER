@@ -190,12 +190,12 @@
   --clr-ink-65:     rgba(18,  13,  20,  0.65);
 
   /* ── Typography scale ──────────────────────────────────────────── */
-  --text-micro:         10px;
-  --text-label:         11px;
-  --text-body:          13px;
-  --text-heading-xl:    clamp(52px,  7.5vw, 112px);
-  --text-jp-display:    clamp(24px,  3vw,   44px);
-  --text-heading-hero:  clamp(84px,  15vw,  210px);
+  --text-micro:         12px;
+  --text-label:         13px;
+  --text-body:          15px;
+  --text-heading-xl:    clamp(56px,  8vw, 120px);
+  --text-jp-display:    clamp(28px,  3.5vw, 48px);
+  --text-heading-hero:  clamp(96px,  16vw, 230px);
 
   /* ── Letter spacing ────────────────────────────────────────────── */
   --tracking-tight: -0.01em;
