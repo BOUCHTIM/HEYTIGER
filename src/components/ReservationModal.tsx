@@ -71,6 +71,15 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [confirmationNum, setConfirmationNum] = useState('');
 
+  // Reset form state when modal closes
+  const handleClose = () => {
+    setStep(1);
+    setForm(defaultForm);
+    setErrors({});
+    setConfirmationNum('');
+    onClose();
+  };
+
   const today = new Date().toISOString().split('T')[0];
 
   // ── A11y plumbing: focus trap, ESC, body-scroll lock, return focus ──
@@ -99,7 +108,7 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        onClose();
+        handleClose();
         return;
       }
       if (e.key !== 'Tab') return;
@@ -134,7 +143,7 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
         el.focus();
       }
     };
-  }, [onClose]);
+  }, [handleClose]);
 
   const validate = (): boolean => {
     const errs: Partial<Record<keyof FormData, string>> = {};
@@ -168,11 +177,11 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
   return (
     <AnimatePresence>
       <motion.div
-        key="backdrop"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
+          key="backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={handleClose}
         style={{
           position: 'fixed', inset: 0,
           background: 'rgba(21,13,17,0.88)',
@@ -219,7 +228,7 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
               </h2>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               aria-label="Close reservation modal"
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
@@ -239,15 +248,22 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
               <div style={{ display: 'flex', gap: '6px' }}>
                 {[1,2,3,4].map(s => (
                   <div key={s} style={{
-                    flex: 1, height: '2px', borderRadius: 0,
-                    background: s <= step ? 'var(--clr-red)' : 'rgba(245,239,224,0.1)',
+                    flex: 1, height: '3px', borderRadius: 0,
+                    background: s < step ? 'var(--clr-amber)' : s === step ? 'var(--clr-red)' : 'rgba(245,239,224,0.1)',
                     transition: 'background 0.3s',
                   }} />
                 ))}
               </div>
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-micro)', letterSpacing: 'var(--tracking-wide)', color: 'rgba(245,239,224,0.62)', marginTop: '8px' }}>
-                STEP {step} OF 4
-              </p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-micro)', letterSpacing: 'var(--tracking-wide)', color: 'rgba(245,239,224,0.62)' }}>
+                  STEP {step} OF 4
+                </p>
+                {step > 1 && (
+                  <p style={{ fontFamily: 'var(--font-jp)', fontSize: '10px', color: 'var(--clr-amber)', letterSpacing: '0.15em' }}>
+                    ✓ Step {step - 1} complete
+                  </p>
+                )}
+              </div>
             </div>
           )}
 
@@ -265,7 +281,7 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
                 {step === 2 && <StepTime form={form} setForm={setForm} />}
                 {step === 3 && <StepGuests form={form} setForm={setForm} />}
                 {step === 4 && <StepInfo form={form} setForm={setForm} errors={errors} />}
-                {step === 5 && <StepConfirm form={form} confirmNum={confirmationNum || 'HT-……'} onClose={onClose} />}
+                {step === 5 && <StepConfirm form={form} confirmNum={confirmationNum || 'HT-……'} onClose={handleClose} />}
               </motion.div>
             </AnimatePresence>
           </div>
