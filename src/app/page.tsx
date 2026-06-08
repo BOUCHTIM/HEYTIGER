@@ -105,7 +105,7 @@ function BookingBand({ id, jp, headline, onReserve, sticker, stickerWhite, micro
         <button
           onClick={onReserve}
           style={{
-            background: 'var(--clr-red)', color: 'var(--clr-void)', border: 0, borderRadius: '999px',
+            background: 'var(--clr-red)', color: 'var(--clr-void)', border: 0, borderRadius: 0,
             padding: '15px 34px', minHeight: '44px', cursor: 'pointer',
             fontFamily: 'var(--font-body)', fontSize: 'var(--text-label)', fontWeight: 900,
             letterSpacing: '0.32em', textTransform: 'uppercase', transition: 'background var(--dur-fast) var(--ease-standard)',
@@ -113,7 +113,7 @@ function BookingBand({ id, jp, headline, onReserve, sticker, stickerWhite, micro
           onMouseEnter={e => { e.currentTarget.style.background = 'var(--clr-red-dim)'; }}
           onMouseLeave={e => { e.currentTarget.style.background = 'var(--clr-red)'; }}
         >
-          BOOK A TABLE
+          BOOK TABLE
         </button>
         <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-micro)', letterSpacing: '0.04em', color: 'rgba(245,239,224,0.4)' }}>
           {microcopy ?? 'Dinner, drinks & brunch reservations.'}

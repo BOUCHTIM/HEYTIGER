@@ -40,7 +40,7 @@ export function BookingPill({ onOpen, modalOpen }: { onOpen: () => void; modalOp
             fontSize:     '16px',
             letterSpacing: 'var(--tracking-wide)',
             padding:      '14px 32px',
-            borderRadius: '999px',
+            borderRadius: 0,
             border:       'none',
             cursor:       'pointer',
             whiteSpace:   'nowrap',
@@ -48,7 +48,7 @@ export function BookingPill({ onOpen, modalOpen }: { onOpen: () => void; modalOp
             minHeight:    '44px',
           }}
         >
-          BOOK A TABLE
+          BOOK TABLE
         </motion.button>
       )}
     </AnimatePresence>
