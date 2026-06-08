@@ -4,7 +4,6 @@ import { useState, useCallback } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 
-import LandingNav       from '@/components/LandingNav';
 import ReservationModal from '@/components/ReservationModal';
 import Footer           from '@/components/Footer';
 import StorySection           from '@/components/StorySection';
@@ -24,8 +23,7 @@ export default function Page() {
   const scrollTo    = useCallback((id: string) => {
     const el = document.getElementById(id);
     if (!el) return;
-    const NAV_OFFSET = 96; // clear the 88px sticky header + breathing room
-    const top = el.getBoundingClientRect().top + window.scrollY - NAV_OFFSET;
+    const top = el.getBoundingClientRect().top + window.scrollY;
     const lenis = window.__lenis;
     if (lenis) {
       // Lenis controls scroll — use its API so it doesn't fight scrollIntoView
@@ -38,8 +36,6 @@ export default function Page() {
   return (
     <>
       <a href="#hero" className="sr-only-focusable">SKIP TO MAIN CONTENT</a>
-
-      <LandingNav onReserve={openReserve} onScrollTo={scrollTo} />
 
       <main style={{ background: 'var(--clr-void)', display: 'flex', flexDirection: 'column' }}>
         <h1 className="sr-only">Hey Tiger — Bar &amp; Restaurant, Motor City Dubai</h1>

@@ -30,7 +30,6 @@ export default function LandingHero({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingTop: '88px',
         background: 'var(--clr-void)',
         overflow: 'hidden',
       }}
