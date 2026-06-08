@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hey Tiger — おいトラ | Japanese Restaurant & Rooftop Lounge, Dubai</title>
+  <meta name="description" content="Where the West meets the East. Hey Tiger is Dubai's premier Japanese street food spot and rooftop lounge. Family by day, electric by night." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=Righteous&display=swap" rel="stylesheet" />
+
+  <!-- StringTune -->
+  <script src="https://unpkg.com/@fiddle-digital/string-tune@1.0.2/dist/index.js" defer></script>
+
+  <style>
+    /* ─────────────────────────────────────────────────────────────
+       TOKENS
+    ───────────────────────────────────────────────────────────── */
+    :root {
+      --coral:        #FF5536;
+      --coral-dark:   #d93e20;
+      --coral-glow:   rgba(255, 85, 54, 0.25);
+      --gold:         #FFC857;
+      --gold-glow:    rgba(255, 200, 87, 0.2);
+      --bg:           #0a0612;
+      --bg-mid:       #0f0a1e;
+      --purple:       #1a1425;
+      --purple-light: #251b36;
+      --glass:        rgba(255, 255, 255, 0.04);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --text:         rgba(255, 255, 255, 0.88);
+      --text-muted:   rgba(255, 255, 255, 0.5);
+      --text-dim:     rgba(255, 255, 255, 0.28);
+
+      --f-display:    'Bebas Neue', sans-serif;
+      --f-brand:      'Righteous', sans-serif;
+      --f-body:       'Inter', sans-serif;
+
+      --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out:  cubic-bezier(0.45, 0, 0.15, 1);
+
+      --shadow-sm:    0 4px 12px rgba(0,0,0,0.18);
+      --shadow-md:    0 20px 60px rgba(255, 85, 54, 0.22);
+      --shadow-lg:    0 40px 100px rgba(255, 85, 54, 0.4);
+
+      --nav-h:        72px;
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       RESET & BASE
+    ───────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--f-body);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+    button { cursor: pointer; font-family: inherit; border: none; background: none; }
+
+    /* ─────────────────────────────────────────────────────────────
+       UTILITIES
+    ───────────────────────────────────────────────────────────── */
+    .label {
+      font-family: var(--f-body);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.38em;
+      color: var(--coral);
+      text-transform: uppercase;
+    }
+
+    .section-title {
+      font-family: var(--f-display);
+      font-size: clamp(56px, 8vw, 108px);
+      letter-spacing: 4px;
+      line-height: 0.9;
+      color: #fff;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 0 clamp(24px, 5vw, 80px);
+    }
+
+    /* Scroll-reveal base state */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-left {
+      opacity: 0;
+      transform: translateX(-40px);
+      transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
+    }
+    .reveal-left.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .reveal-right {
+      opacity: 0;
+      transform: translateX(40px);
+      transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
+    }
+    .reveal-right.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Stagger delays */
+    .stagger-1 { transition-delay: 0.1s; }
+    .stagger-2 { transition-delay: 0.2s; }
+    .stagger-3 { transition-delay: 0.3s; }
+    .stagger-4 { transition-delay: 0.4s; }
+    .stagger-5 { transition-delay: 0.5s; }
+    .stagger-6 { transition-delay: 0.6s; }
+
+    /* ─────────────────────────────────────────────────────────────
+       NAV
+    ───────────────────────────────────────────────────────────── */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      transition: background 0.4s ease, backdrop-filter 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .nav.scrolled {
+      background: rgba(10, 6, 18, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 var(--glass-border);
+    }
+
+    .nav__inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .nav__logo {
+      font-family: var(--f-brand);
+      font-size: 22px;
+      color: #fff;
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.3s var(--ease-out);
+    }
+    .nav__logo:hover { transform: scale(1.05); }
+    .nav__logo-icon {
+      width: 36px; height: 36px;
+      background: var(--coral);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .nav__links {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      list-style: none;
+    }
+
+    .nav__link {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      position: relative;
+      transition: color 0.3s ease;
+    }
+    .nav__link::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 0; height: 1px;
+      background: var(--coral);
+      transition: width 0.3s var(--ease-out);
+    }
+    .nav__link:hover { color: #fff; }
+    .nav__link:hover::after { width: 100%; }
+
+    .nav__cta {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #fff;
+      background: var(--coral);
+      padding: 12px 28px;
+      border-radius: 60px;
+      transition: background 0.25s ease, transform 0.25s var(--ease-out), box-shadow 0.25s ease;
+    }
+    .nav__cta:hover {
+      background: var(--coral-dark);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+    .nav__cta:active { transform: scale(0.97); }
+
+    .nav__burger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      padding: 4px;
+    }
+    .nav__burger span {
+      display: block;
+      width: 24px; height: 2px;
+      background: #fff;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       HERO
+    ───────────────────────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      padding-top: var(--nav-h);
+    }
+
+    /* StringTune parallax target */
+    .hero__bg {
+      position: absolute;
+      inset: -15% 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .hero__glow {
+      position: absolute;
+      width: 900px; height: 900px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,85,54,0.18) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      animation: pulse-glow 6s ease-in-out infinite;
+    }
+
+    .hero__glow-gold {
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,200,87,0.12) 0%, transparent 70%);
+      top: 20%; right: 5%;
+      animation: pulse-glow 8s ease-in-out infinite reverse;
+    }
+
+    .hero__grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 80px 80px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      50%       { opacity: 0.7; transform: translate(-50%, -52%) scale(1.08); }
+    }
+
+    .hero__content {
+      position: relative;
+      z-index: 1;
+      padding: clamp(60px, 10vh, 120px) 0;
+    }
+
+    .hero__label {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.36em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.8s var(--ease-out) 0.1s forwards;
+    }
+    .hero__label::before {
+      content: '';
+      width: 32px; height: 1px;
+      background: var(--coral);
+    }
+
+    .hero__title {
+      font-family: var(--f-display);
+      font-size: clamp(96px, 16vw, 220px);
+      letter-spacing: -1px;
+      line-height: 0.85;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--coral) 60%, #ff3366 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 16px;
+      opacity: 0;
+      transform: translateY(40px);
+      animation: fadeUp 1s var(--ease-out) 0.3s forwards;
+    }
+
+    .hero__subtitle {
+      font-family: var(--f-brand);
+      font-size: clamp(36px, 5vw, 64px);
+      color: var(--coral);
+      letter-spacing: 0.08em;
+      margin-bottom: 40px;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeUp 0.9s var(--ease-out) 0.5s forwards;
+    }
+
+    .hero__desc {
+      max-width: 520px;
+      font-size: clamp(15px, 1.2vw, 17px);
+      font-weight: 400;
+      line-height: 1.75;
+      color: var(--text-muted);
+      margin-bottom: 48px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.8s var(--ease-out) 0.7s forwards;
+    }
+
+    .hero__actions {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.8s var(--ease-out) 0.9s forwards;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #fff;
+      background: var(--coral);
+      padding: 18px 42px;
+      border-radius: 60px;
+      transition: background 0.25s ease, transform 0.3s var(--ease-out), box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .btn-primary:hover {
+      background: var(--coral-dark);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+    .btn-primary:hover::after { opacity: 1; }
+    .btn-primary:active { transform: scale(0.97); }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border: 1px solid var(--glass-border);
+      padding: 17px 36px;
+      border-radius: 60px;
+      transition: color 0.25s ease, border-color 0.25s ease, transform 0.3s var(--ease-out);
+    }
+    .btn-ghost:hover {
+      color: #fff;
+      border-color: rgba(255,255,255,0.3);
+      transform: translateY(-3px);
+    }
+
+    .hero__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 60px;
+      padding: 12px 24px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 60px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+      opacity: 0;
+      transform: translateY(16px);
+      animation: fadeUp 0.7s var(--ease-out) 1.1s forwards;
+    }
+    .hero__badge-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+      animation: blink 2s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.35; }
+    }
+
+    /* StringTune progress-driven scroll bar */
+    .hero__progress-line {
+      position: absolute;
+      bottom: 0; left: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--coral), var(--gold));
+      width: calc(var(--progress, 0) * 100%);
+      z-index: 10;
+    }
+
+    /* Floating Japanese characters */
+    .hero__jp-float {
+      position: absolute;
+      right: 5%;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--f-brand);
+      font-size: clamp(120px, 18vw, 280px);
+      color: rgba(255,85,54,0.06);
+      line-height: 1;
+      pointer-events: none;
+      letter-spacing: 0.1em;
+      writing-mode: vertical-rl;
+      user-select: none;
+      animation: float-jp 12s ease-in-out infinite;
+    }
+    @keyframes float-jp {
+      0%, 100% { transform: translateY(-50%) translateX(0); }
+      50%       { transform: translateY(-52%) translateX(-8px); }
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       MARQUEE
+    ───────────────────────────────────────────────────────────── */
+    .marquee-wrap {
+      overflow: hidden;
+      border-top: 1px solid var(--glass-border);
+      border-bottom: 1px solid var(--glass-border);
+      background: var(--purple);
+      padding: 18px 0;
+    }
+
+    .marquee-track {
+      display: flex;
+      white-space: nowrap;
+      animation: marquee 28s linear infinite;
+    }
+
+    .marquee-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 32px;
+      padding: 0 40px;
+      font-family: var(--f-display);
+      font-size: 13px;
+      letter-spacing: 0.3em;
+      color: var(--text-dim);
+    }
+    .marquee-item span {
+      color: var(--coral);
+      font-size: 8px;
+    }
+
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       EXPERIENCES
+    ───────────────────────────────────────────────────────────── */
+    .experiences {
+      padding: clamp(100px, 14vw, 180px) 0;
+      background: var(--bg);
+    }
+
+    .experiences__header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 40px;
+      margin-bottom: clamp(60px, 8vw, 100px);
+      flex-wrap: wrap;
+    }
+
+    .experiences__header-right {
+      max-width: 400px;
+      font-size: 15px;
+      line-height: 1.8;
+      color: var(--text-muted);
+    }
+
+    .exp-grid {
+      display: grid;
+      gap: clamp(20px, 3vw, 32px);
+    }
+
+    .exp-card {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      background: var(--purple);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.6s var(--ease-out), box-shadow 0.6s var(--ease-out), border-color 0.3s ease;
+    }
+    .exp-card:hover {
+      transform: translateY(-12px);
+      box-shadow: var(--shadow-md);
+      border-color: rgba(255,85,54,0.2);
+    }
+    .exp-card:nth-child(even) {
+      direction: rtl;
+    }
+    .exp-card:nth-child(even) > * {
+      direction: ltr;
+    }
+
+    .exp-card__visual {
+      position: relative;
+      min-height: 420px;
+      overflow: hidden;
+    }
+
+    .exp-card__bg {
+      position: absolute;
+      inset: 0;
+      transition: transform 0.7s var(--ease-out);
+    }
+    .exp-card:hover .exp-card__bg { transform: scale(1.06); }
+
+    .exp-card__bg-1 {
+      background: linear-gradient(135deg, #1a1425 0%, #3d1a35 40%, var(--coral) 100%);
+    }
+    .exp-card__bg-2 {
+      background: linear-gradient(135deg, #0a1a2e 0%, #0a3d2e 50%, #0d6b4a 100%);
+    }
+    .exp-card__bg-3 {
+      background: linear-gradient(135deg, #1a1010 0%, #3d1a00 50%, var(--gold) 100%);
+    }
+    .exp-card__bg-4 {
+      background: linear-gradient(135deg, #0a0a2e 0%, #1a0a3d 50%, #8B5CF6 100%);
+    }
+
+    .exp-card__icon {
+      position: absolute;
+      bottom: 32px; left: 32px;
+      font-size: 72px;
+      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.4));
+    }
+
+    .exp-card__number {
+      position: absolute;
+      top: 28px; right: 28px;
+      font-family: var(--f-display);
+      font-size: 96px;
+      color: rgba(255,255,255,0.06);
+      line-height: 1;
+    }
+
+    .exp-card__content {
+      padding: clamp(40px, 5vw, 64px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .exp-card__tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.36em;
+      text-transform: uppercase;
+      color: var(--coral);
+      margin-bottom: 20px;
+    }
+    .exp-card__tag::before {
+      content: '';
+      width: 20px; height: 1px;
+      background: var(--coral);
+    }
+
+    .exp-card__title {
+      font-family: var(--f-display);
+      font-size: clamp(36px, 4vw, 56px);
+      letter-spacing: 2px;
+      color: #fff;
+      line-height: 0.95;
+      margin-bottom: 20px;
+    }
+
+    .exp-card__desc {
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+
+    .exp-card__link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--coral);
+      transition: gap 0.3s var(--ease-out);
+    }
+    .exp-card__link:hover { gap: 18px; }
+    .exp-card__link-arrow {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(255,85,54,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s ease;
+    }
+    .exp-card__link:hover .exp-card__link-arrow {
+      background: var(--coral);
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       STATS BAR
+    ───────────────────────────────────────────────────────────── */
+    .stats-bar {
+      background: var(--purple);
+      border-top: 1px solid var(--glass-border);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 60px 0;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 40px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 0 20px;
+      border-right: 1px solid var(--glass-border);
+    }
+    .stat-item:last-child { border-right: none; }
+
+    .stat-number {
+      font-family: var(--f-display);
+      font-size: clamp(48px, 6vw, 80px);
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, var(--gold), var(--coral));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       ABOUT
+    ───────────────────────────────────────────────────────────── */
+    .about {
+      padding: clamp(100px, 14vw, 180px) 0;
+      background: var(--bg-mid);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .about::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,200,87,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .about__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(60px, 8vw, 120px);
+      align-items: center;
+    }
+
+    .about__label { margin-bottom: 20px; }
+
+    .about__title {
+      margin-bottom: 40px;
+    }
+
+    .about__body {
+      font-size: clamp(15px, 1.2vw, 17px);
+      line-height: 1.85;
+      color: var(--text-muted);
+      margin-bottom: 48px;
+    }
+    .about__body p + p { margin-top: 20px; }
+
+    .about__features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .about__feature {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+    .about__feature::before {
+      content: '//';
+      font-family: var(--f-display);
+      font-size: 14px;
+      color: var(--coral);
+      letter-spacing: 2px;
+      flex-shrink: 0;
+    }
+
+    .about__visual {
+      position: relative;
+      height: 560px;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .about__visual-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--coral) 0%, var(--gold) 50%, #ff3366 100%);
+      transition: transform 0.8s var(--ease-out);
+    }
+    .about__visual:hover .about__visual-bg { transform: scale(1.03); }
+
+    .about__visual-pattern {
+      position: absolute;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(
+          -45deg,
+          rgba(0,0,0,0) 0px,
+          rgba(0,0,0,0) 20px,
+          rgba(0,0,0,0.12) 20px,
+          rgba(0,0,0,0.12) 21px
+        );
+    }
+
+    .about__visual-text {
+      position: absolute;
+      bottom: 40px; left: 40px;
+      right: 40px;
+    }
+
+    .about__visual-jp {
+      font-family: var(--f-brand);
+      font-size: 72px;
+      color: rgba(255,255,255,0.15);
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+
+    .about__visual-quote {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.9);
+    }
+
+    /* Floating badge on visual */
+    .about__badge {
+      position: absolute;
+      top: 36px; right: 36px;
+      background: rgba(10,6,18,0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      text-align: center;
+    }
+    .about__badge-num {
+      font-family: var(--f-display);
+      font-size: 36px;
+      color: var(--gold);
+      letter-spacing: 2px;
+      line-height: 1;
+    }
+    .about__badge-txt {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       TESTIMONIAL
+    ───────────────────────────────────────────────────────────── */
+    .testimonials {
+      padding: clamp(100px, 14vw, 180px) 0;
+      background: var(--bg);
+      text-align: center;
+    }
+
+    .testimonials__header {
+      margin-bottom: clamp(56px, 7vw, 80px);
+    }
+
+    .testimonials__title { margin-top: 16px; }
+
+    .testimonial-card {
+      max-width: 880px;
+      margin: 0 auto;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: clamp(48px, 6vw, 80px);
+      position: relative;
+      backdrop-filter: blur(20px);
+      transition: border-color 0.4s ease, box-shadow 0.4s ease;
+    }
+    .testimonial-card:hover {
+      border-color: rgba(255,85,54,0.2);
+      box-shadow: var(--shadow-md);
+    }
+
+    .testimonial-card__quote-icon {
+      font-family: var(--f-display);
+      font-size: 120px;
+      color: rgba(255,85,54,0.12);
+      line-height: 0.8;
+      position: absolute;
+      top: 24px; left: 48px;
+    }
+
+    .testimonial-card__stars {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 28px;
+      font-size: 18px;
+    }
+
+    .testimonial-card__text {
+      font-size: clamp(18px, 2vw, 24px);
+      font-weight: 400;
+      line-height: 1.7;
+      color: var(--text);
+      margin-bottom: 40px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .testimonial-card__author {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .testimonial-card__avatar {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--coral), var(--gold));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--f-display);
+      font-size: 22px;
+      color: #fff;
+    }
+
+    .testimonial-card__name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .testimonial-card__role {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 2px;
+      letter-spacing: 0.06em;
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       CONTACT / CTA
+    ───────────────────────────────────────────────────────────── */
+    .cta-section {
+      padding: clamp(100px, 14vw, 180px) 0;
+      background: var(--purple);
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(255,85,54,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-section__label { margin-bottom: 20px; }
+    .cta-section__title { margin-bottom: 28px; }
+
+    .cta-section__desc {
+      max-width: 560px;
+      margin: 0 auto 52px;
+      font-size: clamp(15px, 1.2vw, 17px);
+      line-height: 1.8;
+      color: var(--text-muted);
+    }
+
+    .cta-section__actions {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* Neon line decoration */
+    .cta-section__jp {
+      position: absolute;
+      bottom: -20px; left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--f-brand);
+      font-size: clamp(120px, 20vw, 320px);
+      color: rgba(255,85,54,0.04);
+      pointer-events: none;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       FOOTER
+    ───────────────────────────────────────────────────────────── */
+    .footer {
+      background: #060310;
+      border-top: 1px solid var(--glass-border);
+      padding: 80px 0 40px;
+    }
+
+    .footer__grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: clamp(40px, 6vw, 80px);
+      margin-bottom: 60px;
+    }
+
+    .footer__brand {
+      font-family: var(--f-brand);
+      font-size: 28px;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+
+    .footer__tagline {
+      font-size: 14px;
+      line-height: 1.75;
+      color: var(--text-dim);
+      max-width: 320px;
+    }
+
+    .footer__col-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.36em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 24px;
+    }
+
+    .footer__links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .footer__link {
+      font-size: 14px;
+      color: var(--text-muted);
+      transition: color 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .footer__link:hover { color: #fff; }
+    .footer__link::before {
+      content: '';
+      width: 0;
+      height: 1px;
+      background: var(--coral);
+      transition: width 0.3s var(--ease-out);
+    }
+    .footer__link:hover::before { width: 12px; }
+
+    .footer__bottom {
+      padding-top: 32px;
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .footer__copy {
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+    }
+
+    .footer__social {
+      display: flex;
+      gap: 12px;
+    }
+
+    .footer__social-link {
+      width: 36px; height: 36px;
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: var(--text-dim);
+      transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    }
+    .footer__social-link:hover {
+      background: var(--coral);
+      border-color: var(--coral);
+      color: #fff;
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       SCROLL PROGRESS BAR (StringTune --progress)
+    ───────────────────────────────────────────────────────────── */
+    .scroll-progress {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--coral), var(--gold));
+      z-index: 9999;
+      transform-origin: left;
+      /* StringTune will set --progress via JS; fallback via JS scroll */
+      width: calc(var(--st-progress, 0) * 100%);
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       MOBILE MENU
+    ───────────────────────────────────────────────────────────── */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: rgba(10, 6, 18, 0.97);
+      backdrop-filter: blur(20px);
+      padding: calc(var(--nav-h) + 40px) 40px 40px;
+      flex-direction: column;
+      gap: 32px;
+    }
+    .mobile-menu.open { display: flex; }
+
+    .mobile-menu__link {
+      font-family: var(--f-display);
+      font-size: 52px;
+      letter-spacing: 3px;
+      color: rgba(255,255,255,0.6);
+      transition: color 0.25s ease;
+    }
+    .mobile-menu__link:hover { color: var(--coral); }
+
+    /* ─────────────────────────────────────────────────────────────
+       RESPONSIVE
+    ───────────────────────────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .exp-card {
+        grid-template-columns: 1fr;
+      }
+      .exp-card:nth-child(even) { direction: ltr; }
+      .exp-card__visual { min-height: 300px; }
+      .about__grid { grid-template-columns: 1fr; }
+      .about__visual { height: 380px; }
+      .footer__grid { grid-template-columns: 1fr 1fr; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .stat-item:nth-child(2) { border-right: none; }
+    }
+
+    @media (max-width: 768px) {
+      .nav__links, .nav__cta { display: none; }
+      .nav__burger { display: flex; }
+
+      .hero__jp-float { display: none; }
+
+      .footer__grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+
+      .testimonial-card { padding: 40px 28px; }
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       REDUCED MOTION
+    ───────────────────────────────────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+      .reveal, .reveal-left, .reveal-right {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Scroll Progress Bar -->
+  <div class="scroll-progress" id="scrollProgress" string="progress" string-progress-key="--st-progress"></div>
+
+  <!-- ────────────────────────────────── NAV ──── -->
+  <nav class="nav" id="nav" aria-label="Main navigation">
+    <div class="container">
+      <div class="nav__inner">
+        <a href="#" class="nav__logo" aria-label="Hey Tiger home">
+          <div class="nav__logo-icon" aria-hidden="true">🐯</div>
+          HEY TIGER
+        </a>
+
+        <ul class="nav__links" role="list">
+          <li><a href="#experiences" class="nav__link">Menu</a></li>
+          <li><a href="#about" class="nav__link">About</a></li>
+          <li><a href="#testimonials" class="nav__link">Events</a></li>
+          <li><a href="#contact" class="nav__link">Contact</a></li>
+        </ul>
+
+        <a href="mailto:hello@heytiger.ae" class="nav__cta">Reserve a Table</a>
+
+        <button class="nav__burger" aria-label="Open menu" id="burgerBtn">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu" role="dialog" aria-label="Mobile navigation">
+    <a href="#experiences" class="mobile-menu__link" onclick="closeMobileMenu()">Menu</a>
+    <a href="#about" class="mobile-menu__link" onclick="closeMobileMenu()">About</a>
+    <a href="#testimonials" class="mobile-menu__link" onclick="closeMobileMenu()">Events</a>
+    <a href="#contact" class="mobile-menu__link" onclick="closeMobileMenu()">Contact</a>
+    <a href="mailto:hello@heytiger.ae" class="btn-primary" style="width:fit-content">Reserve a Table</a>
+  </div>
+
+  <!-- ────────────────────────────────── HERO ──── -->
+  <section class="hero" id="hero" aria-label="Hero">
+    <div class="hero__bg" string="parallax" string-parallax-speed="0.3" aria-hidden="true">
+      <div class="hero__glow"></div>
+      <div class="hero__glow-gold"></div>
+      <div class="hero__grid"></div>
+    </div>
+
+    <div class="hero__jp-float" aria-hidden="true">おいトラ</div>
+
+    <div class="container">
+      <div class="hero__content">
+        <p class="hero__label" aria-label="Japanese Street Food and Rooftop Vibes">
+          Japanese Street Food × Rooftop Vibes
+        </p>
+
+        <h1 class="hero__title">HEY TIGER</h1>
+
+        <p class="hero__subtitle" lang="ja">おいトラ</p>
+
+        <p class="hero__desc">
+          Where the west meets the east. A cozy Japanese spot where family comfort meets after-hours chaos, all under one rooftop.
+        </p>
+
+        <div class="hero__actions">
+          <a href="mailto:hello@heytiger.ae" class="btn-primary">
+            Reserve Your Table
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <a href="#experiences" class="btn-ghost">
+            Explore Menu
+          </a>
+        </div>
+
+        <div class="hero__badge" role="note">
+          <span class="hero__badge-dot" aria-hidden="true"></span>
+          Dubai's Best Japanese Experience 2025
+        </div>
+      </div>
+    </div>
+
+    <div class="hero__progress-line" string="progress" string-progress-key="--progress" aria-hidden="true"></div>
+  </section>
+
+  <!-- ────────────────────────────────── MARQUEE ──── -->
+  <div class="marquee-wrap" aria-hidden="true">
+    <div class="marquee-track">
+      <!-- Doubled for seamless loop -->
+      <span class="marquee-item">JAPANESE STREET FOOD <span>◆</span></span>
+      <span class="marquee-item">SUSHI BAR <span>◆</span></span>
+      <span class="marquee-item">ROOFTOP LOUNGE <span>◆</span></span>
+      <span class="marquee-item">DUBAI MOTOR CITY <span>◆</span></span>
+      <span class="marquee-item">おいトラ <span>◆</span></span>
+      <span class="marquee-item">CRAFT COCKTAILS <span>◆</span></span>
+      <span class="marquee-item">WHERE THE WEST MEETS THE EAST <span>◆</span></span>
+      <span class="marquee-item">OPENING 2026 <span>◆</span></span>
+      <!-- Duplicate for loop -->
+      <span class="marquee-item">JAPANESE STREET FOOD <span>◆</span></span>
+      <span class="marquee-item">SUSHI BAR <span>◆</span></span>
+      <span class="marquee-item">ROOFTOP LOUNGE <span>◆</span></span>
+      <span class="marquee-item">DUBAI MOTOR CITY <span>◆</span></span>
+      <span class="marquee-item">おいトラ <span>◆</span></span>
+      <span class="marquee-item">CRAFT COCKTAILS <span>◆</span></span>
+      <span class="marquee-item">WHERE THE WEST MEETS THE EAST <span>◆</span></span>
+      <span class="marquee-item">OPENING 2026 <span>◆</span></span>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────── EXPERIENCES ──── -->
+  <section class="experiences" id="experiences" aria-label="Our experiences">
+    <div class="container">
+      <div class="experiences__header">
+        <div>
+          <p class="label reveal">01 // Experiences</p>
+          <h2 class="section-title reveal stagger-1">WHAT WE<br/>OFFER</h2>
+        </div>
+        <p class="experiences__header-right reveal stagger-2">
+          From binchotan yakitori to craft cocktails — every dish, every drink, every moment tells part of the Tiger story.
+        </p>
+      </div>
+
+      <div class="exp-grid">
+        <!-- Card 1 -->
+        <article class="exp-card reveal stagger-1" tabindex="0">
+          <div class="exp-card__visual">
+            <div class="exp-card__bg exp-card__bg-1"></div>
+            <div class="exp-card__icon" aria-hidden="true">🍜</div>
+            <div class="exp-card__number" aria-hidden="true">01</div>
+          </div>
+          <div class="exp-card__content">
+            <span class="exp-card__tag">Street Food</span>
+            <h3 class="exp-card__title">JAPANESE<br/>STREET FOOD</h3>
+            <p class="exp-card__desc">Yakitori, katsu sando, ramen, sushi tacos. Traditional flavors with a modern twist — every bite tells a story.</p>
+            <a href="#contact" class="exp-card__link" aria-label="Learn more about Japanese Street Food">
+              Explore Menu
+              <span class="exp-card__link-arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
+        </article>
+
+        <!-- Card 2 -->
+        <article class="exp-card reveal stagger-2" tabindex="0">
+          <div class="exp-card__visual">
+            <div class="exp-card__bg exp-card__bg-2"></div>
+            <div class="exp-card__icon" aria-hidden="true">🍱</div>
+            <div class="exp-card__number" aria-hidden="true">02</div>
+          </div>
+          <div class="exp-card__content">
+            <span class="exp-card__tag">Sushi</span>
+            <h3 class="exp-card__title">SUSHI BAR<br/>OMAKASE</h3>
+            <p class="exp-card__desc">Fresh rolls and creative fusions. Watch chefs craft masterpieces in real time. Omakase available by reservation.</p>
+            <a href="#contact" class="exp-card__link" aria-label="Learn more about Sushi Bar">
+              Reserve Seat
+              <span class="exp-card__link-arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
+        </article>
+
+        <!-- Card 3 -->
+        <article class="exp-card reveal stagger-3" tabindex="0">
+          <div class="exp-card__visual">
+            <div class="exp-card__bg exp-card__bg-3"></div>
+            <div class="exp-card__icon" aria-hidden="true">🍸</div>
+            <div class="exp-card__number" aria-hidden="true">03</div>
+          </div>
+          <div class="exp-card__content">
+            <span class="exp-card__tag">Cocktails</span>
+            <h3 class="exp-card__title">CRAFT<br/>COCKTAILS</h3>
+            <p class="exp-card__desc">Japanese-inspired cocktails, premium sake, craft beverages, signature drinks. The house pour waits for you.</p>
+            <a href="#contact" class="exp-card__link" aria-label="Learn more about Cocktails">
+              See Drinks
+              <span class="exp-card__link-arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
+        </article>
+
+        <!-- Card 4 -->
+        <article class="exp-card reveal stagger-4" tabindex="0">
+          <div class="exp-card__visual">
+            <div class="exp-card__bg exp-card__bg-4"></div>
+            <div class="exp-card__icon" aria-hidden="true">🎵</div>
+            <div class="exp-card__number" aria-hidden="true">04</div>
+          </div>
+          <div class="exp-card__content">
+            <span class="exp-card__tag">Rooftop</span>
+            <h3 class="exp-card__title">ROOFTOP<br/>LOUNGE</h3>
+            <p class="exp-card__desc">Dubai skyline views, live DJ sets on weekends, neon vibes, late-night energy. The party starts after midnight.</p>
+            <a href="#contact" class="exp-card__link" aria-label="Learn more about Rooftop Lounge">
+              Get on the List
+              <span class="exp-card__link-arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ────────────────────────────────── STATS ──── -->
+  <div class="stats-bar" aria-label="Hey Tiger by the numbers">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-item reveal">
+          <div class="stat-number">47+</div>
+          <div class="stat-label">Sake Labels</div>
+        </div>
+        <div class="stat-item reveal stagger-1">
+          <div class="stat-number">5</div>
+          <div class="stat-label">Unique Spaces</div>
+        </div>
+        <div class="stat-item reveal stagger-2">
+          <div class="stat-number">200+</div>
+          <div class="stat-label">Menu Items</div>
+        </div>
+        <div class="stat-item reveal stagger-3">
+          <div class="stat-number">2AM</div>
+          <div class="stat-label">Closing Time</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────── ABOUT ──── -->
+  <section class="about" id="about" aria-label="Our story">
+    <div class="container">
+      <div class="about__grid">
+        <div>
+          <p class="label about__label reveal">02 // The Story</p>
+          <h2 class="section-title about__title reveal stagger-1">FORM<br/>MEETS<br/>FUNCTION</h2>
+
+          <div class="about__body reveal stagger-2">
+            <p>At Hey Tiger, nothing is just for show. Every detail serves a purpose. From the crackle of lights to the curve of a chair, from the grit of the bar to the shadows on the wall.</p>
+            <p>This is more than design. It's the mood, the vibe, the energy that shapes the space and moves with the moment.</p>
+          </div>
+
+          <ul class="about__features reveal stagger-3" role="list">
+            <li class="about__feature">Cozy family dining by day</li>
+            <li class="about__feature">Late-night rooftop energy</li>
+            <li class="about__feature">Authentic Japanese flavors</li>
+            <li class="about__feature">Modern Tokyo atmosphere</li>
+            <li class="about__feature">Dubai Motor City Club House</li>
+          </ul>
+        </div>
+
+        <div class="about__visual reveal-right stagger-2">
+          <div class="about__visual-bg"></div>
+          <div class="about__visual-pattern" aria-hidden="true"></div>
+          <div class="about__badge" aria-label="Established 2026">
+            <div class="about__badge-num">2026</div>
+            <div class="about__badge-txt">Est. Dubai</div>
+          </div>
+          <div class="about__visual-text">
+            <div class="about__visual-jp" lang="ja" aria-hidden="true">おいトラ</div>
+            <div class="about__visual-quote">Where West Meets East</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ────────────────────────────────── TESTIMONIALS ──── -->
+  <section class="testimonials" id="testimonials" aria-label="Customer stories">
+    <div class="container">
+      <div class="testimonials__header">
+        <p class="label reveal">03 // What People Say</p>
+        <h2 class="section-title testimonials__title reveal stagger-1">CUSTOMER<br/>STORIES</h2>
+      </div>
+
+      <div class="testimonial-card reveal stagger-2" role="article">
+        <div class="testimonial-card__quote-icon" aria-hidden="true">"</div>
+        <div class="testimonial-card__stars" aria-label="5 stars">
+          ⭐⭐⭐⭐⭐
+        </div>
+        <blockquote class="testimonial-card__text">
+          "The experience was exceptional. From the intimate family dinner to the electric rooftop atmosphere with Dubai skyline views. Hey Tiger delivers on every single level — food, vibes, service."
+        </blockquote>
+        <footer class="testimonial-card__author">
+          <div class="testimonial-card__avatar" aria-hidden="true">A</div>
+          <div>
+            <div class="testimonial-card__name">Ahmed Al Rashid</div>
+            <div class="testimonial-card__role">Food Critic, Dubai Dining Guide</div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </section>
+
+  <!-- ────────────────────────────────── CTA / CONTACT ──── -->
+  <section class="cta-section" id="contact" aria-label="Contact and reservations">
+    <div class="container" style="position:relative;z-index:1">
+      <p class="label cta-section__label reveal">04 // Get in Touch</p>
+      <h2 class="section-title cta-section__title reveal stagger-1">TIME TO<br/>CONNECT</h2>
+      <p class="cta-section__desc reveal stagger-2">
+        Just one small action stands between us and an unforgettable meal. A great journey begins with a simple hello.
+      </p>
+      <div class="cta-section__actions reveal stagger-3">
+        <a href="mailto:hello@heytiger.ae" class="btn-primary">
+          Book a Table
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <a href="https://instagram.com/heytigerdb" target="_blank" rel="noopener noreferrer" class="btn-ghost">
+          Follow @heytigerdb
+        </a>
+      </div>
+    </div>
+    <div class="cta-section__jp" aria-hidden="true">おいトラ</div>
+  </section>
+
+  <!-- ────────────────────────────────── FOOTER ──── -->
+  <footer class="footer" aria-label="Site footer">
+    <div class="container">
+      <div class="footer__grid">
+        <!-- Brand -->
+        <div>
+          <div class="footer__brand">🐯 HEY TIGER</div>
+          <p class="footer__tagline">
+            Your neighborhood Japanese spot with a split personality.<br/>
+            おいトラ — Where the west meets the east.
+          </p>
+        </div>
+
+        <!-- Explore -->
+        <nav aria-label="Footer navigation">
+          <p class="footer__col-title">Explore</p>
+          <ul class="footer__links" role="list">
+            <li><a href="#experiences" class="footer__link">Menu</a></li>
+            <li><a href="#about" class="footer__link">About</a></li>
+            <li><a href="#testimonials" class="footer__link">Events</a></li>
+            <li><a href="#contact" class="footer__link">Contact</a></li>
+          </ul>
+        </nav>
+
+        <!-- Connect -->
+        <nav aria-label="Social media links">
+          <p class="footer__col-title">Connect</p>
+          <ul class="footer__links" role="list">
+            <li>
+              <a href="https://instagram.com/heytigerdb" class="footer__link" target="_blank" rel="noopener noreferrer">
+                Instagram
+              </a>
+            </li>
+            <li>
+              <a href="#" class="footer__link" target="_blank" rel="noopener noreferrer">
+                Facebook
+              </a>
+            </li>
+            <li>
+              <a href="#" class="footer__link" target="_blank" rel="noopener noreferrer">
+                TripAdvisor
+              </a>
+            </li>
+            <li>
+              <a href="mailto:hello@heytiger.ae" class="footer__link">
+                hello@heytiger.ae
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="footer__bottom">
+        <p class="footer__copy">Hey Tiger © 2026 — Dubai, UAE</p>
+        <div class="footer__social" aria-label="Social media">
+          <a href="https://instagram.com/heytigerdb" class="footer__social-link" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <span aria-hidden="true">📸</span>
+          </a>
+          <a href="#" class="footer__social-link" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <span aria-hidden="true">👥</span>
+          </a>
+          <a href="#" class="footer__social-link" target="_blank" rel="noopener noreferrer" aria-label="TripAdvisor">
+            <span aria-hidden="true">🦉</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ─────────────────────────────────────────────────────────────
+       JAVASCRIPT — StringTune + custom interactions
+  ───────────────────────────────────────────────────────────── -->
+  <script>
+  (function() {
+    'use strict';
+
+    /* ── 1. StringTune Init ──────────────────────────────────── */
+    function initStringTune() {
+      if (typeof StringTune === 'undefined') return;
+
+      try {
+        const st = StringTune.StringTune
+          ? StringTune.StringTune.getInstance()
+          : StringTune.getInstance?.();
+
+        if (!st) return;
+
+        // Register available modules
+        const modules = [
+          'StringParallax',
+          'StringProgress',
+          'StringScrollbar',
+          'StringLazy',
+        ];
+
+        modules.forEach(name => {
+          const mod = StringTune[name];
+          if (mod) st.use(mod);
+        });
+
+        st.start(0);
+        console.log('[StringTune] Initialized ✓');
+      } catch (e) {
+        console.warn('[StringTune] Init failed, using fallbacks:', e.message);
+      }
+    }
+
+    /* ── 2. Nav scroll behavior ─────────────────────────────── */
+    const nav = document.getElementById('nav');
+    let lastScroll = 0;
+
+    function onScroll() {
+      const y = window.scrollY;
+
+      // Glassmorphism trigger
+      nav.classList.toggle('scrolled', y > 80);
+
+      // Scroll progress fallback (if StringTune not available)
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = total > 0 ? y / total : 0;
+      document.getElementById('scrollProgress').style.width = (progress * 100) + '%';
+
+      lastScroll = y;
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    /* ── 3. Scroll-reveal (IntersectionObserver) ────────────── */
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.12,
+      rootMargin: '0px 0px -60px 0px'
+    });
+
+    document
+      .querySelectorAll('.reveal, .reveal-left, .reveal-right')
+      .forEach(el => revealObserver.observe(el));
+
+    /* ── 4. Mobile menu ─────────────────────────────────────── */
+    const burgerBtn   = document.getElementById('burgerBtn');
+    const mobileMenu  = document.getElementById('mobileMenu');
+    let menuOpen = false;
+
+    function toggleMobileMenu() {
+      menuOpen = !menuOpen;
+      mobileMenu.classList.toggle('open', menuOpen);
+      document.body.style.overflow = menuOpen ? 'hidden' : '';
+      burgerBtn.setAttribute('aria-expanded', menuOpen);
+      // Animate burger → X
+      const spans = burgerBtn.querySelectorAll('span');
+      if (menuOpen) {
+        spans[0].style.cssText = 'transform:translateY(7px) rotate(45deg)';
+        spans[1].style.cssText = 'opacity:0';
+        spans[2].style.cssText = 'transform:translateY(-7px) rotate(-45deg)';
+      } else {
+        spans.forEach(s => s.style.cssText = '');
+      }
+    }
+
+    window.closeMobileMenu = function() {
+      if (menuOpen) toggleMobileMenu();
+    };
+
+    burgerBtn.addEventListener('click', toggleMobileMenu);
+
+    // Close on outside click
+    mobileMenu.addEventListener('click', (e) => {
+      if (e.target === mobileMenu) closeMobileMenu();
+    });
+
+    // Keyboard: Escape closes menu
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menuOpen) closeMobileMenu();
+    });
+
+    /* ── 5. Button ripple effect ────────────────────────────── */
+    document.querySelectorAll('.btn-primary').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        const rect = this.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const ripple = document.createElement('span');
+        ripple.style.cssText = `
+          position:absolute;
+          left:${x}px;top:${y}px;
+          width:0;height:0;
+          border-radius:50%;
+          background:rgba(255,255,255,0.3);
+          transform:translate(-50%,-50%);
+          pointer-events:none;
+          animation:ripple-expand 0.6s var(--ease-out) forwards;
+        `;
+        this.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 700);
+      });
+    });
+
+    // Ripple keyframe injection
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes ripple-expand {
+        to { width: 300px; height: 300px; opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+
+    /* ── 6. Smooth anchor scroll ────────────────────────────── */
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+      link.addEventListener('click', function(e) {
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          const navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 72;
+          const top = target.getBoundingClientRect().top + window.scrollY - navH;
+          window.scrollTo({ top, behavior: 'smooth' });
+        }
+      });
+    });
+
+    /* ── 7. Card tilt effect (subtle) ──────────────────────── */
+    document.querySelectorAll('.exp-card').forEach(card => {
+      card.addEventListener('mousemove', function(e) {
+        const rect = this.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = (e.clientX - cx) / (rect.width / 2);
+        const dy = (e.clientY - cy) / (rect.height / 2);
+        this.style.transform = `translateY(-12px) rotateX(${dy * -2}deg) rotateY(${dx * 2}deg)`;
+      });
+
+      card.addEventListener('mouseleave', function() {
+        this.style.transform = '';
+      });
+    });
+
+    /* ── 8. Init ────────────────────────────────────────────── */
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initStringTune);
+    } else {
+      initStringTune();
+    }
+
+    // Also try after window load (StringTune may need full load)
+    window.addEventListener('load', initStringTune);
+
+  })();
+  </script>
+
+</body>
+</html>

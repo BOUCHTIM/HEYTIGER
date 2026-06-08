@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hey Tiger — Design & Layout Specification</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,900;1,9..144,700&family=DM+Sans:wght@300;400;500;600;700&family=Bebas+Neue&family=Barlow+Condensed:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;700;900&display=swap');
+
+:root{
+  --void:#1C0808; --plum:#14080A; --plum2:#1f0d0f;
+  --red:#C83D20; --red-dim:#B22D12; --red-10:rgba(200,61,32,0.10); --red-20:rgba(200,61,32,0.22);
+  --cream:#F0EBD8; --cream-70:rgba(240,235,216,0.70); --cream-45:rgba(240,235,216,0.45); --cream-25:rgba(240,235,216,0.25);
+  --border:#2A1F2A; --border-soft:rgba(240,235,216,0.14);
+  --yellow:#F5C518; --olive:#4A5E32; --teal:#3D7A6E; --amber:#C17B3F; --navy:#1A1F2E; --nearblack:#0A070D; --muted:#7A6A7A; --menubg:#F0EBE0;
+  --mono:'SF Mono',ui-monospace,Menlo,Consolas,monospace;
+  --disp:'Fraunces',Georgia,serif;
+  --body:'DM Sans',system-ui,sans-serif;
+  --cond:'Barlow Condensed',sans-serif;
+  --jp:'Noto Sans JP',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+@page{size:210mm 297mm;margin:0;}
+html,body{background:var(--plum);font-family:var(--body);color:var(--cream);}
+
+.page{
+  position:relative;width:210mm;height:297mm;overflow:hidden;
+  background:var(--plum);
+  page-break-after:always;break-after:page;
+  padding:15mm 14mm 13mm;
+}
+.page:last-child{page-break-after:auto;break-after:auto;}
+
+/* film grain / texture wash */
+.page::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(200,61,32,0.06), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 100% 100%, rgba(0,0,0,0.35), transparent 55%);
+}
+.page > *{position:relative;z-index:1;}
+
+/* ─── shared type ─── */
+.eyebrow{font-family:var(--body);font-size:8.5pt;font-weight:700;letter-spacing:0.34em;text-transform:uppercase;color:var(--red);}
+.jp{font-family:var(--jp);color:var(--red);font-weight:700;}
+.disp{font-family:var(--disp);font-weight:900;line-height:0.92;letter-spacing:-0.01em;color:var(--cream);}
+.mono{font-family:var(--mono);font-size:8pt;letter-spacing:0.01em;}
+p{font-size:9.5pt;line-height:1.62;color:var(--cream-70);}
+.lead{font-size:10.5pt;line-height:1.6;color:var(--cream);}
+small{font-size:8pt;color:var(--cream-45);}
+.red{color:var(--red);} .yellow{color:var(--yellow);} .cream{color:var(--cream);}
+
+/* page chrome */
+.runhead{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:16px;}
+.runhead .wm{font-family:var(--disp);font-weight:900;font-size:11pt;letter-spacing:0.02em;color:var(--cream);}
+.runhead .wm .r{color:var(--red);}
+.runhead .sec{font-size:8pt;letter-spacing:0.28em;text-transform:uppercase;color:var(--cream-45);}
+.foot{position:absolute;left:14mm;right:14mm;bottom:8mm;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:6px;}
+.foot small{font-size:7pt;letter-spacing:0.18em;text-transform:uppercase;color:var(--cream-45);}
+.pgno{font-family:var(--mono);font-size:8pt;color:var(--red);}
+
+h2.title{font-family:var(--disp);font-weight:900;font-size:30pt;line-height:0.94;margin:4px 0 4px;color:var(--cream);}
+h2.title .r{color:var(--red);}
+.subtitle{font-size:9.5pt;color:var(--cream-70);max-width:165mm;margin-bottom:14px;}
+
+/* swatches */
+.swatch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.sw{border:1px solid var(--border);background:var(--plum2);border-radius:2px;overflow:hidden;}
+.sw .chip{height:46px;border-bottom:1px solid var(--border);}
+.sw .meta{padding:7px 9px;}
+.sw .nm{font-size:8.5pt;font-weight:700;letter-spacing:0.02em;color:var(--cream);}
+.sw .hex{font-family:var(--mono);font-size:8pt;color:var(--red);margin-top:1px;}
+.sw .use{font-size:7.2pt;color:var(--cream-45);line-height:1.4;margin-top:3px;}
+
+/* token rows */
+.trow{display:grid;grid-template-columns:34mm 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);align-items:baseline;}
+.trow .k{font-size:8.5pt;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--red);}
+.trow .v{font-size:9pt;color:var(--cream-70);}
+.trow .v b{color:var(--cream);font-weight:600;}
+.trow .v .mono{color:var(--cream);}
+
+/* table */
+table{width:100%;border-collapse:collapse;}
+th{font-size:7.5pt;letter-spacing:0.16em;text-transform:uppercase;color:var(--red);text-align:left;padding:7px 8px;border-bottom:1.5px solid var(--red-20);font-weight:700;}
+td{font-size:8.5pt;color:var(--cream-70);padding:7px 8px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.45;}
+td b{color:var(--cream);font-weight:600;}
+td .mono{color:var(--cream);}
+tr:nth-child(even) td{background:rgba(240,235,216,0.02);}
+
+/* cards */
+.card{border:1px solid var(--border);background:var(--plum2);border-radius:3px;padding:12px 14px;}
+.card h3{font-family:var(--disp);font-weight:900;font-size:13pt;color:var(--cream);margin-bottom:5px;}
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+
+/* wireframe schematic */
+.wire{border:1px dashed var(--cream-25);border-radius:2px;position:relative;background:
+  repeating-linear-gradient(0deg,transparent,transparent 11px,rgba(240,235,216,0.025) 11px,rgba(240,235,216,0.025) 12px);}
+.wire .lbl{position:absolute;top:5px;left:7px;font-size:7pt;letter-spacing:0.18em;text-transform:uppercase;color:var(--cream-45);}
+.wire .dim{position:absolute;font-family:var(--mono);font-size:7pt;color:var(--void);background:var(--red);padding:1px 5px;border-radius:2px;letter-spacing:0.02em;}
+.zone{border:1px solid var(--red-20);background:var(--red-10);border-radius:2px;display:flex;align-items:center;justify-content:center;text-align:center;}
+.zone .t{font-size:7pt;letter-spacing:0.12em;text-transform:uppercase;color:var(--red);line-height:1.3;padding:2px;}
+.box{border:1px solid var(--border-soft);border-radius:2px;display:flex;align-items:center;justify-content:center;text-align:center;}
+.box .t{font-size:6.6pt;letter-spacing:0.1em;text-transform:uppercase;color:var(--cream-45);line-height:1.3;padding:2px;}
+.logobox{border:1px solid var(--red);background:rgba(200,61,32,0.14);border-radius:2px;display:flex;align-items:center;justify-content:center;color:var(--red);font-size:7pt;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-align:center;line-height:1.2;}
+
+/* annotation list with numbered dots */
+.anno{list-style:none;}
+.anno li{display:grid;grid-template-columns:16px 1fr;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);align-items:start;}
+.anno .n{width:15px;height:15px;border-radius:50%;background:var(--red);color:var(--void);font-size:7.5pt;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+.anno .tx{font-size:8.3pt;line-height:1.45;color:var(--cream-70);}
+.anno .tx b{color:var(--cream);font-weight:600;}
+.anno .tx .mono{color:var(--red);}
+.dot{width:15px;height:15px;border-radius:50%;background:var(--red);color:var(--void);font-size:7.5pt;font-weight:800;display:inline-flex;align-items:center;justify-content:center;position:absolute;z-index:5;box-shadow:0 0 0 2px var(--plum);}
+
+.callout{border-left:3px solid var(--red);background:rgba(200,61,32,0.08);padding:9px 12px;border-radius:0 3px 3px 0;}
+.callout .h{font-size:8pt;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--red);margin-bottom:3px;}
+.callout p{font-size:8.5pt;color:var(--cream);}
+.tag{display:inline-block;font-size:7pt;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:var(--red);color:var(--void);}
+.tag.ghost{background:transparent;border:1px solid var(--border-soft);color:var(--cream-45);}
+.tag.yellow{background:var(--yellow);color:var(--void);}
+
+.spacer{height:8px;} .spacer-lg{height:14px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.flex{display:flex;gap:8px;align-items:center;}
+ul.bullets{list-style:none;}
+ul.bullets li{font-size:8.6pt;line-height:1.5;color:var(--cream-70);padding:3px 0 3px 14px;position:relative;}
+ul.bullets li::before{content:"▸";position:absolute;left:0;color:var(--red);font-size:8pt;}
+ul.bullets li b{color:var(--cream);font-weight:600;}
+</style>
+</head>
+<body>
+
+<!-- ════════════ PAGE 1 — COVER ════════════ -->
+<section class="page" style="padding:0;display:flex;flex-direction:column;">
+  <div style="position:absolute;inset:0;background:
+      radial-gradient(ellipse 90% 70% at 50% 18%, rgba(200,61,32,0.16), transparent 58%),
+      radial-gradient(ellipse 70% 50% at 80% 100%, rgba(245,197,24,0.05), transparent 55%);z-index:0;"></div>
+
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 22mm;z-index:1;">
+    <div class="flex" style="gap:14px;margin-bottom:8mm;">
+      <span class="jp" style="font-family:'Noto Sans JP';font-size:20pt;font-weight:900;">おいトラ</span>
+      <span style="width:1px;height:26px;background:var(--border);"></span>
+      <span class="eyebrow" style="font-size:9pt;">RAAAAAAR CULTURE · MOTOR CITY DUBAI</span>
+    </div>
+
+    <div class="disp" style="font-size:78pt;line-height:0.84;">
+      <span class="cream">HEY</span><br><span class="r">TIGER</span>
+    </div>
+
+    <div style="margin-top:11mm;max-width:150mm;">
+      <div class="eyebrow" style="font-size:11pt;letter-spacing:0.28em;color:var(--cream);">DESIGN &amp; LAYOUT SPECIFICATION</div>
+      <div style="height:3px;width:64px;background:var(--red);margin:9px 0 12px;"></div>
+      <p class="lead" style="max-width:140mm;">
+        The artwork-placement guide for the graphic designer. Every page's measurements,
+        logo positions, icon &amp; sticker placements, brand colours, type and the
+        <span class="cream">safe zones where you can drop new artwork</span> — for the landing
+        page and every other page.
+      </p>
+    </div>
+  </div>
+
+  <div style="z-index:1;background:var(--void);border-top:4px solid var(--red);padding:9mm 22mm;display:flex;justify-content:space-between;align-items:flex-end;">
+    <div>
+      <small style="display:block;letter-spacing:0.2em;text-transform:uppercase;">Prepared for</small>
+      <div style="font-size:11pt;font-weight:700;color:var(--cream);margin-top:2px;">Graphic Design / Artwork</div>
+      <small style="display:block;margin-top:7px;letter-spacing:0.2em;text-transform:uppercase;">Product</small>
+      <div style="font-size:10pt;color:var(--cream-70);margin-top:2px;">heytigerdubai.com — Web</div>
+    </div>
+    <div style="text-align:right;">
+      <small style="display:block;letter-spacing:0.2em;text-transform:uppercase;">Version</small>
+      <div style="font-family:var(--mono);font-size:10pt;color:var(--red);margin-top:2px;">v1.0 · 2026-06-02</div>
+      <small style="display:block;margin-top:7px;letter-spacing:0.2em;text-transform:uppercase;">Venue</small>
+      <div style="font-size:10pt;color:var(--cream-70);margin-top:2px;">Brass Monkey Hospitality</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ PAGE 2 — HOW TO READ + CONTENTS ════════════ -->
+<section class="page">
+  <div class="runhead"><span class="wm">HEY <span class="r">TIGER</span></span><span class="sec">00 · How to read this</span></div>
+
+  <h2 class="title">HOW TO <span class="r">READ THIS</span></h2>
+  <p class="subtitle">The site is built fluid &amp; responsive — it reshapes itself between phone and desktop. Sizes below are written as <span class="cream">min → max</span>. Read this first; it makes every later page make sense.</p>
+
+  <div class="cols2" style="margin-bottom:14px;">
+    <div class="card">
+      <h3>Fluid sizes — <span class="red">clamp(min, ideal, max)</span></h3>
+      <p>Almost nothing on this site is a single fixed number. A value like
+      <span class="mono red">clamp(24px, 5vw, 72px)</span> means: never smaller than
+      <b>24px</b> (phone), scales with screen width, never larger than <b>72px</b> (large desktop).</p>
+      <ul class="bullets" style="margin-top:6px;">
+        <li>Design the <b>desktop</b> artboard at the <b>MAX</b> value.</li>
+        <li>Design the <b>mobile</b> artboard at the <b>MIN</b> value.</li>
+        <li><span class="mono">vw</span> = 1% of screen width · <span class="mono">dvh</span> = 1% of screen height.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>How the wireframes work</h3>
+      <ul class="bullets">
+        <li><span class="tag">red pill</span> = a hard measurement (px / mm).</li>
+        <li><span style="display:inline-block;border:1px solid var(--red);background:var(--red-10);color:var(--red);font-size:7pt;font-weight:700;padding:1px 6px;border-radius:2px;">RED ZONE</span> = an <b>editable area</b> — where you can place / swap artwork.</li>
+        <li><span class="logobox" style="display:inline-flex;padding:1px 6px;">LOGO</span> = fixed logo position.</li>
+        <li>Numbered <span class="dot" style="position:static;display:inline-flex;">1</span> dots map to the notes beside each diagram.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="eyebrow" style="margin-bottom:8px;">Contents</div>
+  <table>
+    <tr><th style="width:14mm;">Pg</th><th>Section</th><th>What's inside</th></tr>
+    <tr><td class="mono">03</td><td><b>Canvas &amp; breakpoints</b></td><td>Artboard sizes to design at, and where the layout reflows</td></tr>
+    <tr><td class="mono">04</td><td><b>Colour system</b></td><td>Every brand hex, its role and where it's allowed</td></tr>
+    <tr><td class="mono">05</td><td><b>Typography</b></td><td>Fonts, what each is used for, the full size scale</td></tr>
+    <tr><td class="mono">06</td><td><b>Spacing, grid &amp; motion</b></td><td>Padding tokens, max widths, easing &amp; timings</td></tr>
+    <tr><td class="mono">07</td><td><b>Logo — files &amp; placement map</b></td><td>The 2 logos, 3 treatments, and all 8 places they appear</td></tr>
+    <tr><td class="mono">08</td><td><b>Stickers, icons &amp; buttons</b></td><td>Decal inventory, UI icons, the button system</td></tr>
+    <tr><td class="mono">09</td><td><b>Landing page — full stack</b></td><td>All 11 sections top-to-bottom with heights</td></tr>
+    <tr><td class="mono">10–14</td><td><b>Landing — section details</b></td><td>Nav · Hero · About · Story · Menu · Bands · Form · Spaces · Footer</td></tr>
+    <tr><td class="mono">15</td><td><b>Menu page</b> (/menu)</td><td>Header, sticky nav, dish grid, QR</td></tr>
+    <tr><td class="mono">16</td><td><b>Availability page</b> (/availability)</td><td>Header, hours table, CTA</td></tr>
+    <tr><td class="mono">17</td><td><b>Editable zones &amp; asset checklist</b></td><td>Everywhere you can drop artwork + export specs</td></tr>
+  </table>
+
+  <div class="foot"><small>Hey Tiger · Design &amp; Layout Specification</small><span class="pgno">02 / 17</span></div>
+</section>
+
+<!-- ════════════ PAGE 3 — CANVAS & BREAKPOINTS ════════════ -->
+<section class="page">
+  <div class="runhead"><span class="wm">HEY <span class="r">TIGER</span></span><span class="sec">01 · Canvas &amp; breakpoints</span></div>
+  <h2 class="title">CANVAS <span class="r">&amp; BREAKPOINTS</span></h2>
+  <p class="subtitle">Design at these four artboard widths. Page background &amp; photography bleed edge-to-edge; <b>text content stays inside a 1360px max-width</b> and is centred on big screens.</p>
+
+  <div class="eyebrow" style="margin-bottom:8px;">Recommended artboards</div>
+  <div class="cols2" style="margin-bottom:6px;">
+    <div class="card">
+      <div class="flex" style="justify-content:space-between;"><h3 style="margin:0;">Desktop</h3><span class="tag">primary</span></div>
+      <div class="mono red" style="font-size:11pt;margin:4px 0;">1440 × 900 px</div>
+      <p>The main design target. Content column maxes at <b>1360px</b>; hero text column maxes at <b>1100px</b>. Background photos fill the full width.</p>
+    </div>
+    <div class="card">
+      <h3>Large desktop</h3>
+      <div class="mono red" style="font-size:11pt;margin:4px 0;">1920 × 1080 px</div>
+      <p>Only backgrounds / panorama stretch wider. Text + UI stay centred at ≤1360px, so margins grow on the sides.</p>
+    </div>
+  </div>
+  <div class="cols2" style="margin-bottom:14px;">
+    <div class="card">
+      <h3>Tablet</h3>
+      <div class="mono red" style="font-size:11pt;margin:4px 0;">834 × 1112 px</div>
+      <p>Most 2-column splits have collapsed or are about to. Good checkpoint for the 900px &amp; 768px reflows.</p>
+    </div>
+    <div class="card">
+      <div class="flex" style="justify-content:space-between;"><h3 style="margin:0;">Mobile</h3><span class="tag">primary</span></div>
+      <div class="mono red" style="font-size:11pt;margin:4px 0;">390 × 844 px</div>
+      <p>iPhone 14/15 class. Everything is single-column; the nav becomes a hamburger; a floating <b>Book a table</b> pill sits bottom-centre.</p>
+    </div>
+  </div>
+
+  <div class="eyebrow" style="margin-bottom:8px;">Reflow breakpoints — where the layout changes</div>
+  <table>
+    <tr><th style="width:24mm;">Max width</th><th>What changes</th></tr>
+    <tr><td class="mono">980px</td><td>Top-nav links + desktop CTA hide → <b>hamburger menu</b> appears (full-screen overlay).</td></tr>
+    <tr><td class="mono">900px</td><td>Footer, menu grid, "Form Meets Function" &amp; Spaces title row all collapse to <b>1 column</b>; menu grid → 2 columns.</td></tr>
+    <tr><td class="mono">860px</td><td><b>About</b> section stops being a 58/42 split and stacks (text over photo).</td></tr>
+    <tr><td class="mono">768px</td><td>Spaces showcase → 1 column; the bottom photo strip → 3 columns.</td></tr>
+    <tr><td class="mono">600px</td><td><b>Story</b> triptych stops being side-by-side and stacks vertically.</td></tr>
+    <tr><td class="mono">560px</td><td>Menu category grid → <b>1 column</b>.</td></tr>
+    <tr><td class="mono">480px</td><td>Spaces photo strip → 2 columns.</td></tr>
+  </table>
+
+  <div class="callout" style="margin-top:12px;">
+    <div class="h">Fixed numbers that never scale</div>
+    <p>Top navigation bar height = <b>88px</b> · minimum tap target for every button/icon = <b>44 × 44px</b> · all corners are <b>square (0 radius)</b> except pill buttons which are fully round (999px).</p>
+  </div>
+
+  <div class="foot"><small>Hey Tiger · Design &amp; Layout Specification</small><span class="pgno">03 / 17</span></div>
+</section>
+
+<!-- ════════════ PAGE 4 — COLOUR ════════════ -->
+<section class="page">
+  <div class="runhead"><span class="wm">HEY <span class="r">TIGER</span></span><span class="sec">02 · Colour system</span></div>
+  <h2 class="title">COLOUR <span class="r">SYSTEM</span></h2>
+  <p class="subtitle">Three core colours carry ~90% of the site. The remaining "scene" colours are <b>section-locked</b> — only use them where noted.</p>
+
+  <div class="eyebrow" style="margin-bottom:8px;">Core — use everywhere</div>
+  <div class="swatch-grid" style="margin-bottom:14px;">
+    <div class="sw"><div class="chip" style="background:#C83D20;"></div><div class="meta"><div class="nm">Tiger Red</div><div class="hex">#C83D20</div><div class="use">Headlines, CTAs, accents, links. "The Commander."</div></div></div>
+    <div class="sw"><div class="chip" style="background:#1C0808;"></div><div class="meta"><div class="nm">Plum Black (Void)</div><div class="hex">#1C0808</div><div class="use">Dominant background, 60%+ of every screen. "The Stage."</div></div></div>
+    <div class="sw"><div class="chip" style="background:#F0EBD8;"></div><div class="meta"><div class="nm">Parchment / Cream</div><div class="hex">#F0EBD8</div><div class="use">Body text &amp; logo on dark. "The Voice."</div></div></div>
+  </div>
+
+  <div class="eyebrow" style="margin-bottom:8px;">Support &amp; states</div>
+  <div class="swatch-grid" style="margin-bottom:14px;">
+    <div class="sw"><div class="chip" style="background:#B22D12;"></div><div class="meta"><div class="nm">Red Dark</div><div class="hex">#B22D12</div><div class="use">Hover state for red buttons only.</div></div></div>
+    <div class="sw"><div class="chip" style="background:#C8B890;"></div><div class="meta"><div class="nm">Parchment Muted</div><div class="hex">#C8B890</div><div class="use">Second-tier text, captions, subtitles.</div></div></div>
+    <div class="sw"><div class="chip" style="background:#2A1F2A;"></div><div class="meta"><div class="nm">Dark Border</div><div class="hex">#2A1F2A</div><div class="use">All borders, dividers, card edges.</div></div></div>
+    <div class="sw"><div class="chip" style="background:#F5C518;"></div><div class="meta"><div class="nm">Tiger Yellow</div><div class="hex">#F5C518 / #FDBE06</div><div class="use">About headline, "READ THIS SHIT", Act III accent.</div></div></div>
+    <div class="sw"><div class="chip" style="background:#7A6A7A;"></div><div class="meta"><div class="nm">Muted Text</div><div class="hex">#7A6A7A</div><div class="use">Footer small print / meta only.</div></div></div>
+    <div class="sw"><div class="chip" style="background:#F0EBE0;"></div><div class="meta"><div class="nm">Menu Parchment</div><div class="hex">#F0EBE0</div><div class="use">Background of the <b>/menu</b> page only (light page).</div></div></div>
+  </div>
+
+  <div class="eyebrow" style="margin-bottom:8px;">Scene colours — section-locked, do not reuse elsewhere</div>
+  <div class="swatch-grid">
+    <div class="sw"><div class="chip" style="background:#4A5E32;"></div><div class="meta"><div class="nm">Army Olive</div><div class="hex">#4A5E32</div><div class="use">Story-section accents only.</div></div></div>
+    <div class="sw"><div class="chip" style="background:#1A1F2E;"></div><div class="meta"><div class="nm">Deep Navy</div><div class="hex">#1A1F2E</div><div class="use">Events / night scenes only.</div></div></div>
+    <div class="sw"><div class="chip" style="background:#3D7A6E;"></div><div class="meta"><div class="nm">Jade Teal</div><div class="hex">#3D7A6E</div><div class="use">One surprise section only.</div></div></div>
+    <div class="sw"><div class="chip" style="background:#C17B3F;"></div><div class="meta"><div class="nm">Amber Wood</div><div class="hex">#C17B3F</div><div class="use">Photo tint overlay (multiply) only.</div></div></div>
+    <div class="sw"><div class="chip" style="background:#0A070D;"></div><div class="meta"><div class="nm">Near Black</div><div class="hex">#0A070D</div><div class="use">Footer bottom bar only.</div></div></div>
+    <div class="sw" style="border-style:dashed;"><div class="chip" style="background:linear-gradient(90deg,#C83D20,#1C0808);"></div><div class="meta"><div class="nm">Photo overlays</div><div class="hex">rgba 0.18 → 0.96</div><div class="use">Dark gradient scrims keep text legible on images.</div></div></div>
+  </div>
+
+  <div class="foot"><small>Hey Tiger · Design &amp; Layout Specification</small><span class="pgno">04 / 17</span></div>
+</section>
+
+<!-- ════════════ PAGE 5 — TYPOGRAPHY ════════════ -->
+<section class="page">
+  <div class="runhead"><span class="wm">HEY <span class="r">TIGER</span></span><span class="sec">03 · Typography</span></div>
+  <h2 class="title">TYPO<span class="r">GRAPHY</span></h2>
+  <p class="subtitle">Five families. Display is the loud serif; body is a clean sans; the rest are flavour. Japanese is always set in Noto Sans JP (with Dela Gothic for "rough" display).</p>
+
+  <div class="eyebrow" style="margin-bottom:8px;">Font families &amp; where they're used</div>
+  <table style="margin-bottom:12px;">
+    <tr><th style="width:42mm;">Family</th><th style="width:30mm;">Fallback</th><th>Used for</th></tr>
+    <tr><td><b style="font-family:var(--disp);font-weight:900;font-size:11pt;">TAN Nimbus</b></td><td class="mono">Fraunces 900</td><td>All big display headlines — the neon <b>HEY / TIGER</b>, section H2s.</td></tr>
+    <tr><td><b>Jandus RD</b></td><td class="mono">DM Sans</td><td>Body copy, navigation, labels, buttons, meta — the workhorse.</td></tr>
+    <tr><td><b style="font-family:var(--cond);font-weight:700;font-size:11pt;">Barlow Condensed</b></td><td class="mono">DM Sans</td><td>About-section subhead &amp; body, condensed run-ins.</td></tr>
+    <tr><td><b style="font-family:'Bebas Neue';font-size:12pt;letter-spacing:0.04em;">Bebas Neue</b></td><td class="mono">Jandus RD</td><td>About keywords, offering titles, the booking pill.</td></tr>
+    <tr><td><b style="font-family:var(--jp);font-weight:900;">Noto Sans JP</b> / <span style="font-family:var(--jp);">Dela Gothic</span></td><td class="mono">system JP</td><td>Japanese characters everywhere (おいトラ · 食 · 物語 · 空間).</td></tr>
+  </table>
+
+  <div class="eyebrow" style="margin-bottom:8px;">Type scale — what each size is</div>
+  <table>
+    <tr><th style="width:40mm;">Token</th><th style="width:42mm;">Size (min → max)</th><th>Where</th></tr>
+    <tr><td><b>Hero display</b></td><td class="mono">clamp(84 → 210px)</td><td>The neon HEY / TIGER on the landing hero.</td></tr>
+    <tr><td><b>About headline</b></td><td class="mono">clamp(88 → 160px)</td><td>"HEY, TIGER" yellow headline in About.</td></tr>
+    <tr><td><b>Heading XL</b></td><td class="mono">clamp(52 → 112px)</td><td>Section H2s (Menu, Spaces, Footer reserve).</td></tr>
+    <tr><td><b>Menu category H2</b></td><td class="mono">clamp(48 → 96px)</td><td>Category title on the /menu page.</td></tr>
+    <tr><td><b>Story act title</b></td><td class="mono">clamp(44 → 88px)</td><td>THE CALL / THE CODE / THE FEAST.</td></tr>
+    <tr><td><b>JP display</b></td><td class="mono">clamp(24 → 44px)</td><td>Large Japanese display lines.</td></tr>
+    <tr><td><b>Body</b></td><td class="mono">13px</td><td>Default paragraph &amp; list text.</td></tr>
+    <tr><td><b>Label</b></td><td class="mono">11px</td><td>Buttons, nav, eyebrows, meta.</td></tr>
+    <tr><td><b>Micro</b></td><td class="mono">10px</td><td>Tiny captions, index numbers, tags.</td></tr>
+  </table>
+
+  <div class="callout" style="margin-top:12px;">
+    <div class="h">Letter-spacing (tracking)</div>
+    <p>Headlines are tight <span class="mono">−0.01em</span>. Labels &amp; eyebrows are wide: <span class="mono">0.20em → 0.52em</span>. The widest "ultra" tracking <span class="mono">0.44em</span> is the signature look on small uppercase labels. Headlines, CTAs &amp; section titles are <b>UPPERCASE</b>.</p>
+  </div>
+
+  <div class="foot"><small>Hey Tiger · Design &amp; Layout Specification</small><span class="pgno">05 / 17</span></div>
+</section>
+
+<!-- ════════════ PAGE 6 — SPACING / GRID / MOTION ════════════ -->
+<section class="page">
+  <div class="runhead"><span class="wm">HEY <span class="r">TIGER</span></span><span class="sec">04 · Spacing, grid &amp; motion</span></div>
+  <h2 class="title">SPACING <span class="r">&amp; GRID</span></h2>
+  <p class="subtitle">Consistent padding tokens keep the rhythm. These are the same values reused on every page edge and between blocks.</p>
+
+  <div class="eyebrow" style="margin-bottom:6px;">Spacing tokens</div>
+  <div class="trow"><div class="k">Section — X</div><div class="v"><span class="mono">clamp(24px → 72px)</span> &nbsp; Left/right padding on every full section.</div></div>
+  <div class="trow"><div class="k">Section — Y</div><div class="v"><span class="mono">clamp(48px → 88px)</span> &nbsp; Top/bottom padding on sections.</div></div>
+  <div class="trow"><div class="k">Section Y — LG</div><div class="v"><span class="mono">clamp(64px → 112px)</span> &nbsp; Larger top/bottom (e.g. Menu header).</div></div>
+  <div class="trow"><div class="k">Content — Y</div><div class="v"><span class="mono">clamp(32px → 52px)</span> &nbsp; Gaps between content blocks.</div></div>
+  <div class="trow"><div class="k">Content max-width</div><div class="v"><b>1360px</b> centred (Form, Spaces). Hero text column <b>1100px</b>.</div></div>
+  <div class="trow"><div class="k">Copy measure</div><div class="v">Paragraphs capped at <b>40–56 characters</b> per line for readability.</div></div>
+
+  <div class="spacer-lg"></div>
+  <div class="grid-2">
+    <div>
+      <div class="eyebrow" style="margin-bottom:6px;">Corners &amp; borders</div>
+      <ul class="bullets">
+        <li>Everything is <b>square — 0 radius</b> (cards, photos, inputs, tags).</li>
+        <li>Exception: <b>pill buttons</b> are fully round (<span class="mono">999px</span>).</li>
+        <li>Hairlines / dividers: <b>1px</b> in Dark Border <span class="mono">#2A1F2A</span>.</li>
+        <li>Menu page header underline: <b>4px</b> Tiger Red.</li>
+        <li>Spaces private-events block: <b>8px</b> cream left bar.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="eyebrow" style="margin-bottom:6px;">Motion (for reference)</div>
+      <ul class="bullets">
+        <li>Fast <span class="mono">160ms</span> · Base <span class="mono">280ms</span> · Slow <span class="mono">600ms</span>.</li>
+        <li>Standard ease <span class="mono">cubic-bezier(.4,0,.2,1)</span>.</li>
+        <li>Cinematic ease <span class="mono">cubic-bezier(.22,1,.36,1)</span> for reveals.</li>
+        <li>Headlines have a subtle <b>neon flicker</b>; honour "reduce motion".</li>
+        <li>Hero background = slow <b>90s panorama</b> pan across 5 photos.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="spacer-lg"></div>
+  <div class="eyebrow" style="margin-bottom:6px;">Photo treatment (so new photos match)</div>
+  <div class="card">
+    <p>Photos are darkened &amp; slightly desaturated so cream/red text sits on top. Typical recipe:
+    <span class="mono red">contrast 1.05–1.1 · saturate 0.7–0.9 · brightness 0.55–0.82</span>, plus a dark
+    gradient scrim at the bottom and (in some sections) an <b>Amber Wood #C17B3F multiply</b> tint at ~22–28%.
+    Supply photos bright &amp; punchy — the layout dims them.</p>
+  </div>
+
+  <div class="foot"><small>Hey Tiger · Design &amp; Layout Specification</small><span class="pgno">06 / 17</span></div>
+</section>
+
+<!-- ════════════ PAGE 7 — LOGO ════════════ -->
+<section class="page">
+  <div class="runhead"><span class="wm">HEY <span class="r">TIGER</span></span><span class="sec">05 · Logo — files &amp; placement</span></div>
+  <h2 class="title">LOGO <span class="r">PLACEMENT</span></h2>
+  <p class="subtitle">Two logo files, three colour treatments, and the eight places they currently appear across the site.</p>
+
+  <div class="cols2" style="margin-bottom:12px;">
+    <div class="card">
+      <div class="flex" style="justify-content:space-between;"><h3 style="margin:0;">heytiger-logo.png</h3><span class="tag">primary</span></div>
+      <div class="mono red" style="margin:4px 0;">1032 × 968 px · PNG · transparent</div>
+      <p>The main Hey Tiger mark. Near-square. Used at the navbar, About panel, menu sections, footer.</p>
+      <small style="display:block;margin-top:5px;">⚠ Also doubles as the <b>favicon</b> (32×32) &amp; Apple touch icon (180×180).</small>
+    </div>
+    <div class="card">
+      <h3>BMH-logo.png</h3>
+      <div class="mono red" style="margin:4px 0;">515 × 485 px · PNG · transparent</div>
+      <p>Brass Monkey Hospitality (parent group). Always paired with / subordinate to the Hey Tiger mark.</p>
+    </div>
+  </div>
+
+  <div class="eyebrow" style="margin-bottom:8px;">The 3 treatments</div>
+  <div class="cols3" style="margin-bottom:14px;">
+    <div class="box" style="height:42px;background:#1C0808;color:var(--cream);border-color:var(--border);">Full colour (original)</div>
+    <div class="box" style="height:42px;background:#1C0808;color:#fff;border-color:var(--border);">White knockout<br><span class="mono" style="color:var(--cream-45);">brightness(0) invert(1)</span></div>
+    <div class="box" style="height:42px;background:#F0EBD8;color:var(--red);border-color:var(--red);">Red tint<br><span class="mono" style="color:var(--red);">(footer, on cream)</span></div>
+  </div>
+
+  <div class="eyebrow" style="margin-bottom:8px;">Placement map — every appearance</div>
+  <table>
+    <tr><th style="width:6mm;">#</th><th style="width:48mm;">Location</th><th style="width:24mm;">Position</th><th style="width:26mm;">Render height</th><th>Treatment</th></tr>
+    <tr><td class="mono">1</td><td><b>Landing — top nav</b></td><td>Top-left, fixed</td><td class="mono">58px</td><td>Full colour · bar = 88px tall</td></tr>
+    <tr><td class="mono">2</td><td>Landing — mobile menu overlay</td><td>Top-left</td><td class="mono">50px</td><td>White knockout · 92% (shows &lt;980px)</td></tr>
+    <tr><td class="mono">3</td><td><b>Landing — About panel</b></td><td>Top-right of dark panel</td><td class="mono">90 → 150px</td><td>White knockout · 90%</td></tr>
+    <tr><td class="mono">4</td><td>Landing — About panel (BMH)</td><td>Bottom-left</td><td class="mono">36 → 52px</td><td>White knockout · 40%</td></tr>
+    <tr><td class="mono">5</td><td><b>Landing — Menu section header</b></td><td>Top-right (BMH + Hey Tiger paired)</td><td class="mono">64 → 96px ea.</td><td>White knockout</td></tr>
+    <tr><td class="mono">6</td><td><b>Landing — Footer</b></td><td>Newsletter column (paired w/ BMH)</td><td class="mono">70px / 64px</td><td>Red tint · 70% · 1px divider between</td></tr>
+    <tr><td class="mono">7</td><td><b>Menu page — header</b></td><td>Top-left</td><td class="mono">38 → 72px</td><td>White knockout · 95% · 4px red underline</td></tr>
+    <tr><td class="mono">8</td><td>Availability page — header</td><td>—</td><td class="mono">none</td><td><span class="red">No logo image — text wordmark only</span></td></tr>
+  </table>
+
+  <div class="callout" style="margin-top:12px;">
+    <div class="h">Two opportunities for you</div>
+    <p>① The favicon / app icon is just the full logo squeezed into a square — a <b>dedicated square app-icon</b> export would look far sharper. ② The <b>Availability page header has no logo</b> (#8) — it uses Japanese text. Adding the mark there is an easy win.</p>
+  </div>
+
+  <div class="foot"><small>Hey Tiger · Design &amp; Layout Specification</small><span class="pgno">07 / 17</span></div>
+</section>
+
+<!-- ════════════ PAGE 8 — STICKERS / ICONS / BUTTONS ════════════ -->
+<section class="page">
+  <div class="runhead"><span class="wm">HEY <span class="r">TIGER</span></span><span class="sec">06 · Stickers, icons &amp; buttons</span></div>
+  <h2 class="title">STICKERS, ICONS <span class="r">&amp; BUTTONS</span></h2>
+  <p class="subtitle">Hand-drawn sticker decals add the "RAAAAAAR" energy. Below: where each lives, the UI icon set, and the button rules.</p>
+
+  <div class="eyebrow" style="margin-bottom:8px;">Sticker / decal inventory (PNG, transparent)</div>
+  <table style="margin-bottom:12px;">
+    <tr><th style="width:26mm;">File</th><th style="width:24mm;">Native px</th><th style="width:30mm;">Used on</th><th style="width:24mm;">Render size</th><th>Transform</th></tr>
+    <tr><td class="mono">sticker1.png</td><td class="mono">491 × 508</td><td>Story · Act I</td><td class="mono">72 → 110px</td><td>top-right · rotate −14°</td></tr>
+    <tr><td class="mono">sticker3.png</td><td class="mono">500 × 499</td><td>Story · Act II</td><td class="mono">72 → 110px</td><td>top-right · rotate +10°</td></tr>
+    <tr><td class="mono">sticker5.png</td><td class="mono">500 × 499</td><td>Story · Act III</td><td class="mono">72 → 110px</td><td>top-left · rotate −7°</td></tr>
+    <tr><td class="mono">sticker2.png</td><td class="mono">499 × 500</td><td>Footer · reserve CTA</td><td class="mono">160 → 220px</td><td>hover rotate −4° · scale 1.07</td></tr>
+    <tr><td class="mono">sticker4.png</td><td class="mono">573 × 435</td><td>Booking band #2</td><td class="mono">72 → 120px</td><td>white knockout</td></tr>
+    <tr><td class="mono">sticker6 · 9 · fot · fot2</td><td class="mono">—</td><td colspan="2"><span class="red">Spare — currently unused</span></td><td>free to deploy</td></tr>
+  </table>
+
+  <div class="grid-2">
+    <div>
+      <div class="eyebrow" style="margin-bottom:8px;">UI icons &amp; widgets</div>
+      <ul class="bullets">
+        <li><b>Hamburger</b> — 44×44px button, 3 bars (2px, 6px gap), shows &lt;980px.</li>
+        <li><b>Close ✕</b> — 44×44px, 20px glyph, 1px border.</li>
+        <li><b>Arrows ← →</b> — 44×44px square nav buttons (Spaces / Menu).</li>
+        <li><b>Nav dots</b> — active 24×6px, inactive 6×6px (Spaces).</li>
+        <li><b>QR code</b> — 74px module + 8px quiet zone on cream; encodes <span class="mono">heytigerdubai.com/menu</span>.</li>
+        <li><b>Social</b> — text links (Instagram, TikTok), no icon glyphs.</li>
+        <li><b>"EST. 2026"</b> red chip · <b>Room counter</b> chip "ROOM 01 / 5".</li>
+        <li><b>Scroll progress bar</b> — thin bar pinned to top edge.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="eyebrow" style="margin-bottom:8px;">Button system</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div>
+          <div style="display:inline-block;background:var(--red);color:var(--void);font-weight:700;font-size:8.5pt;letter-spacing:0.28em;padding:10px 22px;border-radius:999px;">BOOK A TABLE</div>
+          <small style="display:block;margin-top:3px;">Primary · red pill · min-height 44px · hover → #B22D12</small>
+        </div>
+        <div>
+          <div style="display:inline-block;color:var(--cream-70);font-weight:600;font-size:8.5pt;letter-spacing:0.22em;text-decoration:underline;text-underline-offset:4px;padding:6px 2px;">EXPLORE THE STORY</div>
+          <small style="display:block;margin-top:3px;">Secondary · transparent · underlined cream</small>
+        </div>
+        <div>
+          <div style="display:inline-block;background:var(--red);color:var(--void);font-weight:700;font-size:8.5pt;letter-spacing:0.18em;padding:11px 26px;">VIEW FULL MENU →</div>
+          <small style="display:block;margin-top:3px;">Tertiary · red <b>square</b> · for menu links</small>
+        </div>
+        <div>
+          <div style="display:inline-block;background:var(--void);color:var(--cream);font-weight:700;font-size:8.5pt;letter-spacing:0.18em;padding:11px 26px;border-radius:999px;">CLAIM THE DEN →</div>
+          <small style="display:block;margin-top:3px;">Dark pill on red block (Spaces private events)</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-top:12px;">
+    <div class="h">Accessibility floor</div>
+    <p>Every tappable thing is at least <b>44 × 44px</b>. Keep this when adding icons or buttons. Decorative stickers/icons carry no alt text; meaningful ones do.</p>
+  </div>
+
+  <div class="foot"><small>Hey Tiger · Design &amp; Layout Specification</small><span class="pgno">08 / 17</span></div>
+</section>
+
+<!-- ════════════ PAGE 9 — LANDING FULL STACK ════════════ -->
+<section class="page">
+  <div class="runhead"><span class="wm">HEY <span class="r">TIGER</span></span><span class="sec">07 · Landing — full stack</span></div>
+  <h2 class="title">LANDING PAGE <span class="r">— THE STACK</span></h2>
+  <p class="subtitle">The home page (<span class="mono">/</span>) is one long vertical scroll of 11 blocks. Heights below are at the <b>1440px desktop</b> reference. Detailed diagrams follow on pp.10–14.</p>
+
+  <div style="display:flex;flex-direction:column;gap:5px;">
+    <div class="wire" style="height:24px;background:var(--void);"><span style="position:absolute;left:8px;top:5px;font-size:7.5pt;letter-spacing:0.16em;color:var(--cream);">① NAV BAR <span class="mono red">— fixed · 88px · logo left</span></span></div>
+    <div class="wire" style="height:84px;"><span class="lbl">② HERO</span><span class="dim" style="right:7px;top:5px;">100dvh (≈ full screen) · neon HEY/TIGER · panorama bg</span><div class="zone" style="position:absolute;inset:24px 30%;"><span class="t">editable: 5-photo panorama + wordmark</span></div></div>
+    <div class="wire" style="height:66px;"><span class="lbl">③ ABOUT + OFFERINGS</span><span class="dim" style="right:7px;top:5px;">100vh · 58 / 42 split</span><div class="box" style="position:absolute;left:8px;bottom:8px;top:22px;width:54%;"><span class="t">dark text panel · logo top-right</span></div><div class="zone" style="position:absolute;right:8px;bottom:8px;top:22px;width:38%;"><span class="t">editable photo</span></div></div>
+    <div class="wire" style="height:70px;"><span class="lbl">④ STORY — triptych</span><span class="dim" style="right:7px;top:5px;">header + 3 × 100dvh panels (side-by-side)</span><div style="position:absolute;left:8px;right:8px;bottom:8px;top:24px;display:flex;gap:5px;"><div class="zone" style="flex:1;"><span class="t">ACT I<br>+sticker</span></div><div class="zone" style="flex:1;"><span class="t">ACT II<br>+sticker</span></div><div class="zone" style="flex:1;"><span class="t">ACT III<br>+sticker</span></div></div></div>
+    <div class="wire" style="height:62px;"><span class="lbl">⑤ MENU GRID</span><span class="dim" style="right:7px;top:5px;">header (logos + QR) + 6-card grid + strip</span><div style="position:absolute;left:8px;right:8px;bottom:8px;top:24px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr;gap:4px;"><div class="zone"><span class="t">photo</span></div><div class="zone"><span class="t">photo</span></div><div class="zone"><span class="t">photo</span></div><div class="zone"><span class="t">photo</span></div><div class="zone"><span class="t">photo</span></div><div class="zone"><span class="t">photo</span></div></div></div>
+    <div class="wire" style="height:22px;background:var(--void);"><span style="position:absolute;left:8px;top:5px;font-size:7.5pt;letter-spacing:0.16em;color:var(--cream);">⑥ BOOKING BAND #1 <span class="mono red">— CTA strip · ~120px</span></span></div>
+    <div class="wire" style="height:48px;"><span class="lbl">⑦ FORM MEETS FUNCTION</span><span class="dim" style="right:7px;top:5px;">2-col · text + 3-col photo collage (min 420px)</span><div class="box" style="position:absolute;left:8px;bottom:8px;top:22px;width:48%;"><span class="t">headline + copy</span></div><div class="zone" style="position:absolute;right:8px;bottom:8px;top:22px;width:48%;"><span class="t">editable: 6-photo collage</span></div></div>
+    <div class="wire" style="height:64px;"><span class="lbl">⑧ SPACES</span><span class="dim" style="right:7px;top:5px;">tabs + 16:10 photo + 6-up photo strip (12) + red CTA</span><div style="position:absolute;left:8px;right:8px;bottom:8px;top:22px;display:flex;gap:5px;"><div class="box" style="width:28%;"><span class="t">tab list</span></div><div class="zone" style="flex:1;"><span class="t">editable: room photo 16:10</span></div></div></div>
+    <div class="wire" style="height:22px;background:var(--void);"><span style="position:absolute;left:8px;top:5px;font-size:7.5pt;letter-spacing:0.16em;color:var(--cream);">⑨ BOOKING BAND #2 <span class="mono red">— CTA strip + sticker4 · ~140px</span></span></div>
+    <div class="wire" style="height:54px;"><span class="lbl">⑩ FOOTER</span><span class="dim" style="right:7px;top:5px;">ticker + reserve/newsletter + hours/map + bottom bar</span><div style="position:absolute;left:8px;right:8px;bottom:8px;top:22px;display:flex;gap:5px;"><div class="zone" style="flex:1;"><span class="t">reserve + sticker2</span></div><div class="box" style="flex:1;"><span class="t">newsletter · logos</span></div></div></div>
+  </div>
+
+  <div class="callout" style="margin-top:10px;">
+    <div class="h">Floating element</div>
+    <p>⑪ A <b>"Book a table" pill</b> floats fixed at <b>bottom-centre</b> (mainly mobile), 24px from the bottom edge, above everything. Don't cover it with artwork.</p>
+  </div>
+
+  <div class="foot"><small>Hey Tiger · Design &amp; Layout Specification</small><span class="pgno">09 / 17</span></div>
+</section>
+
+<!-- ════════════ PAGE 10 — NAV + HERO ════════════ -->
+<section class="page">
+  <div class="runhead"><span class="wm">HEY <span class="r">TIGER</span></span><span class="sec">08 · Landing — Nav &amp; Hero</span></div>
+  <h2 class="title">NAV <span class="r">&amp; HERO</span></h2>
+
+  <div class="eyebrow" style="margin-bottom:6px;">① Navigation bar — fixed, always on top</div>
+  <div class="wire" style="height:40px;background:rgba(10,7,13,0.6);margin-bottom:5px;">
+    <div class="logobox" style="position:absolute;left:10px;top:9px;width:60px;height:22px;">LOGO 58px</div>
+    <div class="box" style="position:absolute;left:50%;top:11px;transform:translateX(-50%);width:140px;height:18px;"><span class="t">STORY · MENU · SPACES · FIND US</span></div>
+    <div style="position:absolute;right:10px;top:9px;background:var(--red);color:var(--void);font-size:7pt;font-weight:700;letter-spacing:0.16em;padding:5px 12px;border-radius:999px;">BOOK A TABLE</div>
+    <span class="dim" style="left:50%;bottom:4px;transform:translateX(-50%);">height 88px · paddingX 16→40px · blurred 28% plum bg · 1px bottom border</span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr;gap:0;margin-bottom:12px;">
+    <ul class="anno">
+      <li><span class="n">1</span><span class="tx"><b>Logo</b> top-left, <span class="mono">58px</span> tall, full colour, links to top.</span></li>
+      <li><span class="n">2</span><span class="tx"><b>Nav links</b> centre-right, 11px uppercase, 0.30em tracking; active link turns red. Hidden below 980px.</span></li>
+      <li><span class="n">3</span><span class="tx"><b>Book a table</b> red pill far-right. Below 980px both links &amp; pill hide → hamburger.</span></li>
+    </ul>
+  </div>
+
+  <div class="eyebrow" style="margin-bottom:6px;">② Hero — full-screen, centred</div>
+  <div class="grid-2" style="grid-template-columns:1.1fr 1fr;gap:12px;">
+    <div class="wire" style="height:150px;">
+      <span class="lbl">HERO · 100dvh</span>
+      <span class="dim" style="right:7px;top:5px;">content col max 1100px</span>
+      <div style="position:absolute;inset:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center;">
+        <div style="font-size:6.5pt;color:var(--cream-45);letter-spacing:0.2em;">おいトラ · ON THE OTHER END, A VOICE…</div>
+        <div class="disp" style="font-size:26pt;line-height:0.82;"><span class="cream">HEY</span><br><span class="r">TIGER</span></div>
+        <div style="font-size:6.5pt;color:var(--cream-70);max-width:60mm;">Japanese bar &amp; restaurant, Motor City Dubai.</div>
+        <div style="font-size:6.5pt;color:var(--cream-70);letter-spacing:0.12em;">OPEN TILL 2AM · 47 SAKE LABELS · ROOFTOP</div>
+        <div class="flex" style="gap:5px;margin-top:3px;"><span style="background:var(--red);color:var(--void);font-size:6.5pt;font-weight:700;padding:4px 10px;border-radius:999px;">BOOK A TABLE</span><span style="font-size:6.5pt;color:var(--cream-70);text-decoration:underline;">EXPLORE THE STORY</span></div>
+      </div>
+      <div style="position:absolute;left:8px;bottom:6px;font-size:5.5pt;color:var(--cream-45);letter-spacing:0.2em;">THE ROARING GRIDDLE</div>
+    </div>
+    <ul class="anno">
+      <li><span class="n">1</span><span class="tx"><b>Background</b> = 5-photo panorama, auto-pans 90s, +50% black scrim. <span class="mono">editable — swap the 5 images</span>.</span></li>
+      <li><span class="n">2</span><span class="tx"><b>Neon HEY / TIGER</b> — display font, <span class="mono">clamp(84→210px)</span>, HEY white + TIGER red, flicker animation.</span></li>
+      <li><span class="n">3</span><span class="tx"><b>Meta row</b> — operational facts; <b>two CTAs</b> (red pill + underline).</span></li>
+      <li><span class="n">4</span><span class="tx"><b>Top padding 88px</b> so content clears the fixed nav. Centred vertically &amp; horizontally.</span></li>
+      <li><span class="n">5</span><span class="tx">Corner caption bottom-left. Keep the centre clear for the wordmark.</span></li>
+    </ul>
+  </div>
+
+  <div class="callout" style="margin-top:12px;">
+    <div class="h">Editable in this view</div>
+    <p>The 5 hero panorama photos · the meta-row facts · CTA labels. The neon wordmark itself is type, not an image.</p>
+  </div>
+
+  <div class="foot"><small>Hey Tiger · Design &amp; Layout Specification</small><span class="pgno">10 / 17</span></div>
+</section>
+
+<!-- ════════════ PAGE 11 — ABOUT + STORY ════════════ -->
+<section class="page">
+  <div class="runhead"><span class="wm">HEY <span class="r">TIGER</span></span><span class="sec">09 · Landing — About &amp; Story</span></div>
+  <h2 class="title">ABOUT <span class="r">&amp; STORY</span></h2>
+
+  <div class="eyebrow" style="margin-bottom:6px;">③ About + Offerings — 58 / 42 split, min 100vh (stacks &lt;860px)</div>
+  <div class="grid-2" style="grid-template-columns:1.2fr 1fr;gap:12px;margin-bottom:14px;">
+    <div class="wire" style="height:118px;">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:58%;border-right:1px dashed var(--cream-25);padding:8px;">
+        <div class="logobox" style="position:absolute;right:8px;top:8px;width:46px;height:20px;">LOGO</div>
+        <div class="disp yellow" style="font-size:20pt;line-height:0.8;margin-top:22px;">HEY,<br>TIGER</div>
+        <div style="font-size:6pt;color:var(--cream-45);margin-top:6px;">subhead · keywords · body · offerings (2-col)</div>
+        <div class="box" style="position:absolute;left:8px;bottom:8px;width:30px;height:14px;"><span class="t">BMH</span></div>
+      </div>
+      <div class="zone" style="position:absolute;right:0;top:0;bottom:0;width:42%;"><span class="t">editable<br>full-bleed photo<br>+ bottom caption</span></div>
+      <span class="dim" style="left:8px;top:5px;">58%</span><span class="dim" style="right:8px;top:5px;">42%</span>
+    </div>
+    <ul class="anno">
+      <li><span class="n">1</span><span class="tx"><b>Logo</b> top-right of the dark panel, <span class="mono">90→150px</span>, white knockout 90%.</span></li>
+      <li><span class="n">2</span><span class="tx"><b>Yellow "HEY, TIGER"</b> headline <span class="mono">88→160px</span>, then subhead, keyword line, body, and a 2-column <b>offerings</b> list (7 items).</span></li>
+      <li><span class="n">3</span><span class="tx"><b>BMH logo</b> bottom-left, faint (40%).</span></li>
+      <li><span class="n">4</span><span class="tx"><b>Right photo</b> full-bleed with amber tint + dark bottom gradient carrying JP caption. <span class="mono">editable</span>.</span></li>
+    </ul>
+  </div>
+
+  <div class="eyebrow" style="margin-bottom:6px;">④ Story — 3-act triptych (side-by-side desktop · stacks &lt;600px)</div>
+  <div class="grid-2" style="grid-template-columns:1.2fr 1fr;gap:12px;">
+    <div class="wire" style="height:96px;">
+      <span class="lbl">each panel = 100dvh tall</span>
+      <div style="position:absolute;left:8px;right:8px;bottom:8px;top:22px;display:flex;gap:5px;">
+        <div class="zone" style="flex:1;position:relative;"><span class="t">ACT I<br>THE CALL</span><div class="logobox" style="position:absolute;right:3px;top:3px;width:18px;height:14px;font-size:5pt;">S1</div></div>
+        <div class="zone" style="flex:1;position:relative;"><span class="t">ACT II<br>THE CODE</span><div class="logobox" style="position:absolute;right:3px;top:3px;width:18px;height:14px;font-size:5pt;">S3</div></div>
+        <div class="zone" style="flex:1;position:relative;"><span class="t">ACT III<br>THE FEAST</span><div class="logobox" style="position:absolute;left:3px;top:3px;width:18px;height:14px;font-size:5pt;">S5</div></div>
+      </div>
+    </div>
+    <ul class="anno">
+      <li><span class="n">1</span><span class="tx">Three full-height panels, each a <b>background photo</b> + heavy dark gradient. <span class="mono">editable photos</span>.</span></li>
+      <li><span class="n">2</span><span class="tx">Each carries a <b>sticker</b> (S1/S3/S5) at a jaunty angle — see p.8. Text sits bottom-left: act #, title, JP, lead, body lines.</span></li>
+      <li><span class="n">3</span><span class="tx">A giant ghost numeral (01/02/03) bleeds off the bottom-right corner at ~9% opacity.</span></li>
+      <li><span class="n">4</span><span class="tx">Section header above: "THE STORY · 物語 · MOTOR CITY".</span></li>
+    </ul>
+  </div>
+
+  <div class="foot"><small>Hey Tiger · Design &amp; Layout Specification</small><span class="pgno">11 / 17</span></div>
+</section>
+
+<!-- ════════════ PAGE 12 — MENU GRID + BANDS ════════════ -->
+<section class="page">
+  <div class="runhead"><span class="wm">HEY <span class="r">TIGER</span></span><span class="sec">10 · Landing — Menu grid &amp; Bands</span></div>
+  <h2 class="title">MENU GRID <span class="r">&amp; BOOKING BANDS</span></h2>
+
+  <div class="eyebrow" style="margin-bottom:6px;">⑤ Menu grid — header + 6 categories (3-col → 2 → 1)</div>
+  <div class="grid-2" style="grid-template-columns:1.2fr 1fr;gap:12px;margin-bottom:14px;">
+    <div class="wire" style="height:120px;">
+      <div style="position:absolute;left:8px;right:8px;top:8px;height:30px;border-bottom:1px dashed var(--cream-25);">
+        <div class="disp r" style="font-size:13pt;line-height:0.9;">SIX WORLDS.<br><span class="cream">ONE KITCHEN.</span></div>
+        <div class="logobox" style="position:absolute;right:0;top:0;width:54px;height:16px;">BMH + LOGO</div>
+        <div class="box" style="position:absolute;right:0;top:18px;width:30px;height:12px;"><span class="t">QR</span></div>
+      </div>
+      <div style="position:absolute;left:8px;right:8px;top:42px;bottom:8px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr;gap:4px;">
+        <div class="zone"><span class="t">01 IZAKAYA</span></div><div class="zone"><span class="t">02 ROBATA</span></div><div class="zone"><span class="t">03 RAMEN</span></div>
+        <div class="zone"><span class="t">04 SUSHI</span></div><div class="zone"><span class="t">05 COCKTAILS</span></div><div class="zone"><span class="t">06 DESSERTS</span></div>
+      </div>
+    </div>
+    <ul class="anno">
+      <li><span class="n">1</span><span class="tx"><b>Header</b>: H2 "SIX WORLDS / ONE KITCHEN" left; <b>BMH + Hey Tiger logos</b> (white, 64→96px) + a <b>QR</b> + "VIEW FULL MENU" right.</span></li>
+      <li><span class="n">2</span><span class="tx"><b>6 category cards</b>, hairline-divided. Each reveals a <b>photo on hover</b> (a spotlight mask). <span class="mono">editable: 6 photos</span>.</span></li>
+      <li><span class="n">3</span><span class="tx">Giant 食 kanji watermark behind, ~4% opacity.</span></li>
+      <li><span class="n">4</span><span class="tx"><b>Bottom strip</b>: facts + a red "VIEW FULL MENU →" square button.</span></li>
+    </ul>
+  </div>
+
+  <div class="eyebrow" style="margin-bottom:6px;">⑥ ⑨ Booking bands — full-width CTA strips</div>
+  <div class="wire" style="height:30px;background:var(--void);margin-bottom:5px;">
+    <div class="flex" style="position:absolute;inset:0;justify-content:center;gap:12px;">
+      <span class="jp" style="font-size:9pt;">予約</span>
+      <span class="disp cream" style="font-size:11pt;">READY TO ORDER?</span>
+      <span style="background:var(--red);color:var(--void);font-size:6.5pt;font-weight:700;letter-spacing:0.16em;padding:5px 12px;border-radius:999px;">BOOK A TABLE</span>
+    </div>
+    <span class="dim" style="left:8px;top:4px;">Band #1 · ~120px · centred</span>
+  </div>
+  <div class="wire" style="height:34px;background:var(--void);">
+    <div class="flex" style="position:absolute;inset:0;justify-content:center;gap:12px;">
+      <div class="logobox" style="width:26px;height:20px;font-size:5.5pt;">S4</div>
+      <span class="jp" style="font-size:9pt;">お席へ</span>
+      <span class="disp cream" style="font-size:11pt;">FOUND YOUR ROOM?</span>
+      <span style="background:var(--red);color:var(--void);font-size:6.5pt;font-weight:700;letter-spacing:0.16em;padding:5px 12px;border-radius:999px;">BOOK A TABLE</span>
+    </div>
+    <span class="dim" style="left:8px;top:4px;">Band #2 · ~140px · + sticker4 (white knockout)</span>
+  </div>
+  <ul class="anno" style="margin-top:8px;">
+    <li><span class="n">1</span><span class="tx">Both bands: 1px top + bottom border, plum bg, JP word + display headline + red pill + microcopy. Band #2 adds <b>sticker4</b> on the left.</span></li>
+  </ul>
+
+  <div class="foot"><small>Hey Tiger · Design &amp; Layout Specification</small><span class="pgno">12 / 17</span></div>
+</section>
+
+<!-- ════════════ PAGE 13 — FORM + SPACES ════════════ -->
+<section class="page">
+  <div class="runhead"><span class="wm">HEY <span class="r">TIGER</span></span><span class="sec">11 · Landing — Form &amp; Spaces</span></div>
+  <h2 class="title">FORM <span class="r">&amp; SPACES</span></h2>
+
+  <div class="eyebrow" style="margin-bottom:6px;">⑦ Form Meets Function — 2-col (stacks &lt;900px) · max 1360px</div>
+  <div class="grid-2" style="grid-template-columns:1.1fr 1fr;gap:12px;margin-bottom:14px;">
+    <div class="wire" style="height:88px;">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:50%;padding:8px;">
+        <div class="disp r" style="font-size:15pt;line-height:0.86;">FORM<br>MEETS<br>FUNCTION</div>
+        <div style="font-size:6pt;color:var(--cream-45);margin-top:5px;">body copy + yellow "READ THIS SHIT."</div>
+      </div>
+      <div style="position:absolute;right:0;top:0;bottom:0;width:50%;border-left:1px dashed var(--cream-25);display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:4px;">
+        <div class="zone"><span class="t">1</span></div><div class="zone"><span class="t">2</span></div><div class="zone"><span class="t">3</span></div>
+        <div class="zone"><span class="t">4</span></div><div class="zone"><span class="t">5</span></div><div class="zone"><span class="t">6</span></div>
+      </div>
+    </div>
+    <ul class="anno">
+      <li><span class="n">1</span><span class="tx">Left: stacked display headline <span class="mono">44→104px</span> + body + yellow run-in.</span></li>
+      <li><span class="n">2</span><span class="tx">Right: <b>6-image collage</b>, 3 columns, 4px gaps, min 420px tall. <span class="mono">editable: 6 photos</span>.</span></li>
+    </ul>
+  </div>
+
+  <div class="eyebrow" style="margin-bottom:6px;">⑧ Spaces — tabs + feature photo + 12-photo strip + private CTA</div>
+  <div class="grid-2" style="grid-template-columns:1.1fr 1fr;gap:12px;">
+    <div class="wire" style="height:120px;">
+      <div style="position:absolute;left:8px;right:8px;top:8px;height:14px;"><span class="disp r" style="font-size:9pt;">FIVE ROOMS. <span class="cream">ONE ADDRESS.</span></span></div>
+      <div style="position:absolute;left:8px;top:26px;width:30%;bottom:46px;" class="box"><span class="t">5 tabs<br>BAR · DINING<br>ROOFTOP · DEN<br>TERRACE</span></div>
+      <div class="zone" style="position:absolute;left:35%;right:8px;top:26px;bottom:46px;"><span class="t">editable: active room photo · 16:10<br>(caption + room counter)</span></div>
+      <div style="position:absolute;left:8px;right:8px;bottom:24px;height:14px;display:grid;grid-template-columns:repeat(6,1fr);gap:2px;"><div class="zone"></div><div class="zone"></div><div class="zone"></div><div class="zone"></div><div class="zone"></div><div class="zone"></div></div>
+      <div style="position:absolute;left:8px;right:8px;bottom:6px;height:14px;background:var(--red);border-left:4px solid var(--cream);"><span style="font-size:6pt;color:var(--void);font-weight:700;padding:3px 6px;display:block;">PRIVATE EVENTS · THE TIGER'S DEN IS YOURS · CLAIM THE DEN →</span></div>
+    </div>
+    <ul class="anno">
+      <li><span class="n">1</span><span class="tx"><b>Tab list</b> (5 rooms) left; active tab = red w/ white left bar. <b>Feature photo 16:10</b> right w/ caption + "ROOM 01/5" chip. <span class="mono">editable: 5 room photos</span>.</span></li>
+      <li><span class="n">2</span><span class="tx"><b>Photo strip</b>: 12 portrait (3:4) thumbs, 6-up → 3 → 2. <span class="mono">editable: 12 photos</span>.</span></li>
+      <li><span class="n">3</span><span class="tx"><b>Private events</b> red block w/ 8px cream left bar, capacity facts + dark "CLAIM THE DEN" pill.</span></li>
+    </ul>
+  </div>
+
+  <div class="foot"><small>Hey Tiger · Design &amp; Layout Specification</small><span class="pgno">13 / 17</span></div>
+</section>
+
+<!-- ════════════ PAGE 14 — FOOTER ════════════ -->
+<section class="page">
+  <div class="runhead"><span class="wm">HEY <span class="r">TIGER</span></span><span class="sec">12 · Landing — Footer</span></div>
+  <h2 class="title">FOOTER <span class="r">— ON CREAM</span></h2>
+  <p class="subtitle">The footer flips to a <b>cream #F0EBD8 background</b> — the only large light area on the home page. Logos use the <b>red-tint</b> treatment here.</p>
+
+  <div class="wire" style="height:150px;background:#F0EBD8;margin-bottom:12px;">
+    <div style="position:absolute;left:0;right:0;top:0;height:12px;background:var(--red);"><span style="font-size:5.5pt;color:var(--void);letter-spacing:0.2em;padding:3px 6px;display:block;">◀ SCROLLING TICKER ▶</span></div>
+    <!-- top row -->
+    <div style="position:absolute;left:8px;right:8px;top:16px;height:54px;display:flex;gap:6px;">
+      <div class="box" style="flex:1.7;border-color:rgba(18,13,20,0.2);position:relative;"><div style="position:absolute;left:6px;top:6px;"><div class="disp r" style="font-size:13pt;line-height:0.9;">RESERVE<br><span style="color:#1C0808;">YOUR TABLE.</span></div></div><div class="logobox" style="position:absolute;right:8px;bottom:6px;width:34px;height:30px;border-color:var(--red);background:rgba(200,61,32,0.1);">S2</div></div>
+      <div class="box" style="flex:1;border-color:rgba(18,13,20,0.2);"><span class="t" style="color:rgba(18,13,20,0.55);">newsletter signup<br>+ social<br>+ LOGO · BMH (red tint)</span></div>
+    </div>
+    <!-- mid row -->
+    <div style="position:absolute;left:8px;right:8px;top:74px;height:40px;display:flex;gap:6px;">
+      <div class="box" style="flex:1;border-color:rgba(18,13,20,0.2);"><span class="t" style="color:rgba(18,13,20,0.55);">HOURS<br>Mon closed · Tue–Fri 6pm–2am<br>Sat 11am–2am · Sun 11am–12</span></div>
+      <div class="box" style="flex:1;border-color:rgba(18,13,20,0.2);"><span class="t" style="color:rgba(18,13,20,0.55);">FIND US<br>Motor City Club House<br>hello@heytiger.ae</span></div>
+    </div>
+    <!-- bottom bar -->
+    <div style="position:absolute;left:0;right:0;bottom:0;height:14px;background:var(--nearblack);"><span style="font-size:5.5pt;color:var(--cream-45);letter-spacing:0.12em;padding:4px 6px;display:block;">© 2026 Hey Tiger · A Brass Monkey Hospitality Venue &nbsp;·&nbsp; おいトラ &nbsp;·&nbsp; Privacy · Terms</span></div>
+  </div>
+
+  <div class="grid-2">
+    <ul class="anno">
+      <li><span class="n">1</span><span class="tx"><b>Red ticker</b> strip runs along the very top of the footer.</span></li>
+      <li><span class="n">2</span><span class="tx"><b>Reserve block</b> (left): big red "RESERVE YOUR TABLE." + <b>sticker2</b> (160→220px) as the clickable booking decal.</span></li>
+      <li><span class="n">3</span><span class="tx"><b>Newsletter</b> (right): email signup, Instagram/TikTok text links, then <b>Hey Tiger 70px + BMH 64px</b> logos in <b>red tint</b>, 70%.</span></li>
+    </ul>
+    <ul class="anno">
+      <li><span class="n">4</span><span class="tx"><b>Hours + Find Us</b> two-column band below.</span></li>
+      <li><span class="n">5</span><span class="tx"><b>Bottom bar</b> on near-black #0A070D: copyright, おいトラ, Privacy / Terms.</span></li>
+      <li><span class="n">6</span><span class="tx">Collapses to a single column below <b>900px</b>, centred.</span></li>
+    </ul>
+  </div>
+
+  <div class="foot"><small>Hey Tiger · Design &amp; Layout Specification</small><span class="pgno">14 / 17</span></div>
+</section>
+
+<!-- ════════════ PAGE 15 — MENU PAGE ════════════ -->
+<section class="page">
+  <div class="runhead"><span class="wm">HEY <span class="r">TIGER</span></span><span class="sec">13 · Menu page</span></div>
+  <h2 class="title">MENU PAGE <span class="r">/menu</span></h2>
+  <p class="subtitle">A standalone, mostly <b>light (parchment #F0EBE0)</b> page: a dark header band, a sticky category bar, then the dish grid. 12 categories total.</p>
+
+  <div class="grid-2" style="grid-template-columns:1.15fr 1fr;gap:12px;">
+    <div class="wire" style="height:170px;">
+      <!-- band 1 -->
+      <div style="position:absolute;left:6px;right:6px;top:6px;height:24px;background:var(--void);border-bottom:4px solid var(--red);">
+        <div class="logobox" style="position:absolute;left:6px;top:5px;width:42px;height:14px;">LOGO</div>
+        <span class="jp cream" style="position:absolute;left:54px;top:6px;font-size:9pt;font-weight:900;">ヘイ、タイガー</span>
+        <span style="position:absolute;right:6px;top:7px;background:var(--red);color:var(--void);font-size:5.5pt;font-weight:700;letter-spacing:0.2em;padding:3px 6px;">EST. 2026</span>
+      </div>
+      <!-- band 2 sticky nav -->
+      <div style="position:absolute;left:6px;right:6px;top:34px;height:14px;background:var(--void);display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:2px;">
+        <div class="box" style="border-color:var(--border);"><span class="t">ALL</span></div><div class="box" style="background:var(--red);border:none;"><span class="t" style="color:var(--void);">STARTERS</span></div><div class="box" style="border-color:var(--border);"><span class="t">SUSHI</span></div><div class="box" style="border-color:var(--border);"><span class="t">ROBATA</span></div><div class="box" style="border-color:var(--border);"><span class="t">WOK</span></div><div class="box" style="border-color:var(--border);"><span class="t">…</span></div><div class="box" style="border-color:var(--border);"><span class="t">DRINKS</span></div>
+      </div>
+      <!-- content -->
+      <div style="position:absolute;left:6px;right:6px;top:52px;bottom:24px;background:#F0EBE0;padding:6px;">
+        <div class="disp" style="font-size:14pt;color:var(--red);">STARTERS</div>
+        <div class="zone" style="position:absolute;left:6px;right:6px;top:24px;height:30px;border-color:rgba(200,61,32,0.3);"><span class="t">editable: category hero photo · 16:9</span></div>
+        <div style="position:absolute;left:6px;right:6px;top:58px;bottom:6px;display:grid;grid-template-columns:repeat(3,1fr);gap:2px;"><div class="box" style="border-color:rgba(18,13,20,0.15);"><span class="t" style="color:rgba(18,13,20,0.5);">dish</span></div><div class="box" style="border-color:rgba(18,13,20,0.15);"><span class="t" style="color:rgba(18,13,20,0.5);">dish</span></div><div class="box" style="border-color:rgba(18,13,20,0.15);"><span class="t" style="color:rgba(18,13,20,0.5);">dish</span></div><div class="box" style="border-color:rgba(18,13,20,0.15);"><span class="t" style="color:rgba(18,13,20,0.5);">dish</span></div><div class="box" style="border-color:rgba(18,13,20,0.15);"><span class="t" style="color:rgba(18,13,20,0.5);">dish</span></div><div class="box" style="border-color:rgba(18,13,20,0.15);"><span class="t" style="color:rgba(18,13,20,0.5);">dish</span></div></div>
+      </div>
+      <!-- footer band -->
+      <div style="position:absolute;left:6px;right:6px;bottom:6px;height:14px;background:var(--void);"><span style="font-size:5.5pt;color:var(--cream-45);padding:4px 6px;display:block;">QR → heytigerdubai.com/menu · "scan to view"</span></div>
+    </div>
+    <div>
+      <ul class="anno">
+        <li><span class="n">1</span><span class="tx"><b>Header band</b> (dark, <span class="mono">64→128px</span>): <b>logo top-left 38→72px</b> + ヘイ、タイガー wordmark + EST. 2026 chip. 4px red underline.</span></li>
+        <li><span class="n">2</span><span class="tx"><b>Sticky category nav</b> — a grid of all 12 categories + "ALL"; active = red. Pins to the top on scroll <span class="mono">(top:0)</span>.</span></li>
+        <li><span class="n">3</span><span class="tx"><b>Category title</b> <span class="mono">48→96px</span> red, optional <b>hero photo 16:9</b>. <span class="mono">editable</span>.</span></li>
+        <li><span class="n">4</span><span class="tx"><b>Dish grid</b> auto-fills cards <span class="mono">min 300px</span> wide; each: name, JP, desc, price, dietary tags.</span></li>
+        <li><span class="n">5</span><span class="tx"><b>QR footer band</b> back on dark, encodes the menu URL.</span></li>
+      </ul>
+      <div class="callout" style="margin-top:8px;">
+        <div class="h">Categories (12)</div>
+        <p style="font-size:8pt;">Starters · Sushi &amp; Rolls · Dim Sum · Robata &amp; BBQ · Wok &amp; Mains · Rice &amp; Noodles · Sides · Desserts · Cocktails · Sake &amp; Spirits · No Proof.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-top:10px;">
+    <div class="h">Dietary &amp; tag chips (already designed)</div>
+    <p>Tags: SIGNATURE · CHEF'S FAV · NEW · PLANT · 🌶 SPICY · ✦ PREMIUM. Dietary keys: V · SP · D · E · G · S · F · N — each has its own colour. Match these if adding new dishes.</p>
+  </div>
+
+  <div class="foot"><small>Hey Tiger · Design &amp; Layout Specification</small><span class="pgno">15 / 17</span></div>
+</section>
+
+<!-- ════════════ PAGE 16 — AVAILABILITY PAGE ════════════ -->
+<section class="page">
+  <div class="runhead"><span class="wm">HEY <span class="r">TIGER</span></span><span class="sec">14 · Availability page</span></div>
+  <h2 class="title">AVAILABILITY <span class="r">/availability</span></h2>
+  <p class="subtitle">A focused, all-dark page (#1C0808) showing opening hours &amp; live open/closed status, with a 5-link sub-nav and a single CTA.</p>
+
+  <div class="grid-2" style="grid-template-columns:1.05fr 1fr;gap:12px;">
+    <div class="wire" style="height:165px;background:var(--void);">
+      <!-- header -->
+      <div style="position:absolute;left:6px;right:6px;top:6px;height:22px;border-bottom:1px solid var(--border);">
+        <span class="jp cream" style="position:absolute;left:6px;top:6px;font-size:11pt;font-weight:900;">ヘイ、タイガー</span>
+        <span style="position:absolute;right:6px;top:8px;background:var(--red);color:var(--void);font-size:5.5pt;font-weight:700;letter-spacing:0.2em;padding:3px 6px;">ご予約</span>
+        <span class="dim" style="right:6px;bottom:-9px;">header 72→148px · NO logo image</span>
+      </div>
+      <!-- 5-link nav -->
+      <div style="position:absolute;left:6px;right:6px;top:42px;height:14px;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;">
+        <div class="box" style="border-color:var(--border);"><span class="t">HOME</span></div><div class="box" style="border-color:var(--border);"><span class="t">MENU</span></div><div class="box" style="border-color:var(--border);"><span class="t">SPACES</span></div><div class="box" style="border-color:var(--border);"><span class="t">STORY</span></div><div class="box" style="border-color:var(--border);"><span class="t">FIND US</span></div>
+      </div>
+      <!-- main -->
+      <div style="position:absolute;left:6px;right:6px;top:62px;bottom:6px;padding:6px;">
+        <div class="jp" style="font-size:16pt;font-weight:900;color:var(--red);">予約状況</div>
+        <div style="font-size:6pt;color:var(--cream-45);margin:3px 0 5px;">live OPEN / CLOSED status (Dubai time)</div>
+        <div style="max-width:80%;">
+          <div class="box" style="border-color:var(--border);height:11px;margin-bottom:2px;"><span class="t">MON · 月曜日 · CLOSED</span></div>
+          <div class="box" style="border-color:var(--border);height:11px;margin-bottom:2px;"><span class="t">TUE–FRI · 6PM → 2AM</span></div>
+          <div class="box" style="border-color:var(--border);height:11px;margin-bottom:2px;"><span class="t">SAT · 11AM → 2AM</span></div>
+          <div class="box" style="border-color:var(--border);height:11px;"><span class="t">SUN · 11AM → MIDNIGHT</span></div>
+        </div>
+        <div style="margin-top:6px;background:var(--red);color:var(--void);font-size:6.5pt;font-weight:700;letter-spacing:0.16em;padding:5px 14px;border-radius:999px;display:inline-block;">BOOK A TABLE →</div>
+      </div>
+    </div>
+    <div>
+      <ul class="anno">
+        <li><span class="n">1</span><span class="tx"><b>Header</b> <span class="mono">72→148px</span> — currently a Japanese <b>text wordmark</b> (ヘイ、タイガー) + ご予約 + EST chip. <span class="red">No logo image — add the mark here.</span></span></li>
+        <li><span class="n">2</span><span class="tx"><b>Sub-nav</b>: 5 equal links (Home · Menu · Spaces · Story · Find Us).</span></li>
+        <li><span class="n">3</span><span class="tx"><b>Hours table</b> capped at <span class="mono">680px</span>: day · JP day · hours, with a live status pill driven by Dubai time.</span></li>
+        <li><span class="n">4</span><span class="tx">Single red pill <b>CTA</b> at the bottom.</span></li>
+        <li><span class="n">5</span><span class="tx">Page padding <span class="mono">48→96px</span> vertical, <span class="mono">24→72px</span> horizontal.</span></li>
+      </ul>
+      <div class="callout" style="margin-top:8px;">
+        <div class="h">Hours (source of truth)</div>
+        <p style="font-size:8pt;">Mon CLOSED · Tue–Fri 6PM–2AM · Sat 11AM–2AM · Sun 11AM–Midnight. Keep these consistent with the footer.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><small>Hey Tiger · Design &amp; Layout Specification</small><span class="pgno">16 / 17</span></div>
+</section>
+
+<!-- ════════════ PAGE 17 — EDITABLE ZONES + CHECKLIST ════════════ -->
+<section class="page">
+  <div class="runhead"><span class="wm">HEY <span class="r">TIGER</span></span><span class="sec">15 · Editable zones &amp; export specs</span></div>
+  <h2 class="title">WHERE TO <span class="r">DROP ARTWORK</span></h2>
+  <p class="subtitle">Every <span style="color:var(--red);">red zone</span> in this document is a slot you can fill. Master list below, plus export specs so files drop in clean.</p>
+
+  <div class="eyebrow" style="margin-bottom:8px;">Editable slots — image counts</div>
+  <table style="margin-bottom:12px;">
+    <tr><th style="width:50mm;">Location</th><th style="width:18mm;">Slots</th><th style="width:24mm;">Shape</th><th>Notes</th></tr>
+    <tr><td><b>Hero panorama</b></td><td class="mono">5</td><td>landscape</td><td>Wide, atmospheric; they pan &amp; get a dark scrim.</td></tr>
+    <tr><td><b>About — right panel</b></td><td class="mono">1</td><td>tall full-bleed</td><td>Amber tint + bottom caption overlaps.</td></tr>
+    <tr><td><b>Story acts</b></td><td class="mono">3</td><td>full-height</td><td>Heavy gradient; text sits bottom-left.</td></tr>
+    <tr><td><b>Menu grid cards</b></td><td class="mono">6</td><td>card</td><td>Revealed on hover via spotlight mask.</td></tr>
+    <tr><td><b>Form collage</b></td><td class="mono">6</td><td>portrait-ish</td><td>3-col mosaic, tight 4px gaps.</td></tr>
+    <tr><td><b>Spaces — feature</b></td><td class="mono">5</td><td>16:10</td><td>One per room tab; caption overlays bottom.</td></tr>
+    <tr><td><b>Spaces — strip</b></td><td class="mono">12</td><td>3:4 portrait</td><td>Thumbnail row; name label on each.</td></tr>
+    <tr><td><b>Menu page</b></td><td class="mono">12+</td><td>16:9 + dish</td><td>Category hero + per-dish photos.</td></tr>
+    <tr><td><b>Stickers / decals</b></td><td class="mono">∞</td><td>cut-out PNG</td><td>4 spares ready (sticker6/9/fot/fot2); add more.</td></tr>
+  </table>
+
+  <div class="grid-2">
+    <div>
+      <div class="eyebrow" style="margin-bottom:6px;">Export specs</div>
+      <ul class="bullets">
+        <li><b>Logos &amp; stickers</b>: PNG, transparent, @2–3× the max render size. Also supply <b>SVG</b> if vector exists.</li>
+        <li><b>Photos</b>: JPG, sRGB, quality ~80. Width ≥ <b>2400px</b> for hero/full-bleed; ≥ <b>1200px</b> for cards/strip.</li>
+        <li>Supply photos <b>bright</b> — the site darkens them (see p.6 recipe).</li>
+        <li><b>Favicon / app icon</b>: dedicated square <b>512×512</b> master (currently missing).</li>
+        <li><b>OG / social share</b>: <b>1200×630</b> (currently herophoto.png).</li>
+        <li>Keep <b>square corners</b>; only pill buttons are round.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="eyebrow" style="margin-bottom:6px;">Naming &amp; handoff</div>
+      <ul class="bullets">
+        <li>Photos already live in <span class="mono">/public/images/</span> → <span class="mono">header · spaces · story · brand</span>.</li>
+        <li>Logos &amp; stickers live at <span class="mono">/public/</span> root.</li>
+        <li>Match existing names when swapping (e.g. <span class="mono">spaces/rooftop.jpg</span>), or hand me a clearly-labelled folder and I'll wire it up.</li>
+        <li>Flag any colour that must print exactly — give me Pantone/CMYK too.</li>
+      </ul>
+      <div class="callout" style="margin-top:8px;">
+        <div class="h">Quick wins to design</div>
+        <p style="font-size:8pt;">① Square app/favicon icon · ② Logo for the Availability header · ③ Fresh sticker set · ④ Hero panorama refresh.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:10px;text-align:center;">
+    <span class="jp" style="font-size:13pt;">おいトラ</span>
+    <div class="disp" style="font-size:16pt;margin-top:2px;">HEY <span class="r">TIGER</span> — RAAAAAAR CULTURE</div>
+    <small style="display:block;margin-top:4px;">Questions on any measurement? Everything here is pulled live from the build — ask and I'll confirm exact values.</small>
+  </div>
+
+  <div class="foot"><small>Hey Tiger · Design &amp; Layout Specification · v1.0</small><span class="pgno">17 / 17</span></div>
+</section>
+
+</body>
+</html>

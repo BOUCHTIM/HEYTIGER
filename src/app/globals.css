@@ -1,0 +1,1207 @@
+/* ═══════════════════════════════════════════════════════════════════
+   1. IMPORTS
+   ═══════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,700;1,9..144,900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+JP:wght@400;700;900&family=Dela+Gothic+One&family=Bebas+Neue&family=Barlow+Condensed:wght@400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════
+   2. FONT FACES
+   All fonts live in /public/fonts/. Priority: local → extracted → Google
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* TAN NIMBUS — Primary Display / Headlines */
+@font-face {
+  font-family: 'TAN Nimbus';
+  src: url('/fonts/TAN-NIMBUS.otf') format('opentype'),
+       url('/fonts/TAN-Nimbus.woff2') format('woff2'),
+       url('/fonts/TAN-Nimbus.woff')  format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* JANDUS ROAD — Regular */
+@font-face {
+  font-family: 'Jandus RD';
+  src: url('/fonts/JandusRoadRegular.otf') format('opentype'),
+       url('/fonts/JandusRD20-Regular.woff2') format('woff2'),
+       url('/fonts/JandusRD20-Regular.woff')  format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* JANDUS ROAD — Oblique */
+@font-face {
+  font-family: 'Jandus RD';
+  src: url('/fonts/JandusRoadOblique.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* JANDUS ROAD — Bold / Depth */
+@font-face {
+  font-family: 'Jandus RD';
+  src: url('/fonts/JandusRoadDepth.otf') format('opentype'),
+       url('/fonts/JandusRD20-Bold.woff2') format('woff2'),
+       url('/fonts/JandusRD20-Bold.woff')  format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* JANDUS ROAD CONDENSED */
+@font-face {
+  font-family: 'Jandus RD Condensed';
+  src: url('/fonts/JandusRoadCondensed.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* JANDUS ROAD EXTENDED — Regular */
+@font-face {
+  font-family: 'Jandus RD Extended';
+  src: url('/fonts/JandusRoadExtended.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* JANDUS ROAD EXTENDED — Bold / Depth */
+@font-face {
+  font-family: 'Jandus RD Extended';
+  src: url('/fonts/JandusRoadExtendedDepth.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* DELA GOTHIC ONE — Japanese katakana display */
+@font-face {
+  font-family: 'Dela Gothic One';
+  src: url('/fonts/DelaGothicOne-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* TA KAKUGO — Japanese street/rough style */
+@font-face {
+  font-family: 'TA Kakugo';
+  src: url('/fonts/TA_kakugo_gf_01.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   3. DESIGN TOKENS
+   Calibrated from GC HT MOODBOARD.ai (20-page brand doc)
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  /* ══ ELITE REDESIGN PALETTE — おいトラ ═══════════════════════════ */
+  --tiger-red:     #C83D20;   /* THE COMMANDER — headlines, CTAs, accents  */
+  --plum-black:    #1C0808;   /* THE STAGE — dominant background (60%+)    */
+  --parchment:     #F0EBD8;   /* THE VOICE — body text, logo on dark       */
+  --army-olive:    #4A5E32;   /* THE SOLDIER — Story section bg ONLY       */
+  --deep-navy:     #1A1F2E;   /* THE NIGHT — Events section bg ONLY        */
+  --jade-teal:     #3D7A6E;   /* THE SURPRISE — one section only           */
+  --amber-wood:    #C17B3F;   /* THE TEXTURE — photo treatment only        */
+  --near-black:    #0A070D;   /* Footer only. Darker than plum-black.      */
+  --dark-border:   #2A1F2A;   /* All borders, dividers, card edges         */
+  --muted-text:    #7A6A7A;   /* Footer small text, meta info only         */
+  --red-dark:      #B22D12;   /* Tiger red hover state                     */
+  --parchment-muted: #C8B890; /* Body text second tier — captions, subtitles */
+  /* ── Border tokens (Fix 12) ───────────────────────────────────── */
+  --border-structural: #2A1F2A;
+  --border-accent:     rgba(200, 61, 32, 0.18);
+
+  /* ── Legacy aliases (kept for backward compat) ─────────────────── */
+  --ht-void:       #1C0808;
+  --ht-red:        #C83D20;
+  --ht-amber:      #C17B3F;
+  --ht-cream:      #F0EBD8;
+  --ht-sand:       #F0EBD8;
+  --ht-sand-2:     #C8B890;
+  --ht-teal:       #3D7A6E;
+  --ht-cyan:       #3D7A6E;
+  --ht-olive:      #4A5E32;
+  --ht-white:      #F0EBD8;
+  --ht-brown:      #C17B3F;
+  --ht-deep-red:   #C83D20;
+  --ht-sand-bg:    #C8B890;
+  --jp-suna:       #C8B890;
+  --jp-kaki:       #C17B3F;
+  --jp-renga:      #C83D20;
+  --jp-kusa:       #4A5E32;
+  --jp-sumi:       #1C0808;
+  --jp-shu:        #C83D20;
+  --jp-kin:        #F0EBD8;
+
+  /* ── Semantic Aliases ──────────────────────────────────────────── */
+  --clr-void:      #1C0808;
+  --clr-dark:      #1C0808;
+  --clr-mid:       #1C0808;
+  --clr-slate:     #1C0808;
+  --clr-red:       #C83D20;
+  --clr-red-dim:   #B22D12;
+  --clr-cream:     #F0EBD8;
+  --clr-cream-2:   #F0EBD8;
+  --clr-amber:     #C83D20;
+  --clr-gold:      #F0EBD8;
+  --clr-gold-dim:  rgba(240,235,216,0.12);
+  --clr-olive:     #4A5E32;
+  --clr-teal:      #3D7A6E;
+
+  /* ── Font Stacks ───────────────────────────────────────────────── */
+  --font-display:   'TAN Nimbus', 'Fraunces', 'Georgia', serif;
+  --font-body:      'Jandus RD', 'DM Sans', system-ui, sans-serif;
+  --font-bebas:     'Bebas Neue', 'Jandus RD', system-ui, sans-serif;
+  --font-barlow:    'Barlow Condensed', 'DM Sans', system-ui, sans-serif;
+  --font-extended:  'Jandus RD Extended', 'Jandus RD', 'DM Sans', system-ui, sans-serif;
+  --font-condensed: 'Jandus RD Condensed', 'Jandus RD', 'DM Sans', system-ui, sans-serif;
+  --font-jp:        'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'YuGothic', 'Yu Gothic', 'Meiryo', sans-serif;
+  --font-jp-rough:  'Dela Gothic One', 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', sans-serif;
+  --font-gothic:    'Jandus RD Extended', 'Jandus RD', 'DM Sans', system-ui, sans-serif;
+
+  /* ── Layout Tokens ─────────────────────────────────────────────── */
+  --ht-announce-h:  0px;
+
+  /* ── Motion Tokens ─────────────────────────────────────────────── */
+  --ease-standard:  cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-cinematic: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast:       160ms;
+  --dur-base:       280ms;
+  --dur-slow:       600ms;
+
+  /* ── Color opacity scale ───────────────────────────────────────── */
+  --clr-red-10:     rgba(200, 61,  32,  0.10);
+  --clr-red-20:     rgba(200, 61,  32,  0.20);
+  --clr-red-60:     rgba(200, 61,  32,  0.60);
+  --clr-red-80:     rgba(200, 61,  32,  0.80);
+  --clr-cream-30:   rgba(240, 235, 216, 0.30);
+  --clr-cream-70:   rgba(240, 235, 216, 0.70);
+  --clr-ink-25:     rgba(18,  13,  20,  0.25);
+  --clr-ink-55:     rgba(18,  13,  20,  0.55);
+  --clr-ink-65:     rgba(18,  13,  20,  0.65);
+
+  /* ── Typography scale ──────────────────────────────────────────── */
+  --text-micro:         10px;
+  --text-label:         11px;
+  --text-body:          13px;
+  --text-heading-xl:    clamp(52px,  7.5vw, 112px);
+  --text-jp-display:    clamp(24px,  3vw,   44px);
+  --text-heading-hero:  clamp(84px,  15vw,  210px);
+
+  /* ── Letter spacing ────────────────────────────────────────────── */
+  --tracking-tight: -0.01em;
+  --tracking-wide:   0.20em;
+  --tracking-ultra:  0.44em;
+
+  /* ── Spacing scale ─────────────────────────────────────────────── */
+  --space-section-x:    clamp(24px, 5vw,  72px);
+  --space-section-y:    clamp(48px, 6vw,  88px);
+  --space-section-y-lg: clamp(64px, 8vw,  112px);
+  --space-content-y:    clamp(32px, 4vw,  52px);
+
+  /* ── Shadow Tokens ─────────────────────────────────────────────── */
+  --shadow-gold-sm: 0 4px 16px rgba(232,213,168,0.18), 0 1px 4px rgba(0,0,0,0.30);
+  --shadow-gold-md: 0 8px 32px rgba(232,213,168,0.24), 0 2px 8px rgba(0,0,0,0.36);
+  --shadow-gold-lg: 0 16px 56px rgba(232,213,168,0.32), 0 4px 12px rgba(0,0,0,0.44);
+
+  /* ── Japanese Material Textures ────────────────────────────────── */
+
+  /* Washi — uneven light field of handmade paper.
+     Felt as material warmth; invisible at arm's length. */
+  --ht-texture-washi:
+    radial-gradient(ellipse 88% 72% at 44% 36%, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 50%, transparent 72%),
+    radial-gradient(ellipse 55% 45% at 72% 74%, rgba(0,0,0,0.035) 0%, transparent 58%),
+    radial-gradient(ellipse 38% 32% at 14% 82%, rgba(0,0,0,0.025) 0%, transparent 52%),
+    radial-gradient(ellipse 70% 55% at 88% 18%, rgba(0,0,0,0.02) 0%, transparent 48%);
+
+  /* Shoji — diffused light bloom. Three clouds, no lines. */
+  --ht-texture-shoji:
+    radial-gradient(ellipse 100% 82% at 50% 18%, rgba(245,239,224,0.038) 0%, transparent 62%),
+    radial-gradient(ellipse 68% 58% at 22% 76%, rgba(245,239,224,0.022) 0%, transparent 52%),
+    radial-gradient(ellipse 52% 44% at 82% 58%, rgba(245,239,224,0.018) 0%, transparent 46%);
+
+  /* Sumi — ink pooling at the edges, pale void at centre. */
+  --ht-texture-sumi:
+    radial-gradient(ellipse 62% 50% at 50% 46%, rgba(255,255,255,0.022) 0%, transparent 52%),
+    radial-gradient(ellipse 110% 110% at   0%   0%, rgba(0,0,0,0.18) 0%, transparent 46%),
+    radial-gradient(ellipse 110% 110% at 100% 100%, rgba(0,0,0,0.15) 0%, transparent 44%),
+    radial-gradient(ellipse  90%  80% at 100%   0%, rgba(0,0,0,0.10) 0%, transparent 42%),
+    radial-gradient(ellipse  80%  70% at   0% 100%, rgba(0,0,0,0.09) 0%, transparent 40%);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   4. TAILWIND MAPPINGS
+   ═══════════════════════════════════════════════════════════════════ */
+@theme inline {
+  --color-void:   var(--clr-void);
+  --color-dark:   var(--clr-dark);
+  --color-mid:    var(--clr-mid);
+  --color-red:    var(--clr-red);
+  --color-cream:  var(--clr-cream);
+  --color-amber:  var(--clr-amber);
+  --color-olive:  var(--clr-olive);
+  --font-mono:    var(--font-body);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   5. RESET & BASE
+   ═══════════════════════════════════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Lenis smooth scroll — disable native CSS smooth-scroll so Lenis owns it */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+html {
+  background: var(--clr-void);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+  overscroll-behavior: none;
+}
+
+body {
+  background: var(--clr-void);
+  color: var(--clr-cream);
+  font-family: var(--font-body);
+  font-weight: 400;
+  overflow-x: hidden;
+  overflow-wrap: break-word;
+  text-rendering: optimizeLegibility;
+  cursor: url('/cursors/chopsticks-default.png') 12 40, auto;
+  position: relative;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+html,
+body {
+  isolation: isolate;
+}
+
+em, i { font-style: normal; }
+
+/* Interactive cursor states */
+a,
+button,
+[role="button"],
+[role="link"],
+summary,
+label,
+select,
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"],
+input[type="submit"],
+input[type="button"] {
+  cursor: url('/cursors/chopsticks-hover.png') 12 40, pointer !important;
+}
+
+/* Text cursor stays native on text inputs */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+input[type="search"],
+input[type="password"],
+textarea {
+  cursor: text !important;
+}
+
+/* Prevent iOS Safari auto-zoom on focused inputs (font-size must be ≥ 16px) */
+input, select, textarea {
+  font-size: max(16px, 1em);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: transparent; border-radius: 2px; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   6. TYPOGRAPHY
+   ═══════════════════════════════════════════════════════════════════ */
+
+.t-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-style: normal;
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+}
+
+.t-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+.t-jp {
+  font-family: var(--font-jp);
+  font-weight: 700;
+}
+
+.t-label {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.ht-title-shadow {
+  text-shadow:
+    0.04em 0.04em 0 var(--clr-mid),
+    0.08em 0.08em 0 var(--clr-mid),
+    0.12em 0.12em 0 var(--clr-mid),
+    0.16em 0.16em 0 var(--clr-mid);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   7. LAYOUT UTILITIES
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* dvh viewport utility */
+@supports (height: 100dvh) {
+  .h-screen-fit     { height: 100dvh; }
+  .min-h-screen-fit { min-height: 100dvh; }
+}
+
+/* Safe-area utilities */
+.safe-area-top    { padding-top: env(safe-area-inset-top); }
+.safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+/* iOS scroll momentum on overflow containers */
+.scroll-momentum {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* MenuView header brand grid */
+.ht-brand-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: clamp(24px, 5vw, 80px);
+  align-items: flex-end;
+  padding-bottom: clamp(20px, 2.8vh, 36px);
+  border-bottom: 1px solid rgba(237,231,201,0.1);
+}
+
+.ht-brand-desc {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 22px;
+  max-width: 320px;
+  text-align: right;
+}
+
+/* Denwacho 電話帳 index — 4-column directory grid */
+.dw-row-grid {
+  display: grid;
+  grid-template-columns:
+    clamp(140px, 18vw, 240px)
+    minmax(0, 1fr)
+    clamp(160px, 20vw, 280px)
+    auto;
+  gap: 0 clamp(16px, 2.2vw, 42px);
+  align-items: baseline;
+}
+
+/* Top venue photo band — 2 cols on mobile */
+@media (max-width: 640px) {
+  .ht-top-photo-band {
+    grid-template-columns: repeat(2, 1fr) !important;
+    height: clamp(200px, 52vw, 300px) !important;
+  }
+}
+
+.dw-header-grid {
+  display: grid;
+  grid-template-columns:
+    clamp(140px, 18vw, 240px)
+    minmax(0, 1fr)
+    clamp(160px, 20vw, 280px)
+    auto;
+  gap: 0 clamp(16px, 2.2vw, 42px);
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(237,231,201,0.12);
+}
+
+.dw-col-index    { display: flex; }
+.dw-header-index { display: block; }
+
+/* Hero / footer marquee ticker */
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ht-ticker-scroll 32s linear infinite;
+}
+@keyframes ht-ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Thin gold ornamental divider */
+.ht-lux-rule {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  margin: 0 auto;
+}
+.ht-lux-rule::before,
+.ht-lux-rule::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201,162,39,0.35), transparent);
+}
+.ht-lux-rule--center {
+  justify-content: center;
+  max-width: 420px;
+}
+.ht-lux-rule span {
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.5em;
+  color: var(--clr-gold);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Section eyebrow with flanking hairlines */
+.ht-eyebrow-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.ht-eyebrow-wrap::before,
+.ht-eyebrow-wrap::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201,162,39,0.28), transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   7b. ANALOG PRINT SYSTEM — screen-print, halftone, projector effects
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Halftone dot overlay — apply over any surface for screen-print texture */
+.ht-halftone {
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgba(20,20,20,0.3) 1.2px, transparent 1.2px);
+  background-size: 7px 7px;
+  mix-blend-mode: multiply;
+  opacity: 0.3;
+}
+
+/* Print misregistration — subtle chromatic drift */
+.ht-misreg {
+  position: relative;
+}
+.ht-misreg::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  color: rgba(197,72,52,0.45);
+  transform: translate(2px, 1px);
+  pointer-events: none;
+  user-select: none;
+}
+.ht-misreg::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  color: rgba(93,159,196,0.35);
+  transform: translate(-2px, -1px);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Ink stamp — red stamp overlay decoration */
+.ht-stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2.5px solid currentColor;
+  border-radius: 2px;
+  padding: 3px 8px;
+  transform: rotate(-4deg);
+  opacity: 0.82;
+  letter-spacing: 0.22em;
+  font-weight: 800;
+  font-size: 10px;
+}
+
+/* Paper fold crease — decorative horizontal line */
+.ht-crease {
+  position: relative;
+  overflow: hidden;
+}
+.ht-crease::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 20%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 80%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Analog print noise animation */
+@keyframes ht-print-noise {
+  0%, 100% { opacity: 0.18; }
+  25%       { opacity: 0.22; }
+  50%       { opacity: 0.15; }
+  75%       { opacity: 0.20; }
+}
+
+/* Projector flicker */
+@keyframes ht-flicker {
+  0%, 89%, 93%, 96%, 100% { opacity: 1; }
+  90%   { opacity: 0.82; }
+  91%   { opacity: 0.97; }
+  92%   { opacity: 0.74; }
+  94%   { opacity: 0.96; }
+  95%   { opacity: 0.80; }
+}
+
+/* Slow analog drift — for floating elements */
+@keyframes ht-analog-drift {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  33%  { transform: translate(1px, -1.5px) rotate(0.15deg); }
+  66%  { transform: translate(-1px, 1px) rotate(-0.1deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+.ht-analog-drift {
+  animation: ht-analog-drift 8s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   8. MOTION SYSTEM
+   PRIMARY:   grain atmosphere + StringTune scroll motion
+   SECONDARY: subtle hover transitions
+   Nothing else competes.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Grain Atmosphere — SIGNATURE VISUAL ELEMENT ─────────────────── */
+.ht-grain-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  mix-blend-mode: overlay;
+  opacity: 0.05;
+  /* Neutral film grain — no colour tint */
+  background-image:
+    radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px),
+    radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+    radial-gradient(rgba(0,0,0,0.06)       1px, transparent 1px);
+  background-size: 2px 2px, 3px 3px, 5px 5px;
+  background-position: 0 0, 1px 1px, 2px 2px;
+  animation: ht-grain-drift-simple 14s linear infinite;
+  will-change: background-position;
+}
+
+.ht-grain-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  mix-blend-mode: overlay;
+  /* Neutral scanlines only */
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(255,255,255,0.025) 2px, rgba(255,255,255,0.025) 3px),
+    radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    radial-gradient(rgba(0,0,0,0.03)       1px, transparent 1px);
+  background-size: auto, 4px 4px, 7px 7px;
+  background-position: 0 0, 0 0, 2px 2px;
+  animation: ht-grain-drift-simple 9s linear infinite reverse;
+  will-change: background-position;
+}
+
+.ht-grain-overlay::after {
+  display: none;
+}
+
+@keyframes ht-grain-drift {
+  0%   { background-position: 0 0,   0 0,   0 0,   0 0,   0 0,   1px 1px, 2px 2px; }
+  100% { background-position: 48px 40px, 48px 40px, 48px 40px, 48px 40px, 48px 40px, 49px 41px, 50px 42px; }
+}
+
+@keyframes ht-grain-drift-simple {
+  0%   { background-position: 0 0, 1px 1px, 2px 2px; }
+  100% { background-position: 48px 40px, 49px 41px, 50px 42px; }
+}
+
+/* ── Hero Ken Burns — cinematic slow drift on static poster ─────── */
+@keyframes ht-hero-kenburns {
+  0%   { transform: scale(1.0) translate(0%, 0%); }
+  100% { transform: scale(1.08) translate(-1.5%, -1%); }
+}
+
+/* ── Fade-up entrance — one-shot, used sparingly ────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── StringTune Scroll-Driven Animations ─────────────────────────
+   Library: @fiddle-digital/string-tune
+   Engine writes --progress (0→1) on each [string="parallax"] element.
+   All transforms activate only after html.st-ready to prevent FOIT. */
+
+.ht-scroll-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 0;
+  background: var(--clr-red);
+  z-index: 9995;
+  pointer-events: none;
+  transform-origin: left center;
+  will-change: width;
+}
+
+.st-ready .ht-scroll-progress-bar {
+  width: calc(var(--progress, 0) * 100%);
+}
+
+.st-ready .ht-st-img {
+  transform: translateY(calc((0.5 - var(--progress, 0.5)) * 88px));
+  will-change: transform;
+}
+
+.st-ready .ht-st-img-slow {
+  transform: translateY(calc((0.5 - var(--progress, 0.5)) * 48px));
+  will-change: transform;
+}
+
+.st-ready .ht-st-kanji {
+  transform: translateY(calc((0.5 - var(--progress, 0.5)) * 140px));
+  will-change: transform;
+}
+
+.st-ready .ht-st-h-left {
+  transform: translateX(calc((0.5 - var(--progress, 0.5)) * -60px));
+  will-change: transform;
+}
+
+.st-ready .ht-st-h-right {
+  transform: translateX(calc((0.5 - var(--progress, 0.5)) * 60px));
+  will-change: transform;
+}
+
+.st-ready .ht-st-scale {
+  transform: scale(calc(0.96 + var(--progress, 0) * 0.04))
+             translateY(calc((1 - clamp(0, calc(var(--progress, 0) * 4), 1)) * 24px));
+  opacity: clamp(0, calc(var(--progress, 0) * 4), 1);
+  will-change: transform, opacity;
+}
+
+.st-ready .ht-st-reveal {
+  opacity: clamp(0, calc((var(--progress, 0) - 0.05) * 9), 1);
+  transform: translateY(calc(
+    (1 - clamp(0, calc((var(--progress, 0) - 0.05) * 9), 1)) * 40px
+  ));
+  will-change: opacity, transform;
+}
+
+.st-ready .ht-st-eyebrow {
+  opacity: clamp(0, calc((var(--progress, 0) - 0.08) * 12), 1);
+  transform: translateY(calc(
+    (1 - clamp(0, calc((var(--progress, 0) - 0.08) * 12), 1)) * 20px
+  ));
+  will-change: opacity, transform;
+}
+
+.st-ready .ht-st-headline {
+  opacity: clamp(0, calc((var(--progress, 0) - 0.05) * 8), 1);
+  transform: translateY(calc(
+    (1 - clamp(0, calc((var(--progress, 0) - 0.05) * 8), 1)) * 56px
+  ));
+  will-change: opacity, transform;
+}
+
+.st-ready .ht-st-pill {
+  opacity: clamp(0, calc((var(--progress, 0) - 0.12) * 14), 1);
+  transform: scale(calc(0.88 + clamp(0, calc((var(--progress, 0) - 0.12) * 14), 1) * 0.12));
+  will-change: opacity, transform;
+}
+
+.st-ready .ht-st-cta {
+  opacity: clamp(0, calc((var(--progress, 0) - 0.1) * 10), 1);
+  transform: translateY(calc(
+    (1 - clamp(0, calc((var(--progress, 0) - 0.1) * 10), 1)) * 28px
+  ));
+  will-change: opacity, transform;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   9. EFFECTS
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Japanese Material Light System ────────────────────────────────
+   Usage A — inline:  style={{ backgroundImage: 'var(--ht-texture-washi)' }}
+   Usage B — overlay: <div className="ht-tex ht-tex--washi" aria-hidden="true" />
+   ── */
+.ht-tex {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.ht-tex--washi {
+  mix-blend-mode: soft-light;
+  background-image: var(--ht-texture-washi);
+}
+.ht-tex--shoji {
+  mix-blend-mode: screen;
+  background-image: var(--ht-texture-shoji);
+}
+.ht-tex--sumi {
+  background-image: var(--ht-texture-sumi);
+}
+
+/* ── Floating reservation CTA ────────────────────────────────────── */
+.ht-float-reserve {
+  position: fixed;
+  bottom: clamp(20px, 3vw, 32px);
+  right: clamp(20px, 3vw, 32px);
+  z-index: 980;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: var(--clr-red);
+  color: #120D14;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  border-radius: 0;
+  text-decoration: none;
+  transition:
+    background var(--dur-fast) var(--ease-standard);
+  transform-origin: bottom right;
+  white-space: nowrap;
+}
+.ht-float-reserve:hover {
+  background: var(--clr-red-dim);
+}
+
+/* ── Secondary outlined CTA ─────────────────────────────────────── */
+.ht-btn-secondary {
+  background: transparent !important;
+  border: 1.5px solid var(--clr-red) !important;
+  color: var(--clr-red) !important;
+  border-radius: 0 !important;
+  transition:
+    background var(--dur-base) var(--ease-standard),
+    color var(--dur-base) var(--ease-standard) !important;
+}
+.ht-btn-secondary:hover,
+.ht-btn-secondary:focus-visible {
+  background: var(--clr-red) !important;
+  color: #120D14 !important;
+}
+
+/* ── Cursor magnetic offset ─────────────────────────────────────── */
+[data-magnetic] {
+  will-change: translate;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  [data-magnetic] {
+    translate: var(--ht-mag-x, 0) var(--ht-mag-y, 0);
+  }
+}
+
+/* ── Focus system (WCAG 2.1 AA compliant) ───────────────────────── */
+*:focus                      { outline: none; }
+*:focus-visible              { outline: 2px solid var(--clr-red); outline-offset: 3px; }
+*:focus:not(:focus-visible)  { outline: none; }
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline-offset: 0;
+  box-shadow: 0 0 0 3px rgba(200,61,32,0.35);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   10. ACCESSIBILITY
+   ═══════════════════════════════════════════════════════════════════ */
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: var(--clr-red);
+  color: #fff;
+  padding: 8px 16px;
+  z-index: 9999;
+  font-family: var(--font-body);
+}
+.skip-link:focus { top: 0; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   11. NEON FLICKER SYSTEM
+   High-voltage loop animations — applied only to brand headlines,
+   titles, labels, nav items and Japanese subtitles. Never on body
+   copy, inputs, error states or utility UI.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@keyframes neonFlickerYellow {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    text-shadow:
+      0 0 8px  rgba(245,197,24,0.9),
+      0 0 20px rgba(245,197,24,0.6),
+      0 0 40px rgba(245,197,24,0.3);
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+    opacity: 0.45;
+  }
+}
+
+@keyframes neonFlickerRed {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    text-shadow:
+      0 0 6px  rgba(192,57,43,0.9),
+      0 0 16px rgba(192,57,43,0.6),
+      0 0 30px rgba(192,57,43,0.2);
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+    opacity: 0.5;
+  }
+}
+
+/* Filter-based variant for image elements (logos, etc.) */
+@keyframes neonFlickerYellowImg {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(245,197,24,0.9)) drop-shadow(0 0 18px rgba(245,197,24,0.45));
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    filter: brightness(0) invert(1);
+    opacity: 0.45;
+  }
+}
+
+@keyframes neonFlickerRedImg {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    filter: brightness(0) invert(1) drop-shadow(0 0 6px rgba(232,57,26,0.9)) drop-shadow(0 0 14px rgba(232,57,26,0.5));
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    filter: brightness(0) invert(1);
+    opacity: 0.5;
+  }
+}
+
+/* Base class — required for text-shadow + opacity on inline elements */
+.ht-neon { display: inline-block; }
+
+/* Reduce motion — kill all neon animations */
+@media (prefers-reduced-motion: reduce) {
+  [class*="ht-neon"],
+  [style*="neonFlicker"] {
+    animation: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+}
+
+.sr-only-focusable {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+  z-index: 10000;
+}
+.sr-only-focusable:focus,
+.sr-only-focusable:focus-visible {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  width: auto;
+  height: auto;
+  padding: 12px 20px;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  background: var(--clr-amber);
+  color: var(--clr-void);
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.18em;
+  border-radius: 40px;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(250,175,63,0.34);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   11. RESPONSIVE / MOBILE
+   iPhone-first: 320px → 380px → 540px → 600px → 768px → 900px
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Coarse pointer — enforce 44px minimum touch targets */
+@media (pointer: coarse) {
+  a, button, [role="button"], summary {
+    min-height: 44px;
+  }
+}
+
+/* Desktop: scroll snap available but off by default */
+@media (hover: hover) and (pointer: fine) and (min-width: 900px) {
+  html { scroll-snap-type: none; }
+  main > * { scroll-snap-align: start; scroll-snap-stop: normal; }
+}
+
+/* Tablet (≤ 900px): collapse denwacho tagline column */
+@media (max-width: 900px) {
+  .dw-row-grid {
+    grid-template-columns:
+      clamp(120px, 22vw, 200px)
+      minmax(0, 1fr)
+      auto;
+  }
+  .dw-header-grid {
+    grid-template-columns:
+      clamp(120px, 22vw, 200px)
+      minmax(0, 1fr)
+      auto;
+  }
+  .dw-col-tagline    { display: none; }
+  .dw-header-tagline { display: none; }
+}
+
+/* Mobile (≤ 768px): compressed hero scroll story */
+@media (max-width: 768px) {
+  section[aria-label='Hero — The Phone Call Story'] {
+    height: 220vh !important;
+  }
+}
+
+/* Mobile (≤ 600px): brand grid collapses to single column */
+@media (max-width: 600px) {
+  .ht-brand-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .ht-brand-desc {
+    align-items: flex-start;
+    text-align: left;
+    max-width: 100%;
+  }
+  .ht-meta-location {
+    letter-spacing: 0.32em !important;
+  }
+}
+
+/* Mobile (≤ 540px): denwacho index column hidden + typography rescue */
+@media (max-width: 540px) {
+  .dw-row-grid {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .dw-header-grid {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .dw-col-index    { display: none !important; }
+  .dw-header-index { display: none !important; }
+
+  /* TAN Nimbus has deep curves — relax negative tracking to prevent collisions */
+  h1, h2, h3,
+  [class*='ht-title'] {
+    letter-spacing: 0em !important;
+    word-spacing: 0.04em;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+  p {
+    overflow-wrap: break-word;
+  }
+}
+
+/* Ultra-small (≤ 380px): iPhone SE */
+@media (max-width: 380px) {
+  h1, h2, h3 {
+    letter-spacing: 0.01em !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   12. REDUCED MOTION
+   Single centralized block — respects OS prefers-reduced-motion.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  html { scroll-behavior: auto; }
+
+  .ht-grain-overlay,
+  .ht-grain-overlay::after {
+    animation: none !important;
+  }
+
+  .ht-hero-kenburns { animation: none !important; }
+
+  video[autoplay] {
+    animation: none !important;
+    visibility: visible;
+  }
+
+  .ht-st-img,
+  .ht-st-img-slow,
+  .ht-st-kanji,
+  .ht-st-h-left,
+  .ht-st-h-right,
+  .ht-st-scale,
+  .ht-st-reveal,
+  .ht-st-eyebrow,
+  .ht-st-headline,
+  .ht-st-pill,
+  .ht-st-cta {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  .ht-scroll-progress-bar { display: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   UX FIXES — Design Critique Fixes 4, 8, 9, 10, 11, 12, 16
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Fix 4 — Spaces tab keyboard focus */
+.spaces-tab-btn:focus-visible {
+  outline: 2px solid var(--clr-red);
+  outline-offset: 2px;
+}
+.spaces-tab-btn:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Fix 10 — Nav touch targets on mobile */
+@media (max-width: 768px) {
+  .ht-landing-nav-links .nav-link,
+  .ht-landing-nav-links button {
+    padding: 12px 0;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+/* Fix 1 — Mobile booking pill */
+.mobile-booking-pill {
+  display: none !important;
+}
+@media (max-width: 768px) {
+  .mobile-booking-pill {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Fix 11 — Screen-reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── O1: Space nav dot expanded hit area (WCAG 2.5.5) ────────────── */
+.space-nav-dot {
+  position: relative;
+  cursor: pointer;
+}
+.space-nav-dot::after {
+  content: '';
+  position: absolute;
+  inset: -19px;
+}
+
+/* ── O2: Footer touch targets (WCAG 2.5.5) ──────────────────────── */
+.footer-social-link,
+.footer-utility-link,
+.footer-contact-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 4px;
+}
+
+/* ── CC1: Active spaces tab text contrast (WCAG 1.4.3) ──────────── */
+/* Applied inline — white on #C83D20 = 4.56:1 ✅ */

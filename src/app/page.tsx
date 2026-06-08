@@ -1,0 +1,124 @@
+'use client';
+
+import { useState, useCallback } from 'react';
+import { useReducedMotion } from 'framer-motion';
+import Image from 'next/image';
+
+import LandingNav       from '@/components/LandingNav';
+import AnnouncementBar  from '@/components/AnnouncementBar';
+import ReservationModal from '@/components/ReservationModal';
+import Footer           from '@/components/Footer';
+import StorySection           from '@/components/StorySection';
+import MenuGrid               from '@/components/MenuGrid';
+import SpaceSection           from '@/components/SpaceSection';
+import LandingHero            from '@/components/LandingHero';
+import AboutOfferings         from '@/components/AboutOfferings';
+import FormFunction           from '@/components/FormFunction';
+import { BookingPill }        from '@/components/BookingPill';
+
+/* ─── Page ────────────────────────────────────────────────────────── */
+export default function Page() {
+  const [modalOpen, setModalOpen] = useState(false);
+  const reduceMotion = !!useReducedMotion();
+
+  const openReserve = useCallback(() => setModalOpen(true), []);
+  const scrollTo    = useCallback((id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const NAV_OFFSET = 96; // clear the 88px sticky header + breathing room
+    const top = el.getBoundingClientRect().top + window.scrollY - NAV_OFFSET;
+    const lenis = window.__lenis;
+    if (lenis) {
+      // Lenis controls scroll — use its API so it doesn't fight scrollIntoView
+      lenis.scrollTo(top, { duration: 1.1 });
+    } else {
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  }, []);
+
+  return (
+    <>
+      <a href="#hero" className="sr-only-focusable">SKIP TO MAIN CONTENT</a>
+
+      <LandingNav onReserve={openReserve} onScrollTo={scrollTo} />
+
+      <main style={{ background: 'var(--clr-void)', display: 'flex', flexDirection: 'column' }}>
+        <h1 className="sr-only">Hey Tiger — Bar &amp; Restaurant, Motor City Dubai</h1>
+        <LandingHero
+          onReserve={openReserve}
+          onExplore={() => scrollTo('story')}
+        />
+
+        <AboutOfferings reduceMotion={reduceMotion} />
+
+        <StorySection   reduceMotion={reduceMotion} />
+        <MenuGrid />
+        <BookingBand id="booking-band-1" jp="予約" headline="READY TO ORDER?" onReserve={openReserve} microcopy="Reserve for tonight — the kitchen's waiting." />
+        <FormFunction   reduceMotion={reduceMotion} />
+        <SpaceSection   reduceMotion={reduceMotion} />
+        <BookingBand id="booking-band-2" jp="お席へ" headline="FOUND YOUR ROOM?" onReserve={openReserve} sticker="/sticker4.png" stickerWhite microcopy="Reserve your room. We hold it for you." />
+
+      </main>
+
+      <Footer onReserve={openReserve} />
+
+      <BookingPill onOpen={openReserve} modalOpen={modalOpen} />
+      {modalOpen && <ReservationModal onClose={() => setModalOpen(false)} />}
+    </>
+  );
+}
+
+/* ─── Booking band — primary CTA anchor (after menu, after spaces) ──── */
+function BookingBand({ id, jp, headline, onReserve, sticker, stickerWhite, microcopy }: { id?: string; jp: string; headline: string; onReserve: () => void; sticker?: string; stickerWhite?: boolean; microcopy?: string }) {
+  return (
+    <section
+      id={id}
+      aria-label="Book a table"
+      style={{
+        background: 'var(--clr-void)',
+        borderTop: '1px solid var(--border-structural)',
+        borderBottom: '1px solid var(--border-structural)',
+        padding: 'clamp(28px, 4vw, 48px) var(--space-section-x)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 'clamp(20px, 3vw, 44px)',
+        flexWrap: 'wrap',
+        textAlign: 'center',
+      }}
+    >
+      {sticker && (
+        <Image
+          src={sticker}
+          alt=""
+          width={120}
+          height={100}
+          unoptimized
+          style={{ width: 'clamp(72px, 7vw, 120px)', height: 'auto', flexShrink: 0, filter: stickerWhite ? 'brightness(0) invert(1)' : undefined }}
+        />
+      )}
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <span lang="ja" style={{ fontFamily: 'var(--font-jp)', fontSize: 'clamp(20px, 2.4vw, 30px)', fontWeight: 700, color: 'var(--clr-red)' }}>{jp}</span>
+        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 'clamp(22px, 3vw, 38px)', letterSpacing: 'var(--tracking-tight)', color: 'var(--clr-cream)', lineHeight: 1 }}>{headline}</span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+        <button
+          onClick={onReserve}
+          style={{
+            background: 'var(--clr-red)', color: 'var(--clr-void)', border: 0, borderRadius: '999px',
+            padding: '15px 34px', minHeight: '44px', cursor: 'pointer',
+            fontFamily: 'var(--font-body)', fontSize: 'var(--text-label)', fontWeight: 900,
+            letterSpacing: '0.32em', textTransform: 'uppercase', transition: 'background var(--dur-fast) var(--ease-standard)',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'var(--clr-red-dim)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'var(--clr-red)'; }}
+        >
+          BOOK A TABLE
+        </button>
+        <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-micro)', letterSpacing: '0.04em', color: 'rgba(245,239,224,0.4)' }}>
+          {microcopy ?? 'Dinner, drinks & brunch reservations.'}
+        </span>
+      </div>
+    </section>
+  );
+}

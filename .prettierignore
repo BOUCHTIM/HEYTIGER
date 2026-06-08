@@ -1,0 +1,3 @@
+# Prevent auto-formatting from overwriting hand-crafted files
+src/app/page.tsx
+src/components/Nav.tsx
