@@ -992,7 +992,7 @@ textarea:focus-visible {
   font-weight: 800;
   font-size: 14px;
   letter-spacing: 0.18em;
-  border-radius: 40px;
+  border-radius: 0;
   text-decoration: none;
   box-shadow: 0 8px 24px rgba(250,175,63,0.34);
 }
