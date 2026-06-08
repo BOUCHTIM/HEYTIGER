@@ -86,6 +86,8 @@ function ActPanel({ act, index, reduceMotion }: {
     >
       {/* ── Background image ── */}
       <Image
+        string="parallax"
+        className="ht-st-img-slow"
         src={act.imgSrc}
         alt=""
         fill
@@ -304,7 +306,10 @@ export default function StorySection({ reduceMotion }: { reduceMotion: boolean }
     <section id="story" aria-label="The Story" style={{ background: 'var(--clr-void)' }}>
 
       {/* Section header */}
-      <div style={{
+      <div
+        string="parallax"
+        className="ht-st-eyebrow"
+        style={{
         padding:       'clamp(28px, 4vw, 48px) clamp(24px, 5vw, 64px) clamp(20px, 2.5vw, 32px)',
         display:       'flex',
         alignItems:    'baseline',

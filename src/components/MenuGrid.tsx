@@ -127,6 +127,8 @@ export default function MenuGrid() {
 
       {/* ── Section header ── */}
       <motion.div
+        string="parallax"
+        className="ht-st-headline menu-header"
         initial={{ opacity: 0, y: 28 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.7 }}
@@ -142,7 +144,6 @@ export default function MenuGrid() {
           borderRadius: 0,
           overflow: 'hidden',
         }}
-        className="menu-header"
       >
 
         <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 3 }}>
