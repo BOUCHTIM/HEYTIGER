@@ -6,6 +6,7 @@
 import 'react';
 
 declare module 'react' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface HTMLAttributes<T> {
     /** StringTune module selector: "parallax" | "progress" | "scrollbar" | "lazy" */
     string?: string;

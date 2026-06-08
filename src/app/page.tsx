@@ -5,7 +5,6 @@ import { useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 
 import LandingNav       from '@/components/LandingNav';
-import AnnouncementBar  from '@/components/AnnouncementBar';
 import ReservationModal from '@/components/ReservationModal';
 import Footer           from '@/components/Footer';
 import StorySection           from '@/components/StorySection';

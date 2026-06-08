@@ -10,7 +10,6 @@ import Image from 'next/image';
 
 
 const YELLOW  = '#F5C518';
-const RED     = 'var(--clr-red)';
 const MUTED   = '#9a8070';
 
 const OFFERINGS = [

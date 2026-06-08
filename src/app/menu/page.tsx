@@ -35,15 +35,7 @@ interface MenuCategory {
   items: MenuItem[];
 }
 
-/* ─── Tag styles ───────────────────────────────────────────────────────── */
-const TAG_STYLES: Record<Tag, { bg: string; color: string; label: string }> = {
-  SIGNATURE: { bg: 'rgba(200,61,32,0.18)', color: '#C83D20', label: 'SIGNATURE' },
-  CHEF:      { bg: 'rgba(200,61,32,0.12)', color: '#C83D20', label: "CHEF'S FAV" },
-  NEW:       { bg: 'rgba(240,235,216,0.1)', color: '#C8B890', label: 'NEW' },
-  VEGAN:     { bg: 'rgba(74,94,50,0.35)',  color: '#8FA882', label: 'PLANT' },
-  SPICY:     { bg: 'rgba(200,61,32,0.12)', color: '#C83D20', label: '🌶 SPICY' },
-  PREMIUM:   { bg: 'rgba(240,235,216,0.12)', color: '#F0EBD8', label: '✦ PREMIUM' },
-};
+
 
 /* ─── Dietary labels styling ───────────────────────────────────────────── */
 const DIETARY_LABELS: Record<string, { label: string; color: string; bg: string }> = {

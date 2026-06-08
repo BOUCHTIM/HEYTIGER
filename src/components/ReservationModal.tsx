@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 
@@ -73,22 +73,22 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
   const [confirmationNum, setConfirmationNum] = useState('');
 
   // Reset form state when modal closes
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setStep(1);
     setMaxUnlockedStep(1);
     setForm(defaultForm);
     setErrors({});
     setConfirmationNum('');
     onClose();
-  };
+  }, [onClose]);
 
-  const resetReservation = () => {
+  const resetReservation = useCallback(() => {
     setStep(1);
     setMaxUnlockedStep(1);
     setForm(defaultForm);
     setErrors({});
     setConfirmationNum('');
-  };
+  }, []);
 
   const goToStep = (targetStep: Step) => {
     if (targetStep <= maxUnlockedStep) {
