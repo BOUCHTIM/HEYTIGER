@@ -1,4 +1,4 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# See https://help.github.com/articles/ignoring-files for more about ignoring files.
 
 # dependencies
 /node_modules
@@ -42,3 +42,11 @@ next-env.d.ts
 
 # large files
 public/textures/Film-Grain-Textures-FREE-Pack-8K.zip
+
+# temp/dev folders
+.claude
+.dbg
+.firecrawl
+HEYTIGER NEW ASSETS
+hitigerassets
+design-handoff
