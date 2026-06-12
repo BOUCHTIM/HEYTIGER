@@ -64,47 +64,49 @@ function BookingBand({ id, jp, headline, onReserve, sticker, stickerWhite, micro
       id={id}
       aria-label="Book a table"
       style={{
-        background: 'var(--clr-void)',
-        borderTop: '1px solid var(--border-structural)',
-        borderBottom: '1px solid var(--border-structural)',
-        padding: 'clamp(28px, 4vw, 48px) var(--space-section-x)',
+        background: 'var(--clr-red)',
+        borderTop: '1px solid rgba(255,255,255,0.1)',
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        padding: 'clamp(40px, 6vw, 64px) var(--space-section-x)',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        gap: 'clamp(20px, 3vw, 44px)',
+        justifyContent: 'space-between',
+        gap: 'clamp(24px, 4vw, 48px)',
         flexWrap: 'wrap',
-        textAlign: 'center',
       }}
     >
-      {sticker && (
-        <Image
-          src={sticker}
-          alt=""
-          width={120}
-          height={100}
-          unoptimized
-          style={{ width: 'clamp(72px, 7vw, 120px)', height: 'auto', flexShrink: 0, filter: stickerWhite ? 'brightness(0) invert(1)' : undefined }}
-        />
-      )}
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <span lang="ja" style={{ fontFamily: 'var(--font-jp)', fontSize: 'clamp(20px, 2.4vw, 30px)', fontWeight: 700, color: 'var(--clr-red)' }}>{jp}</span>
-        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 'clamp(22px, 3vw, 38px)', letterSpacing: 'var(--tracking-tight)', color: 'var(--clr-cream)', lineHeight: 1 }}>{headline}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+        {sticker && (
+          <Image
+            src={sticker}
+            alt=""
+            width={120}
+            height={100}
+            unoptimized
+            style={{ width: 'clamp(72px, 7vw, 120px)', height: 'auto', flexShrink: 0, filter: stickerWhite ? 'brightness(0) invert(1)' : undefined }}
+          />
+        )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <span lang="ja" style={{ fontFamily: 'var(--font-jp)', fontSize: 'clamp(18px, 2vw, 24px)', fontWeight: 700, color: 'rgba(10,8,8,0.7)' }}>{jp}</span>
+          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 'clamp(28px, 4vw, 52px)', letterSpacing: '-0.02em', color: 'var(--clr-void)', lineHeight: 1 }}>{headline}</span>
+        </div>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+      
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px' }}>
         <button
           onClick={onReserve}
           style={{
-            background: 'var(--clr-red)', color: 'var(--clr-void)', border: 0, borderRadius: 0,
-            padding: '15px 34px', minHeight: '44px', cursor: 'pointer',
+            background: 'var(--clr-void)', color: 'var(--clr-red)', border: '2px solid var(--clr-void)', borderRadius: 0,
+            padding: '16px 40px', minHeight: '56px', cursor: 'pointer',
             fontFamily: 'var(--font-body)', fontSize: 'var(--text-label)', fontWeight: 900,
-            letterSpacing: '0.32em', textTransform: 'uppercase', transition: 'background var(--dur-fast) var(--ease-standard)',
+            letterSpacing: '0.4em', textTransform: 'uppercase', transition: 'all 0.15s ease',
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'var(--clr-red-dim)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'var(--clr-red)'; }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,8,8,0.85)'; e.currentTarget.style.borderColor = 'var(--clr-void)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'var(--clr-void)'; e.currentTarget.style.borderColor = 'var(--clr-void)'; }}
         >
           BOOK TABLE
         </button>
-        <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-micro)', letterSpacing: '0.04em', color: 'rgba(245,239,224,0.4)' }}>
+        <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-micro)', letterSpacing: '0.12em', color: 'rgba(10,8,8,0.6)', fontWeight: 700 }}>
           {microcopy ?? 'Dinner, drinks & brunch reservations.'}
         </span>
       </div>
