@@ -29,6 +29,7 @@
     "string-tune-3d": "^0.0.13",
     "tailwind-merge": "^3.6.0",
     "three": "^0.184.0",
+    "vercel": "^54.12.2",
     "zod": "^4.1.9"
   },
   "devDependencies": {
