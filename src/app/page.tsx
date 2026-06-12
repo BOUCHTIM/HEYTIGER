@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 
@@ -9,29 +9,26 @@ import Footer           from '@/components/Footer';
 import StorySection           from '@/components/StorySection';
 import MenuGrid               from '@/components/MenuGrid';
 import SpaceSection           from '@/components/SpaceSection';
-import LandingHero            from '@/components/LandingHero';
-import AboutOfferings         from '@/components/AboutOfferings';
-import FormFunction           from '@/components/FormFunction';
-import { BookingPill }        from '@/components/BookingPill';
+import HeroCinematic         from '@/components/HeroCinematic';
+import AboutOfferingsRedesign from '@/components/AboutOfferingsRedesign';
+
+
 
 /* ─── Page ────────────────────────────────────────────────────────── */
 export default function Page() {
   const [modalOpen, setModalOpen] = useState(false);
   const reduceMotion = !!useReducedMotion();
 
-  const openReserve = useCallback(() => setModalOpen(true), []);
-  const scrollTo    = useCallback((id: string) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const top = el.getBoundingClientRect().top + window.scrollY;
-    const lenis = window.__lenis;
+  // Scroll to top on initial load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const lenis = (window as any).lenis;
     if (lenis) {
-      // Lenis controls scroll — use its API so it doesn't fight scrollIntoView
-      lenis.scrollTo(top, { duration: 1.1 });
-    } else {
-      window.scrollTo({ top, behavior: 'smooth' });
+      lenis.scrollTo(0, { immediate: true });
     }
   }, []);
+
+  const openReserve = useCallback(() => setModalOpen(true), []);
 
   return (
     <>
@@ -39,17 +36,15 @@ export default function Page() {
 
       <main style={{ background: 'var(--clr-void)', display: 'flex', flexDirection: 'column' }}>
         <h1 className="sr-only">Hey Tiger — Bar &amp; Restaurant, Motor City Dubai</h1>
-        <LandingHero
-          onReserve={openReserve}
-          onExplore={() => scrollTo('story')}
-        />
+        <HeroCinematic />
 
-        <AboutOfferings reduceMotion={reduceMotion} />
+        {/* Scroll target for the hero's "EXPLORE" link */}
+        <div id="explore" aria-hidden="true" />
+        <AboutOfferingsRedesign reduceMotion={reduceMotion} onReserve={openReserve} />
 
         <StorySection   reduceMotion={reduceMotion} />
         <MenuGrid />
         <BookingBand id="booking-band-1" jp="予約" headline="READY TO ORDER?" onReserve={openReserve} microcopy="Reserve for tonight — the kitchen's waiting." />
-        <FormFunction   reduceMotion={reduceMotion} />
         <SpaceSection   reduceMotion={reduceMotion} />
         <BookingBand id="booking-band-2" jp="お席へ" headline="FOUND YOUR ROOM?" onReserve={openReserve} sticker="/sticker4.png" stickerWhite microcopy="Reserve your room. We hold it for you." />
 
@@ -57,7 +52,7 @@ export default function Page() {
 
       <Footer onReserve={openReserve} />
 
-      <BookingPill onOpen={openReserve} modalOpen={modalOpen} />
+
       {modalOpen && <ReservationModal onClose={() => setModalOpen(false)} />}
     </>
   );

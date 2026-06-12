@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@fiddle-digital/string-tune": "^1.2.0",
     "@paper-design/shaders-react": "^0.0.76",
     "@radix-ui/react-slot": "^1.2.4",
     "@shadergradient/react": "^2.4.20",
@@ -23,7 +24,9 @@
     "qrcode.react": "^4.2.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "string-tune-3d": "^0.0.13",
     "tailwind-merge": "^3.6.0",
+    "three": "^0.184.0",
     "zod": "^4.1.9"
   },
   "devDependencies": {

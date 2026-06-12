@@ -1,737 +1,835 @@
 'use client';
 
+/**
+ * MenuGrid — Japanese Fan (扇子 / Sensu) menu preview
+ *
+ * Motion approach: Framer Motion spring physics
+ * - Shared pivot point at blade bottoms (transform-origin: bottom center)
+ * - Left-to-right stagger (100ms per blade) mimics flicking a fan open
+ * - Spring stiffness 58 / damping 11 / mass 0.8 → 2-3° natural overshoot + settle
+ * - Hover: stiffer spring (150/18) for tactile response, blade lifts ~14% toward centre
+ * - Other blades dim to 42% opacity on any-active state
+ * - AnimatePresence cross-fades the detail panel between chapters
+ * - Reduced-motion: static 3×2 card grid, no animation
+ */
+
 import { useRef, useState } from 'react';
-import { motion, useInView, useReducedMotion } from 'framer-motion';
+import {
+  motion,
+  useInView,
+  useReducedMotion,
+  AnimatePresence,
+} from 'framer-motion';
 import Link from 'next/link';
-import Image from 'next/image';
-import { QRCodeCanvas } from 'qrcode.react';
 
-/* ─── Category data ───────────────────────────────────────────────────── */
-const MENU_QR_URL = 'https://heytigerdubai.com/menu';
+/* ─── chapter data ──────────────────────────────────────────── */
+const CHAPTERS = [
+  {
+    num: '01', title: 'ROBATA',    jp: '炉端焼き', sub: 'Binchotan Fire',
+    dishes: ['A5 Wagyu Skewer', 'Miso Black Cod', 'Tiger Bone Marrow'],
+    price: 'From AED 65',  slug: 'robata',
+    bg: 'linear-gradient(175deg,#401C0C 0%,#1A0806 100%)',
+  },
+  {
+    num: '02', title: 'IZAKAYA',   jp: '居酒屋',   sub: 'Share the Table',
+    dishes: ['Wagyu Gyoza', 'Truffle Karaage', 'Crispy Rice Stack'],
+    price: 'From AED 65',  slug: 'izakaya',
+    bg: 'linear-gradient(175deg,#3A1A0A 0%,#170705 100%)',
+  },
+  {
+    num: '03', title: 'SUSHI BAR', jp: '鮨バー',   sub: 'Ocean-First',
+    dishes: ['Omakase Nigiri', 'RAAAAAR Roll', 'Toro Tartare'],
+    price: 'From AED 110', slug: 'sushi-bar',
+    bg: 'linear-gradient(175deg,#361809 0%,#150604 100%)',
+  },
+  {
+    num: '04', title: 'RAMEN',     jp: '拉麺',     sub: 'Late-Night Craving',
+    dishes: ['Tiger Broth', 'Red Dragon', 'Cold Tiger'],
+    price: 'AED 145 — 185', slug: 'ramen',
+    bg: 'linear-gradient(175deg,#361809 0%,#150604 100%)',
+  },
+  {
+    num: '05', title: 'COCKTAILS', jp: 'カクテル', sub: '47 Sake Labels',
+    dishes: ['Tokyo Negroni', 'The Cage', 'RAAAAAR'],
+    price: 'AED 130 — 180', slug: 'cocktails',
+    bg: 'linear-gradient(175deg,#3A1A0A 0%,#170705 100%)',
+  },
+  {
+    num: '06', title: 'DESSERTS',  jp: '甘味',     sub: 'No Portion Control',
+    dishes: ['Miso Lava Cake', 'Black Sesame Parfait', 'Yuzu Cheesecake'],
+    price: 'AED 75 — 95',  slug: 'desserts',
+    bg: 'linear-gradient(175deg,#401C0C 0%,#1A0806 100%)',
+  },
+] as const;
 
-const CATEGORIES = [
-  {
-    num: '01',
-    id: 'izakaya',
-    title: 'IZAKAYA',
-    jp: '居酒屋',
-    kanji: '食',
-    sub: 'Pass it around the table',
-    dishes: 'Wagyu gyoza · Truffle karaage · Crispy rice',
-    desc: 'Wagyu gyoza. Crispy rice. Truffle karaage. Built to be passed around the table until someone asks for more.',
-    range: 'AED 65–210',
-    accent: 'var(--clr-red)',
-    photo: { src: '/images/spaces/dining.jpg', objectPosition: 'center 50%' },
-  },
-  {
-    num: '02',
-    id: 'robata',
-    title: 'ROBATA',
-    jp: '炉端焼き',
-    kanji: '炎',
-    sub: 'Built over real fire',
-    dishes: 'A5 wagyu skewers · Miso black cod · Tiger prawn',
-    desc: 'A5 wagyu skewers. Miso black cod. Tiger prawn kushiyaki. Over binchotan — nothing in between fire and flavour.',
-    range: 'AED 65–320',
-    accent: 'var(--clr-red)',
-    photo: { src: '/images/spaces/bar.jpg', objectPosition: 'center 50%' },
-  },
-  {
-    num: '03',
-    id: 'ramen',
-    title: 'RAMEN',
-    jp: '拉麺',
-    kanji: '麺',
-    sub: 'Open after midnight',
-    dishes: 'Tiger Broth · Red Dragon · Cold Tiger',
-    desc: 'Tiger Broth. Red Dragon. Cold Tiger. Broths built on bone and time. The Den opens at 7:30. The broth never stopped.',
-    range: 'AED 145–185',
-    accent: 'var(--clr-red)',
-    photo: { src: '/images/spaces/den.jpg', objectPosition: 'center 46%' },
-  },
-  {
-    num: '04',
-    id: 'sushi',
-    title: 'SUSHI BAR',
-    jp: '鮨バー',
-    kanji: '鮨',
-    sub: 'Ocean decides the menu',
-    dishes: 'Omakase nigiri · The RAAAAAAR Roll · Sashimi',
-    desc: 'Omakase nigiri. The RAAAAAAR Roll — wagyu, foie gras, gold leaf. Premium sashimi, freshly grated wasabi. The ocean decides.',
-    range: 'AED 110–420',
-    accent: 'var(--clr-red)',
-    photo: { src: '/images/spaces/dining-night.jpg', objectPosition: 'center 48%' },
-  },
-  {
-    num: '05',
-    id: 'cocktails',
-    title: 'COCKTAILS',
-    jp: 'カクテル',
-    kanji: '酒',
-    sub: 'Eight originals. One for you.',
-    dishes: 'RAAAAAAR · Tokyo Negroni · VOID',
-    desc: 'RAAAAAAR. Tokyo Negroni. VOID — after 10PM only. Eight originals that tell eight different stories. One of them is yours.',
-    range: 'AED 130–180',
-    accent: 'var(--clr-red)',
-    photo: { src: '/images/spaces/terrace-night.jpg', objectPosition: 'center 50%' },
-  },
-  {
-    num: '06',
-    id: 'desserts',
-    title: 'DESSERTS',
-    jp: '甘味',
-    kanji: '甘',
-    sub: 'No portion control here',
-    dishes: 'Miso lava cake · Black sesame cheesecake · Matcha tiramisu',
-    desc: 'Miso caramel lava cake. Black sesame cheesecake. Matcha tiramisu. No apologies. No portion control.',
-    range: 'AED 75–95',
-    accent: 'var(--clr-red)',
-    photo: { src: '/images/spaces/terrace-day.jpg', objectPosition: 'center 50%' },
-  },
-];
+type Chapter = (typeof CHAPTERS)[number];
 
-/* ─── Component ───────────────────────────────────────────────────────── */
+/* ─── fan geometry ──────────────────────────────────────────── */
+// Total arc: 110° symmetric (-55° … +55°) from vertical
+const FINAL_ANGLES  = [-55, -33, -11, 11, 33, 55] as const;
+// Stagger delays: left → right (like flicking a fan open with the right hand)
+const DELAYS        = [0, 0.10, 0.20, 0.30, 0.40, 0.50] as const;
+
+const BW = 182;   // blade width  (px)
+const BH = 428;   // blade height (px) — pivot at bottom centre
+
+// Trapezoid clip-path: full width at top, pinched to 26 px at pivot
+const BLADE_CLIP = `polygon(0% 0%, 100% 0%, calc(50% + 13px) 100%, calc(50% - 13px) 100%)`;
+
+/* ─── sub-components ─────────────────────────────────────────── */
+
+/** Single lacquered fan blade */
+function FanBlade({
+  chapter,
+  index,
+  inView,
+  isActive,
+  anyActive,
+  onEnter,
+  onLeave,
+}: {
+  chapter: Chapter;
+  index: number;
+  inView: boolean;
+  isActive: boolean;
+  anyActive: boolean;
+  onEnter: () => void;
+  onLeave: () => void;
+}) {
+  const angle  = FINAL_ANGLES[index];
+  // Active blade lifts 14% toward centre — subtle but perceptible
+  const target = isActive ? angle * 0.86 : angle;
+
+  return (
+    <motion.div
+      style={{
+        position:        'absolute',
+        bottom:          0,
+        left:            `calc(50% - ${BW / 2}px)`,
+        width:           BW,
+        height:          BH,
+        transformOrigin: 'bottom center',
+        clipPath:        BLADE_CLIP,
+        zIndex:          isActive ? 20 : index + 1,
+        cursor:          'pointer',
+        // Lacquered panel finish
+        background:      chapter.bg,
+        // drop-shadow follows clip-path shape — casts depth onto blade behind
+        filter:          `drop-shadow(-3px 0 14px rgba(5,2,1,0.68))`,
+      }}
+      initial={{ rotate: 0, opacity: 0 }}
+      animate={{
+        rotate:  inView ? target : 0,
+        opacity: inView ? (anyActive && !isActive ? 0.42 : 1) : 0,
+      }}
+      transition={{
+        rotate: {
+          type:      'spring',
+          stiffness: isActive ? 150 : 58,
+          damping:   isActive ? 18  : 11,
+          mass:      0.8,
+          // Only use stagger on the initial fan-open; not on hover transitions
+          delay:     anyActive ? 0 : (inView ? DELAYS[index] : 0),
+        },
+        opacity: {
+          duration: 0.3,
+          delay:    anyActive ? 0 : (inView ? DELAYS[index] + 0.15 : 0),
+        },
+      }}
+      onHoverStart={onEnter}
+      onHoverEnd={onLeave}
+    >
+      {/* Accessible link — entire blade is the click target */}
+      <Link
+        href={`/menu#${chapter.slug}`}
+        aria-label={`Chapter ${chapter.num}: ${chapter.title} — ${chapter.sub}`}
+        style={{
+          display:        'block',
+          width:          '100%',
+          height:         '100%',
+          position:       'relative',
+          textDecoration: 'none',
+          outline:        'none',
+        }}
+        onFocus={onEnter}
+        onBlur={onLeave}
+      >
+        {/* Brass / gold edge shimmer — brighter against cooler bg */}
+        <div
+          aria-hidden="true"
+          style={{
+            position:   'absolute',
+            inset:       0,
+            background: 'linear-gradient(to right, rgba(210,168,60,0.28) 0px, transparent 12px, transparent calc(100% - 12px), rgba(210,168,60,0.28) 100%)',
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* Lacquer sheen — bright hairline highlight at blade tip */}
+        <div
+          aria-hidden="true"
+          style={{
+            position:   'absolute',
+            top: 0, left: '8%', right: '8%',
+            height:     '1px',
+            background: `linear-gradient(to right, transparent, rgba(225,182,72,${isActive ? 0.85 : 0.62}), transparent)`,
+            transition: 'background 0.25s ease',
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* Ghost chapter number — texture layer, bottom half */}
+        <div
+          aria-hidden="true"
+          style={{
+            position:    'absolute',
+            bottom:      '6%',
+            left:        '50%',
+            transform:   'translateX(-50%)',
+            fontFamily:  'var(--font-display)',
+            fontWeight:   900,
+            fontSize:    `${Math.round(BW * 0.68)}px`,
+            lineHeight:   1,
+            color:       `rgba(200,61,32,${isActive ? 0.11 : 0.07})`,
+            letterSpacing: '-0.04em',
+            userSelect:  'none',
+            pointerEvents: 'none',
+            whiteSpace:  'nowrap',
+            transition:  'color 0.3s ease',
+          }}
+        >
+          {chapter.num}
+        </div>
+
+        {/* Vertical content column — JP + chapter number */}
+        <div
+          style={{
+            position:      'absolute',
+            top:            '10%',
+            bottom:         '20%',
+            left:           '50%',
+            transform:      'translateX(-50%)',
+            display:        'flex',
+            flexDirection:  'column',
+            alignItems:     'center',
+            gap:             6,
+            pointerEvents:  'none',
+          }}
+        >
+          {/* Japanese characters — vertical writing */}
+          <span
+            lang="ja"
+            style={{
+              fontFamily:      'var(--font-jp)',
+              fontSize:         13,
+              fontWeight:       700,
+              color:           `rgba(200,61,32,${isActive ? 0.95 : 0.5})`,
+              writingMode:     'vertical-rl',
+              textOrientation: 'mixed',
+              letterSpacing:   '0.08em',
+              lineHeight:       1.3,
+              transition:      'color 0.25s ease',
+            }}
+          >
+            {chapter.jp}
+          </span>
+
+          {/* Brass divider */}
+          <div
+            aria-hidden="true"
+            style={{
+              width:      1,
+              height:     20,
+              flexShrink: 0,
+              background: `rgba(212,162,48,${isActive ? 0.70 : 0.24})`,
+              transition: 'background 0.25s ease',
+            }}
+          />
+
+          {/* Chapter number label */}
+          <span
+            style={{
+              fontFamily:      'var(--font-body)',
+              fontSize:         9,
+              fontWeight:       900,
+              letterSpacing:   '0.38em',
+              color:           `rgba(200,61,32,${isActive ? 0.9 : 0.4})`,
+              writingMode:     'vertical-rl',
+              textOrientation: 'mixed',
+              transition:      'color 0.25s ease',
+            }}
+          >
+            {chapter.num}
+          </span>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
+
+/** Chapter detail panel — cross-fades above the fan */
+function ChapterDetail({ chapter }: { chapter: Chapter }) {
+  return (
+    <motion.div
+      key={chapter.num}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -6 }}
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.3, 1] }}
+      style={{ textAlign: 'center' }}
+    >
+      {/* Eyebrow */}
+      <div
+        style={{
+          display:        'flex',
+          alignItems:     'center',
+          justifyContent: 'center',
+          gap:             12,
+          marginBottom:    12,
+        }}
+      >
+        <span
+          style={{
+            fontFamily:    'var(--font-body)',
+            fontSize:       10,
+            fontWeight:     900,
+            letterSpacing: '0.44em',
+            color:         'var(--clr-red)',
+            textTransform: 'uppercase',
+          }}
+        >
+          {chapter.num}
+        </span>
+        <span style={{ width: 28, height: 1, background: 'rgba(200,61,32,0.35)', display:'block', flexShrink:0 }} />
+        <span
+          style={{
+            fontFamily:    'var(--font-body)',
+            fontSize:       10,
+            fontWeight:     700,
+            letterSpacing: '0.24em',
+            color:         'rgba(240,235,216,0.36)',
+            textTransform: 'uppercase',
+          }}
+        >
+          {chapter.sub}
+        </span>
+      </div>
+
+      {/* Title + JP */}
+      <div
+        style={{
+          display:        'flex',
+          alignItems:     'baseline',
+          justifyContent: 'center',
+          gap:            'clamp(8px,1.5vw,18px)',
+          flexWrap:       'wrap',
+          marginBottom:    14,
+        }}
+      >
+        <h3
+          style={{
+            margin:        0,
+            fontFamily:    'var(--font-display)',
+            fontWeight:     900,
+            fontSize:      'clamp(32px,4.2vw,60px)',
+            letterSpacing: '-0.025em',
+            lineHeight:     1,
+            color:         'var(--clr-cream)',
+            textTransform: 'uppercase',
+          }}
+        >
+          {chapter.title}
+        </h3>
+        <span
+          lang="ja"
+          style={{
+            fontFamily:  'var(--font-jp)',
+            fontSize:    'clamp(13px,1.7vw,20px)',
+            fontWeight:   700,
+            color:       'var(--clr-red)',
+            opacity:      0.9,
+            letterSpacing:'0.1em',
+          }}
+        >
+          {chapter.jp}
+        </span>
+      </div>
+
+      {/* Signature dishes */}
+      <div
+        style={{
+          display:        'flex',
+          justifyContent: 'center',
+          gap:            'clamp(14px,2.5vw,32px)',
+          flexWrap:       'wrap',
+          marginBottom:    10,
+        }}
+      >
+        {chapter.dishes.map(d => (
+          <span
+            key={d}
+            style={{
+              fontFamily:    'var(--font-body)',
+              fontSize:      'clamp(10px,0.9vw,12px)',
+              letterSpacing: '0.16em',
+              color:         'rgba(240,235,216,0.56)',
+              textTransform: 'uppercase',
+            }}
+          >
+            {d}
+          </span>
+        ))}
+      </div>
+
+      {/* Price cue */}
+      <span
+        style={{
+          fontFamily:    'var(--font-body)',
+          fontSize:       10,
+          fontWeight:     700,
+          letterSpacing: '0.24em',
+          color:         'rgba(240,235,216,0.26)',
+          textTransform: 'uppercase',
+        }}
+      >
+        {chapter.price}
+      </span>
+    </motion.div>
+  );
+}
+
+/** Reduced-motion fallback — accessible static grid */
+function StaticGrid() {
+  return (
+    <div>
+      <div
+        style={{
+          display:             'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+          gap:                  '1px',
+          background:          'rgba(240,235,216,0.07)',
+          border:              '1px solid rgba(240,235,216,0.07)',
+        }}
+      >
+        {CHAPTERS.map(ch => (
+          <Link
+            key={ch.num}
+            href={`/menu#${ch.slug}`}
+            style={{
+              display:        'flex',
+              flexDirection:  'column',
+              padding:        'clamp(28px,4vw,44px) clamp(24px,3.5vw,36px)',
+              background:      ch.bg,
+              textDecoration: 'none',
+              gap:             12,
+            }}
+          >
+            <span
+              style={{
+                fontFamily:    'var(--font-body)',
+                fontSize:       10,
+                fontWeight:     900,
+                letterSpacing: '0.4em',
+                color:         'var(--clr-red)',
+                textTransform: 'uppercase',
+              }}
+            >
+              {ch.num}
+            </span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+              <span
+                style={{
+                  fontFamily:    'var(--font-display)',
+                  fontWeight:     900,
+                  fontSize:      'clamp(22px,2.4vw,32px)',
+                  letterSpacing: '-0.02em',
+                  color:         'var(--clr-cream)',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {ch.title}
+              </span>
+              <span
+                lang="ja"
+                style={{
+                  fontFamily:  'var(--font-jp)',
+                  fontSize:     14,
+                  fontWeight:   700,
+                  color:       'var(--clr-red)',
+                  opacity:      0.85,
+                }}
+              >
+                {ch.jp}
+              </span>
+            </div>
+            <span
+              style={{
+                fontFamily:    'var(--font-body)',
+                fontSize:      'clamp(11px,1vw,13px)',
+                letterSpacing: '0.04em',
+                color:         'rgba(240,235,216,0.5)',
+                lineHeight:     1.55,
+              }}
+            >
+              {ch.dishes.join(' · ')}
+            </span>
+            <span
+              style={{
+                fontFamily:    'var(--font-body)',
+                fontSize:       10,
+                fontWeight:     700,
+                letterSpacing: '0.22em',
+                color:         'rgba(240,235,216,0.26)',
+                textTransform: 'uppercase',
+                marginTop:      4,
+              }}
+            >
+              {ch.price}
+            </span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── main export ────────────────────────────────────────────── */
 export default function MenuGrid() {
-  const ref = useRef<HTMLElement>(null);
-  const inView = useInView(ref, { once: true, margin: '-6% 0px' });
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const reduceMotion = !!useReducedMotion();
+  const sectionRef  = useRef<HTMLElement>(null);
+  const inView      = useInView(sectionRef, { once: true, margin: '-8%' });
+  const prefersLess = useReducedMotion();
+
+  // Active chapter: null = no hover (shows first chapter as default)
+  const [activeIdx, setActiveIdx] = useState<number | null>(null);
+  const displayChapter = CHAPTERS[activeIdx ?? 0];
+  const anyActive      = activeIdx !== null;
 
   return (
     <section
       id="menu"
-      ref={ref}
-      aria-label="Menu categories"
-      data-texture="on"
+      ref={sectionRef}
+      aria-label="Menu chapters"
       style={{
-        position: 'relative',
-        overflow: 'hidden',
-        background: 'var(--clr-void)',
+        background:    'var(--clr-void)',
+        position:      'relative',
+        borderTop:     '1px solid var(--border-structural)',
+        paddingTop:    'clamp(72px,9vw,120px)',
+        paddingBottom: 'clamp(72px,9vw,120px)',
+        overflow:      'hidden',
       }}
     >
-      {/* Giant kanji watermark */}
-      <div style={{
-        position: 'absolute',
-        right: '-4%', top: '-8%',
-        fontFamily: 'var(--font-jp)',
-        fontWeight: 900,
-        fontSize: 'clamp(280px, 40vw, 580px)',
-        color: 'rgba(255,255,255,0.04)',
-        lineHeight: 1,
-        userSelect: 'none',
-        pointerEvents: 'none',
-        zIndex: 0,
-      }} aria-hidden="true">
-        食
-      </div>
-
-      {/* ── Section header ── */}
+      {/* ── Ember stage light — single warm source at pivot, animates with fan ── */}
       <motion.div
-        string="parallax"
-        className="ht-st-headline menu-header"
-        initial={{ opacity: 0, y: 28 }}
-        animate={inView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.7 }}
-        style={{
-          position: 'relative', zIndex: 2,
-          padding: 'var(--space-section-y-lg) var(--space-section-x) clamp(48px, 5vw, 72px)',
-          display: 'grid',
-          gridTemplateColumns: '1fr auto',
-          alignItems: 'end',
-          gap: '40px',
-          backgroundColor: 'transparent',
-          border: '1px solid var(--border-structural)',
-          borderRadius: 0,
-          overflow: 'hidden',
-        }}
-      >
-
-        <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 3 }}>
-          <motion.div
-            initial={{ x: 0 }}
-            animate={inView ? { x: '-108%' } : { x: 0 }}
-            transition={{ duration: 1.95, ease: [0.22, 0.9, 0.18, 1], delay: 0.16 }}
-            style={{
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              left: 0,
-              width: '52%',
-              backgroundColor: 'rgba(241,230,205,0.94)',
-              borderRight: '1px solid rgba(13,13,13,0.18)',
-              boxShadow: '16px 0 30px rgba(0,0,0,0.22)',
-              backgroundImage:
-                'repeating-linear-gradient(90deg, rgba(13,13,13,0.12) 0px, rgba(13,13,13,0.12) 1px, transparent 1px, transparent 34px), repeating-linear-gradient(0deg, rgba(13,13,13,0.1) 0px, rgba(13,13,13,0.1) 1px, transparent 1px, transparent 34px)',
-              backgroundSize: 'auto',
-              backgroundPosition: '0 0',
-            }}
-          >
-            <div style={{ position: 'absolute', right: '18px', top: '50%', transform: 'translateY(-50%)', width: '10px', height: '56px', borderRadius: '999px', background: 'rgba(13,13,13,0.18)' }} />
-          </motion.div>
-
-          <motion.div
-            initial={{ x: 0 }}
-            animate={inView ? { x: '108%' } : { x: 0 }}
-            transition={{ duration: 1.95, ease: [0.22, 0.9, 0.18, 1], delay: 0.16 }}
-            style={{
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              right: 0,
-              width: '52%',
-              backgroundColor: 'rgba(241,230,205,0.94)',
-              borderLeft: '1px solid rgba(13,13,13,0.18)',
-              boxShadow: '-16px 0 30px rgba(0,0,0,0.22)',
-              backgroundImage:
-                'repeating-linear-gradient(90deg, rgba(13,13,13,0.12) 0px, rgba(13,13,13,0.12) 1px, transparent 1px, transparent 34px), repeating-linear-gradient(0deg, rgba(13,13,13,0.1) 0px, rgba(13,13,13,0.1) 1px, transparent 1px, transparent 34px)',
-              backgroundSize: 'auto',
-              backgroundPosition: '0 0',
-            }}
-          >
-            <div style={{ position: 'absolute', left: '18px', top: '50%', transform: 'translateY(-50%)', width: '10px', height: '56px', borderRadius: '999px', background: 'rgba(13,13,13,0.18)' }} />
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 1 }}
-            animate={inView ? { opacity: 0 } : { opacity: 1 }}
-            transition={{ duration: 0.75, ease: 'easeOut', delay: 1.05 }}
-            style={{
-              position: 'absolute',
-              left: '50%',
-              top: 0,
-              bottom: 0,
-              width: '2px',
-              transform: 'translateX(-50%)',
-              background: 'rgba(13,13,13,0.22)',
-            }}
-          />
-        </div>
-
-        <div style={{ maxWidth: 'min(720px, 100%)' }}>
-          <div style={{ marginBottom: '20px' }}>
-            <span style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: 'var(--text-label)',
-              letterSpacing: 'var(--tracking-ultra)',
-              color: 'var(--clr-red-80)',
-              fontWeight: 700,
-            }}>
-              THE MENU · <span lang="ja">料理</span> · MOTOR CITY
-            </span>
-          </div>
-          <h2 style={{
-            margin: 0,
-            fontFamily: 'var(--font-display)',
-            fontWeight: 900,
-            fontSize: 'var(--text-heading-xl)',
-            lineHeight: 0.94,
-            letterSpacing: 'var(--tracking-tight)',
-            color: 'var(--clr-red)',
-            display: 'inline-block',
-            animation: reduceMotion ? 'none' : 'neonFlickerRed 4.5s infinite 0.2s',
-          }}>
-            SIX WORLDS.<br />
-            <span style={{ color: 'var(--clr-cream)' }}>ONE KITCHEN.</span>
-          </h2>
-
-          {/* Japanese display */}
-          <div lang="ja" style={{
-            marginTop: 'clamp(16px, 2vw, 28px)',
-            fontFamily: 'var(--font-jp)',
-            fontSize: 'var(--text-jp-display)',
-            fontWeight: 700,
-            color: 'var(--clr-red)',
-            letterSpacing: '0.08em',
-          }}>おいトラ</div>
-        </div>
-
-        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
-          <div
-            aria-hidden="true"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-end',
-              gap: '18px',
-              marginTop: 'clamp(30px, 2.6vw, 40px)',
-              marginBottom: '10px',
-              opacity: 0.95,
-              flexShrink: 0,
-              pointerEvents: 'none',
-            }}
-          >
-            <Image
-              src="/BMH-logo.png"
-              alt=""
-              width={220}
-              height={96}
-              priority
-              unoptimized
-              style={{
-                height: 'clamp(64px, 6.2vw, 96px)',
-                width: 'auto',
-                display: 'block',
-                objectFit: 'contain',
-                filter: 'brightness(0) invert(1)',
-                flexShrink: 0,
-              }}
-            />
-            <Image
-              src="/heytiger-logo.png"
-              alt=""
-              width={300}
-              height={96}
-              priority
-              unoptimized
-              style={{
-                height: 'clamp(64px, 6.2vw, 96px)',
-                width: 'auto',
-                display: 'block',
-                objectFit: 'contain',
-                filter: 'brightness(0) invert(1)',
-                flexShrink: 0,
-              }}
-            />
-          </div>
-          <p lang="ja" style={{
-            fontFamily: 'var(--font-jp)',
-            fontSize: '16px',
-            letterSpacing: '0.15em',
-            color: 'var(--clr-cream-70)',
-            marginBottom: '8px',
-            lineHeight: 1.8,
-          }}>
-            日本料理<br />
-            居酒屋スタイル
-          </p>
-          <a
-            href="/menu"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '10px 12px',
-              borderRadius: 0,
-              border: '1px solid var(--border-structural)',
-              background: 'rgba(18,13,20,0.5)',
-              textDecoration: 'none',
-              marginBottom: '18px',
-            }}
-            aria-label="Scan to open the menu"
-          >
-            <div style={{
-              padding: '8px',
-              background: 'var(--clr-cream)',
-              borderRadius: 0,
-              lineHeight: 0,
-            }}>
-              <QRCodeCanvas
-                value={MENU_QR_URL}
-                size={74}
-                bgColor="var(--clr-cream)"
-                fgColor="var(--clr-void)"
-                level="M"
-                style={{ display: 'block' }}
-              />
-            </div>
-            <div style={{ textAlign: 'left' }}>
-              <div style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: 'var(--text-micro)',
-                letterSpacing: '0.26em',
-                fontWeight: 800,
-                color: 'var(--clr-red)',
-                marginBottom: '6px',
-              }}>
-                SCAN MENU
-              </div>
-              <div style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: 'var(--text-label)',
-                letterSpacing: '0.14em',
-                color: 'rgba(240,235,216,0.72)',
-                fontWeight: 600,
-              }}>
-                heytigerdubai.com/menu
-              </div>
-            </div>
-          </a>
-          <Link
-            href="/menu"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '10px',
-              fontFamily: 'var(--font-body)',
-              fontSize: 'var(--text-body)',
-              letterSpacing: '0.18em',
-              fontWeight: 700,
-              color: 'var(--clr-void)',
-              background: 'var(--clr-red)',
-              padding: '16px 40px',
-              borderRadius: 0,
-              textDecoration: 'none',
-              border: 'none',
-              transition: 'background var(--dur-fast) var(--ease-standard)',
-              whiteSpace: 'nowrap',
-              minHeight: '44px',
-              textTransform: 'uppercase',
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--clr-red-dim)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--clr-red)'; }}
-          >
-            VIEW FULL MENU
-            <span style={{ fontSize: '16px', lineHeight: 1 }}>→</span>
-          </Link>
-        </div>
-      </motion.div>
-
-      {/* ── Categories grid ── */}
-      <div
-        style={{
-          position: 'relative', zIndex: 2,
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          borderTop: '1px solid var(--border-structural)',
-        }}
-        className="menu-cats"
-      >
-        {CATEGORIES.map((cat, i) => (
-          <CategoryBlock
-            key={cat.id}
-            cat={cat}
-            index={i}
-            inView={inView}
-            isHovered={hoveredId === cat.id}
-            anyHovered={hoveredId !== null}
-            onHover={setHoveredId}
-          />
-        ))}
-      </div>
-
-      {/* ── Bottom strip ── */}
-      <motion.div
+        aria-hidden="true"
         initial={{ opacity: 0 }}
         animate={inView ? { opacity: 1 } : {}}
-        transition={{ duration: 0.6, delay: 0.8 }}
-        className="ht-dynamic-strip"
+        transition={{ duration: 1.4, delay: 0.3, ease: 'easeOut' }}
         style={{
-          position: 'relative', zIndex: 2,
-          borderTop: '1px solid var(--border-structural)',
-          background: 'none',
-          backgroundColor: 'var(--clr-void)',
-          padding: 'clamp(24px, 3vw, 36px) var(--space-section-x)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '20px',
-          flexWrap: 'wrap',
+          position:      'absolute',
+          inset:          0,
+          pointerEvents: 'none',
+          zIndex:         0,
+          background:    `
+            radial-gradient(ellipse 55% 38% at 50% 100%, rgba(190,90,20,0.30) 0%, transparent 60%),
+            radial-gradient(ellipse 88% 56% at 50% 100%, rgba(150,55,10,0.14) 0%, transparent 70%)
+          `,
+        }}
+      />
+
+      {/* ── Section header ── */}
+      <div
+        style={{
+          maxWidth:  '1320px',
+          margin:    '0 auto',
+          padding:   '0 clamp(20px,5vw,56px)',
+          textAlign: 'center',
+          marginBottom: 'clamp(40px,5vw,60px)',
+          position:  'relative',
+          zIndex:     2,
         }}
       >
-        <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
-          {['SHARING PLATES', 'SAKE · 47 LABELS', 'OPEN TILL 4AM', 'MOTOR CITY DUBAI'].map((label, i) => (
-            <span key={i} style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: 'var(--text-body)',
-              letterSpacing: '0.28em',
-              color: 'rgba(240,235,216,0.65)',
-            }}>
-              {label}
-            </span>
-          ))}
-        </div>
-        <Link
-          href="/menu"
-          style={{
-            fontFamily: 'var(--font-body)',
-            fontWeight: 700,
-            fontSize: 'var(--text-body)',
-            letterSpacing: '0.18em',
-            color: 'var(--clr-void)',
-            backgroundColor: 'var(--clr-red)',
-            textDecoration: 'none',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '10px',
-            padding: '14px 32px',
-            borderRadius: 0,
-            minHeight: '44px',
-            textTransform: 'uppercase',
-            transition: 'background var(--dur-fast) var(--ease-standard)',
-          }}
-          onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.backgroundColor = 'var(--clr-red-dim)'; }}
-          onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.backgroundColor = 'var(--clr-red)'; }}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7 }}
+          style={{ marginBottom: 18 }}
         >
-          VIEW MENU <span>→</span>
-        </Link>
-      </motion.div>
+          <span
+            style={{
+              fontFamily:    'var(--font-body)',
+              fontSize:       10,
+              fontWeight:     900,
+              letterSpacing: '0.48em',
+              color:         'var(--clr-red)',
+              textTransform: 'uppercase',
+            }}
+          >
+            THE MENU ·{' '}
+            <span lang="ja" style={{ fontFamily: 'var(--font-jp)', letterSpacing: '0.2em' }}>
+              料理
+            </span>
+          </span>
+        </motion.div>
 
-      <style>{`
-        @media (max-width: 900px) {
-          .menu-cats { grid-template-columns: repeat(2, 1fr) !important; }
-          .menu-header { grid-template-columns: 1fr !important; }
-        }
-        @media (max-width: 560px) {
-          .menu-cats { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
-    </section>
-  );
-}
+        <motion.h2
+          initial={{ opacity: 0, y: 14 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.85, delay: 0.08, ease: [0.22, 1, 0.3, 1] }}
+          style={{
+            margin:        0,
+            fontFamily:    'var(--font-display)',
+            fontWeight:     900,
+            fontSize:      'clamp(40px,5.5vw,80px)',
+            letterSpacing: '-0.03em',
+            lineHeight:     0.94,
+            color:         'var(--clr-cream)',
+            textTransform: 'uppercase',
+          }}
+        >
+          SIX CHAPTERS.{' '}
+          <span style={{ color: 'var(--clr-red)' }}>ONE KITCHEN.</span>
+        </motion.h2>
+      </div>
 
-function hexToRgba(hex: string, alpha: number) {
-  const normalized = hex.replace('#', '').trim();
-  const full = normalized.length === 3
-    ? normalized.split('').map((c) => c + c).join('')
-    : normalized;
-  const r = Number.parseInt(full.slice(0, 2), 16);
-  const g = Number.parseInt(full.slice(2, 4), 16);
-  const b = Number.parseInt(full.slice(4, 6), 16);
-  const a = Math.max(0, Math.min(1, alpha));
-  return `rgba(${r}, ${g}, ${b}, ${a})`;
-}
+      {/* ── Content ── */}
+      {prefersLess ? (
+        /* Reduced-motion: static grid */
+        <div
+          style={{
+            maxWidth:  '1320px',
+            margin:    '0 auto',
+            padding:   '0 clamp(20px,5vw,56px)',
+            position:  'relative',
+            zIndex:     2,
+          }}
+        >
+          <StaticGrid />
+          <div style={{ marginTop: 48, textAlign: 'center' }}>
+            <Link
+              href="/menu"
+              style={{
+                display:       'inline-flex',
+                alignItems:    'center',
+                gap:            10,
+                fontFamily:    'var(--font-body)',
+                fontSize:       11,
+                fontWeight:     900,
+                letterSpacing: '0.38em',
+                color:         'var(--clr-void)',
+                background:    'var(--clr-red)',
+                padding:       '14px 32px',
+                textDecoration:'none',
+                textTransform: 'uppercase',
+              }}
+            >
+              VIEW FULL MENU{' '}
+              <span style={{ fontSize: 15, lineHeight: '1' }}>→</span>
+            </Link>
+          </div>
+        </div>
+      ) : (
+        /* ── Interactive fan ── */
+        <>
+          {/* ── Mobile (< 520px): static grid fallback ── */}
+          <div className="ht-fan-sm" style={{ position: 'relative', zIndex: 2 }}>
+            <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '0 clamp(20px,5vw,56px)' }}>
+              <StaticGrid />
+              <div style={{ marginTop: 40, textAlign: 'center' }}>
+                <Link
+                  href="/menu"
+                  style={{
+                    display:       'inline-flex',
+                    alignItems:    'center',
+                    gap:            10,
+                    fontFamily:    'var(--font-body)',
+                    fontSize:       11,
+                    fontWeight:     900,
+                    letterSpacing: '0.38em',
+                    color:         'var(--clr-void)',
+                    background:    'var(--clr-red)',
+                    padding:       '14px 32px',
+                    textDecoration:'none',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  VIEW FULL MENU <span style={{ fontSize: 15 }}>→</span>
+                </Link>
+              </div>
+            </div>
+          </div>
 
-/* ─── Individual Category Block ──────────────────────────────────────── */
-function CategoryBlock({
-  cat, index, inView, isHovered, anyHovered, onHover,
-}: {
-  cat: typeof CATEGORIES[0];
-  index: number;
-  inView: boolean;
-  isHovered: boolean;
-  anyHovered: boolean;
-  onHover: (id: string | null) => void;
-}) {
-  const forcedBg = 'var(--clr-void)';
+          {/* ── Tablet + desktop (≥ 520px): interactive fan ── */}
+          <div className="ht-fan-lg" style={{ position: 'relative', zIndex: 2 }}>
+          {/* Detail panel — fixed-height container prevents layout shift */}
+          <div
+            aria-live="polite"
+            aria-atomic="true"
+            style={{
+              position:       'relative',
+              height:          160,
+              display:        'flex',
+              alignItems:     'center',
+              justifyContent: 'center',
+              padding:        '0 clamp(20px,5vw,56px)',
+            }}
+          >
+            <AnimatePresence mode="wait">
+              <ChapterDetail key={displayChapter.num} chapter={displayChapter} />
+            </AnimatePresence>
+          </div>
 
-  const forcedBorder = null;
-  const cardBase = isHovered
-    ? 'rgba(13,13,13,0.24)'
-    : anyHovered
-    ? 'rgba(13,13,13,0.14)'
-    : 'rgba(13,13,13,0.12)';
+          {/* Invite hint — only shown before first interaction */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: anyActive ? 0 : 0.35 } : {}}
+            transition={{ duration: 0.5, delay: 0.9 }}
+            style={{
+              textAlign:     'center',
+              marginBottom:   12,
+              fontFamily:    'var(--font-body)',
+              fontSize:       9,
+              fontWeight:     700,
+              letterSpacing: '0.38em',
+              color:         'rgba(240,235,216,0.6)',
+              textTransform: 'uppercase',
+              pointerEvents: 'none',
+              userSelect:    'none',
+            }}
+          >
+            ── HOVER A CHAPTER ──
+          </motion.div>
 
-  const photoOpacity = isHovered ? 1 : 0;
-  const photoScale = isHovered ? 1.06 : 1.02;
+          {/* Fan container */}
+          <div
+            id="ht-fan-stage"
+            style={{
+              position:       'relative',
+              zIndex:          2,
+              height:          BH + 24,
+              width:          '100%',
+              overflow:       'visible',
+              display:        'flex',
+              justifyContent: 'center',
+            }}
+          >
+            {/* Fan blades */}
+            {CHAPTERS.map((chapter, i) => (
+              <FanBlade
+                key={chapter.num}
+                chapter={chapter}
+                index={i}
+                inView={inView}
+                isActive={activeIdx === i}
+                anyActive={anyActive}
+                onEnter={() => setActiveIdx(i)}
+                onLeave={() => setActiveIdx(null)}
+              />
+            ))}
 
-  return (
-    <motion.a
-      href={`/menu#${cat.id}`}
-      initial={{ opacity: 0, y: 32 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay: index * 0.09, ease: [0.25, 0.46, 0.45, 0.94] }}
-      onMouseEnter={(e) => {
-        onHover(cat.id);
-        e.currentTarget.style.setProperty('--mr', '180px');
-      }}
-      onMouseLeave={(e) => {
-        onHover(null);
-        e.currentTarget.style.setProperty('--mr', '0px');
-      }}
-      onMouseMove={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        e.currentTarget.style.setProperty('--mx', `${x}px`);
-        e.currentTarget.style.setProperty('--my', `${y}px`);
-      }}
-      aria-label={`See ${cat.title} dishes on the menu`}
-      style={{
-        position: 'relative',
-        padding: 'clamp(28px, 3.5vw, 48px) clamp(24px, 3vw, 40px)',
-        borderRight: (index + 1) % 3 !== 0 ? '1px solid var(--border-structural)' : 'none',
-        borderBottom: index < 3 ? '1px solid var(--border-structural)' : 'none',
-        cursor: 'pointer',
-        textDecoration: 'none',
-        color: 'inherit',
-        display: 'block',
-        overflow: 'hidden',
-        transition: 'background-color 0.35s',
-        backgroundColor: forcedBg ?? cardBase,
-        ...(forcedBorder ?? {}),
-      }}
-    >
+            {/* Pivot rivet — the physical join point */}
+            <div
+              aria-hidden="true"
+              style={{
+                position:    'absolute',
+                bottom:       0,
+                left:        '50%',
+                transform:   'translateX(-50%)',
+                width:        16,
+                height:       16,
+                borderRadius: '50%',
+                background:  'radial-gradient(circle at 35% 35%, #d4a844, #8a6420)',
+                border:      '1px solid rgba(210,165,65,0.6)',
+                boxShadow:   '0 0 12px rgba(200,130,40,0.4), inset 0 1px 2px rgba(255,220,120,0.3)',
+                zIndex:       30,
+              }}
+            />
+          </div>
+
+          {/* CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.85 }}
+            style={{ textAlign: 'center', marginTop: 'clamp(36px,5vw,56px)' }}
+          >
+            <Link
+              href="/menu"
+              style={{
+                display:       'inline-flex',
+                alignItems:    'center',
+                gap:            10,
+                fontFamily:    'var(--font-body)',
+                fontSize:       11,
+                fontWeight:     900,
+                letterSpacing: '0.38em',
+                color:         'var(--clr-void)',
+                background:    'var(--clr-red)',
+                padding:       '14px 36px',
+                textDecoration:'none',
+                textTransform: 'uppercase',
+                transition:    'background 0.18s ease',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--clr-red-dim)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--clr-red)'; }}
+            >
+              VIEW FULL MENU{' '}
+              <span style={{ fontSize: 15, lineHeight: '1' }}>→</span>
+            </Link>
+          </motion.div>
+          </div>{/* end .ht-fan-lg */}
+        </>
+      )}
+
+      {/* ── Edge vignette — pulls eye to centre, pointer-events: none ── */}
       <div
         aria-hidden="true"
         style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 0,
-          opacity: photoOpacity,
-          transition: 'opacity 0.25s',
+          position:      'absolute',
+          inset:          0,
           pointerEvents: 'none',
-          overflow: 'hidden',
-          WebkitMaskImage:
-            'radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(0,0,0,1) 0px, rgba(0,0,0,1) var(--mr, 0px), rgba(0,0,0,0) calc(var(--mr, 0px) + 1px))',
-          WebkitMaskRepeat: 'no-repeat',
-          maskImage:
-            'radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(0,0,0,1) 0px, rgba(0,0,0,1) var(--mr, 0px), rgba(0,0,0,0) calc(var(--mr, 0px) + 1px))',
-          maskRepeat: 'no-repeat',
+          zIndex:         50,
+          background:    'radial-gradient(ellipse 80% 65% at 50% 50%, transparent 30%, rgba(5,3,2,0.48) 100%)',
         }}
-      >
-        <Image
-          src={cat.photo.src}
-          alt=""
-          fill
-          unoptimized
-          sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 34vw"
-          style={{
-            objectFit: 'cover',
-            objectPosition: cat.photo.objectPosition,
-            transform: `scale(${photoScale})`,
-            transition: 'transform 0.6s',
-            filter: 'contrast(1.08) saturate(1.24) brightness(1.06)',
-          }}
-        />
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          background:
-            'linear-gradient(180deg, rgba(13,13,13,0.62) 0%, rgba(13,13,13,0.26) 46%, rgba(13,13,13,0.70) 100%)',
-        }} />
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          background:
-            `radial-gradient(70% 70% at 50% 35%, ${hexToRgba(cat.accent, 0.26)} 0%, rgba(0,0,0,0) 62%)`,
-          mixBlendMode: 'screen',
-        }} />
-      </div>
+      />
 
-      {/* Giant kanji bg */}
-      <div style={{
-        position: 'absolute',
-        right: '-8%', bottom: '-12%',
-        fontFamily: 'var(--font-jp)',
-        fontWeight: 900,
-        fontSize: 'clamp(100px, 12vw, 160px)',
-        color: isHovered ? 'rgba(240,235,216,0.06)' : 'rgba(240,235,216,0.03)',
-        lineHeight: 1,
-        userSelect: 'none',
-        pointerEvents: 'none',
-        transition: 'color 0.35s',
-        zIndex: 0,
-      }} aria-hidden="true">
-        {cat.kanji}
-      </div>
+      {/* ── Responsive fan scaling ── */}
+      <style>{`
+        /* Default: show fan, hide static fallback */
+        .ht-fan-sm { display: none; }
+        .ht-fan-lg { display: block; }
 
-      <div style={{ position: 'relative', zIndex: 2 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
-          <span style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: 'var(--text-body)',
-            letterSpacing: '0.3em',
-            color: isHovered ? cat.accent : 'rgba(240,235,216,0.55)',
-            fontWeight: 700,
-            transition: 'color var(--dur-fast) var(--ease-standard)',
-          }}>
-            {cat.num}
-          </span>
-          <div style={{
-            flex: 1,
-            height: '1px',
-            background: isHovered ? cat.accent : 'var(--border-structural)',
-            transition: 'background 0.35s',
-          }} />
-        </div>
+        /* Mobile < 520px: show static grid, hide fan */
+        @media (max-width: 519px) {
+          .ht-fan-sm { display: block; }
+          .ht-fan-lg { display: none; }
+        }
 
-        <span lang="ja" style={{
-          display: 'block',
-          fontFamily: 'var(--font-jp)',
-          fontSize: 'var(--text-body)',
-          letterSpacing: '0.15em',
-          color: isHovered ? cat.accent : 'var(--clr-cream-70)',
-          marginBottom: '8px',
-          transition: 'color var(--dur-fast) var(--ease-standard)',
-        }}>
-          {cat.jp}
-        </span>
+        /* Tablet 520–900px: scale fan to 70%
+           transform-origin: bottom center means the empty layout space
+           is at the TOP of the stage div — pull it up with negative margin-top */
+        @media (min-width: 520px) and (max-width: 900px) {
+          #ht-fan-stage {
+            transform: scale(0.70);
+            transform-origin: bottom center;
+            margin-top: -136px;
+          }
+        }
 
-        <h3 style={{
-          margin: '0 0 6px',
-          fontFamily: 'var(--font-display)',
-          fontWeight: 900,
-          fontSize: 'clamp(32px, 4vw, 58px)',
-          lineHeight: 0.9,
-          letterSpacing: '-0.02em',
-          color: isHovered ? 'var(--clr-cream)' : 'var(--clr-cream)',
-          transition: 'color var(--dur-fast) var(--ease-standard)',
-        }}>
-          {cat.title}
-        </h3>
-
-        <span style={{
-          display: 'block',
-          fontFamily: 'var(--font-body)',
-          fontSize: 'var(--text-body)',
-          letterSpacing: '0.22em',
-          color: isHovered ? cat.accent : 'rgba(240,235,216,0.6)',
-          marginBottom: '18px',
-          transition: 'color var(--dur-fast) var(--ease-standard)',
-        }}>
-          {cat.sub.toUpperCase()}
-        </span>
-
-        {/* Specific dish names — always visible */}
-        <span style={{
-          display: 'block',
-          fontFamily: 'var(--font-body)',
-          fontSize: 'clamp(14px, 1.15vw, 16px)',
-          fontWeight: 600,
-          letterSpacing: '0.01em',
-          lineHeight: 1.5,
-          color: isHovered ? 'var(--clr-cream)' : 'rgba(240,235,216,0.72)',
-          marginBottom: '16px',
-          transition: 'color var(--dur-fast) var(--ease-standard)',
-        }}>
-          {cat.dishes}
-        </span>
-
-        <p
-          style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: 'clamp(15px, 1.4vw, 18px)',
-            lineHeight: 1.7,
-            color: isHovered ? 'rgba(245,239,224,0.7)' : 'rgba(245,239,224,0.5)',
-            marginBottom: 20,
-            transition: 'color 0.28s',
-          }}
-        >
-          {cat.desc}
-        </p>
-
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '12px',
-          marginTop: '4px',
-        }}>
-          <span style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: '14px',
-            letterSpacing: '0.14em',
-            fontWeight: 700,
-            color: isHovered ? cat.accent : 'rgba(240,235,216,0.75)',
-            transition: 'color var(--dur-fast) var(--ease-standard)',
-          }}>
-            {cat.range}
-          </span>
-          <motion.span
-            animate={{ opacity: isHovered ? 1 : 0, x: isHovered ? 0 : 8 }}
-            transition={{ duration: 0.2 }}
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: 'var(--text-body)',
-              letterSpacing: '0.22em',
-              fontWeight: 700,
-              color: 'var(--clr-cream)',
-            }}
-          >
-            TASTE THIS →
-          </motion.span>
-        </div>
-      </div>
-    </motion.a>
+        /* ── Grain texture — SVG fractal noise at 3% overlay ──
+           Adds subtle material depth without an external asset.
+           z-index 55 keeps it above the vignette (50). */
+        #menu::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+          background-size: 180px 180px;
+          opacity: 0.032;
+          mix-blend-mode: overlay;
+          pointer-events: none;
+          z-index: 55;
+        }
+      `}</style>
+    </section>
   );
 }

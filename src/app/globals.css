@@ -2,7 +2,7 @@
    1. IMPORTS
    ═══════════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,700;1,9..144,900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+JP:wght@400;700;900&family=Dela+Gothic+One&family=Bebas+Neue&family=Barlow+Condensed:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,700;1,9..144,900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+JP:wght@400;700;900&family=Noto+Serif+JP:wght@600;700&family=Dela+Gothic+One&family=Bebas+Neue&family=Barlow+Condensed:wght@400;500;600;700&display=swap');
 
 @import "tailwindcss";
 
@@ -98,6 +98,15 @@
   font-display: swap;
 }
 
+/* ANTON — Ultra-condensed broadcast/kinetic display (OFL) */
+@font-face {
+  font-family: 'Anton';
+  src: url('/fonts/Anton-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    3. DESIGN TOKENS
    Calibrated from GC HT MOODBOARD.ai (20-page brand doc)
@@ -121,7 +130,7 @@
   --border-accent:     rgba(200, 61, 32, 0.18);
 
   /* ── Legacy aliases (kept for backward compat) ─────────────────── */
-  --ht-void:       #1C0808;
+  --ht-void:       #0D0B0A;
   --ht-red:        #C83D20;
   --ht-amber:      #C17B3F;
   --ht-cream:      #F0EBD8;
@@ -138,15 +147,15 @@
   --jp-kaki:       #C17B3F;
   --jp-renga:      #C83D20;
   --jp-kusa:       #4A5E32;
-  --jp-sumi:       #1C0808;
+  --jp-sumi:       #0D0B0A;
   --jp-shu:        #C83D20;
   --jp-kin:        #F0EBD8;
 
   /* ── Semantic Aliases ──────────────────────────────────────────── */
-  --clr-void:      #1C0808;
-  --clr-dark:      #1C0808;
-  --clr-mid:       #1C0808;
-  --clr-slate:     #1C0808;
+  --clr-void:      #0D0B0A;
+  --clr-dark:      #0D0B0A;
+  --clr-mid:       #0D0B0A;
+  --clr-slate:     #0D0B0A;
   --clr-red:       #C83D20;
   --clr-red-dim:   #B22D12;
   --clr-cream:     #F0EBD8;
@@ -164,8 +173,10 @@
   --font-barlow:    'Barlow Condensed', 'DM Sans', system-ui, sans-serif;
   --font-extended:  'Jandus RD Extended', 'Jandus RD', 'DM Sans', system-ui, sans-serif;
   --font-condensed: 'Jandus RD Condensed', 'Jandus RD', 'DM Sans', system-ui, sans-serif;
+  --font-anton:     'Anton', 'Jandus RD Condensed', 'Arial Narrow', system-ui, sans-serif;
   --font-jp:        'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'YuGothic', 'Yu Gothic', 'Meiryo', sans-serif;
   --font-jp-rough:  'Dela Gothic One', 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', sans-serif;
+  --font-japanese-serif: 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Sans JP', serif; /* cinematic JP titles */
   --font-gothic:    'Jandus RD Extended', 'Jandus RD', 'DM Sans', system-ui, sans-serif;
 
   /* ── Layout Tokens ─────────────────────────────────────────────── */
@@ -266,13 +277,13 @@ html.lenis,
 html.lenis body {
   height: auto;
 }
-.lenis.lenis-smooth {
+html.lenis {
   scroll-behavior: auto !important;
 }
 .lenis.lenis-smooth [data-lenis-prevent] {
   overscroll-behavior: contain;
 }
-.lenis.lenis-stopped {
+html.lenis-stopped {
   overflow: hidden;
 }
 
@@ -284,7 +295,7 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
   overscroll-behavior: none;
 }
 
@@ -294,12 +305,14 @@ body {
   font-family: var(--font-body);
   font-weight: 400;
   overflow-x: hidden;
+  overflow-y: auto;
   overflow-wrap: break-word;
   text-rendering: optimizeLegibility;
   cursor: url('/cursors/chopsticks-default.png') 12 40, auto;
   position: relative;
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
+  min-height: 100dvh;
 }
 
 html,
@@ -702,27 +715,27 @@ input, select, textarea {
 }
 
 .st-ready .ht-st-img {
-  transform: translateY(calc((0.5 - var(--progress, 0.5)) * 88px));
+  transform: translateY(calc((0.5 - var(--progress, 0.5)) * 40px));
   will-change: transform;
 }
 
 .st-ready .ht-st-img-slow {
-  transform: translateY(calc((0.5 - var(--progress, 0.5)) * 48px));
+  transform: translateY(calc((0.5 - var(--progress, 0.5)) * 24px));
   will-change: transform;
 }
 
 .st-ready .ht-st-kanji {
-  transform: translateY(calc((0.5 - var(--progress, 0.5)) * 140px));
+  transform: translateY(calc((0.5 - var(--progress, 0.5)) * 70px));
   will-change: transform;
 }
 
 .st-ready .ht-st-h-left {
-  transform: translateX(calc((0.5 - var(--progress, 0.5)) * -60px));
+  transform: translateX(calc((0.5 - var(--progress, 0.5)) * -30px));
   will-change: transform;
 }
 
 .st-ready .ht-st-h-right {
-  transform: translateX(calc((0.5 - var(--progress, 0.5)) * 60px));
+  transform: translateX(calc((0.5 - var(--progress, 0.5)) * 30px));
   will-change: transform;
 }
 
@@ -769,6 +782,34 @@ input, select, textarea {
     (1 - clamp(0, calc((var(--progress, 0) - 0.1) * 10), 1)) * 28px
   ));
   will-change: opacity, transform;
+}
+
+/* ── StringTune Magnetic Cursor Effects ─────────────────────── */
+[data-magnetic],
+[string="magnetic"] {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+/* Custom cursor glow effect */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  body {
+    cursor: none;
+  }
+
+  .custom-cursor {
+    position: fixed;
+    width: 70px;
+    height: 70px;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.15s ease-out;
+    transform: translate(-35%, -55%);
+  }
+
+  body:hover .custom-cursor {
+    opacity: 1;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -1137,15 +1178,6 @@ textarea:focus-visible {
    UX FIXES — Design Critique Fixes 4, 8, 9, 10, 11, 12, 16
    ═══════════════════════════════════════════════════════════════════ */
 
-/* Fix 4 — Spaces tab keyboard focus */
-.spaces-tab-btn:focus-visible {
-  outline: 2px solid var(--clr-red);
-  outline-offset: 2px;
-}
-.spaces-tab-btn:focus:not(:focus-visible) {
-  outline: none;
-}
-
 /* Fix 10 — Nav touch targets on mobile */
 @media (max-width: 768px) {
   .ht-landing-nav-links .nav-link,
@@ -1182,17 +1214,6 @@ textarea:focus-visible {
   border: 0;
 }
 
-/* ── O1: Space nav dot expanded hit area (WCAG 2.5.5) ────────────── */
-.space-nav-dot {
-  position: relative;
-  cursor: pointer;
-}
-.space-nav-dot::after {
-  content: '';
-  position: absolute;
-  inset: -19px;
-}
-
 /* ── O2: Footer touch targets (WCAG 2.5.5) ──────────────────────── */
 .footer-social-link,
 .footer-utility-link,
@@ -1201,6 +1222,52 @@ textarea:focus-visible {
   align-items: center;
   min-height: 44px;
   padding: 0 4px;
+}
+
+/* ── StringTune 3D Animations ──────────────────────────────────── */
+@keyframes floatSphere {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+  }
+  25% {
+    transform: translateY(-20px) translateX(10px);
+  }
+  50% {
+    transform: translateY(0) translateX(20px);
+  }
+  75% {
+    transform: translateY(20px) translateX(10px);
+  }
+}
+
+@keyframes rotateSphere {
+  0% {
+    --rotate-y: 0deg;
+    --rotate-x: 0deg;
+  }
+  50% {
+    --rotate-y: 180deg;
+    --rotate-x: 10deg;
+  }
+  100% {
+    --rotate-y: 360deg;
+    --rotate-x: 0deg;
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes floatSphere {
+    0%, 100% {
+      transform: none;
+    }
+  }
+  @keyframes rotateSphere {
+    0%, 100% {
+      --rotate-y: 0deg;
+      --rotate-x: 0deg;
+    }
+  }
 }
 
 /* ── CC1: Active spaces tab text contrast (WCAG 1.4.3) ──────────── */

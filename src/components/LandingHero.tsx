@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
+import SectionSticker from '@/components/SectionSticker';
 
 export default function LandingHero({
   onReserve,
@@ -68,6 +69,8 @@ export default function LandingHero({
           background: 'rgba(0,0,0,0.50)',
           pointerEvents: 'none',
         }} />
+
+
       </div>
 
       <motion.div
@@ -152,7 +155,6 @@ export default function LandingHero({
               fontWeight: 900,
               fontSize: 'var(--text-heading-hero)',
               color: '#FFFFFF',
-              animation: 'neonFlickerYellow 4.5s infinite 0.1s',
               textShadow: '0 2px 12px rgba(0,0,0,0.7)',
             }}
           >
@@ -162,11 +164,11 @@ export default function LandingHero({
             className="ht-neon"
             style={{
               display: 'block',
+              marginTop: '0.12em',
               fontFamily: 'var(--font-display)',
               fontWeight: 900,
               fontSize: 'var(--text-heading-hero)',
               color: 'var(--clr-red)',
-              animation: 'neonFlickerRed 4.5s infinite 0.4s',
               textShadow: '0 2px 12px rgba(0,0,0,0.7)',
             }}
           >
@@ -239,65 +241,69 @@ export default function LandingHero({
           }}
         >
           {/* Primary CTA — single global label */}
-          <motion.button
-            onClick={onReserve}
-            whileHover={reduceMotion ? {} : { y: -2, scale: 1.02 }}
-            style={{
-              background: 'var(--clr-red)',
-              color: 'var(--clr-void)',
-              border: 0,
-              borderRadius: 0,
-              padding: '15px 26px',
-              minHeight: '44px',
-              cursor: 'pointer',
-              fontFamily: 'var(--font-body)',
-              fontSize: 'var(--text-label)',
-              fontWeight: 900,
-              letterSpacing: '0.32em',
-              textTransform: 'uppercase',
-              transition: 'background var(--dur-fast) var(--ease-standard)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--clr-red-dim)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'var(--clr-red)';
-            }}
-          >
-            BOOK TABLE
-          </motion.button>
+        <motion.button
+          string="magnetic"
+          string-factor="0.3"
+          onClick={onReserve}
+          whileHover={reduceMotion ? {} : { y: -2, scale: 1.02 }}
+          style={{
+            background: 'var(--clr-red)',
+            color: 'var(--clr-void)',
+            border: 0,
+            borderRadius: 0,
+            padding: '15px 26px',
+            minHeight: '44px',
+            cursor: 'pointer',
+            fontFamily: 'var(--font-body)',
+            fontSize: 'var(--text-label)',
+            fontWeight: 900,
+            letterSpacing: '0.32em',
+            textTransform: 'uppercase',
+            transition: 'background var(--dur-fast) var(--ease-standard)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--clr-red-dim)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'var(--clr-red)';
+          }}
+        >
+          BOOK TABLE
+        </motion.button>
 
-          {/* Secondary — lighter, never competing */}
-          <motion.button
-            onClick={onExplore}
-            whileHover={reduceMotion ? {} : { y: -2 }}
-            style={{
-              background: 'transparent',
-              color: 'var(--clr-cream-70)',
-              border: 0,
-              borderRadius: 0,
-              padding: '15px 18px',
-              minHeight: '44px',
-              cursor: 'pointer',
-              fontFamily: 'var(--font-body)',
-              fontSize: 'var(--text-label)',
-              fontWeight: 700,
-              letterSpacing: '0.28em',
-              textTransform: 'uppercase',
-              textDecoration: 'underline',
-              textUnderlineOffset: '5px',
-              textDecorationColor: 'var(--clr-cream-30)',
-              transition: 'color var(--dur-fast) var(--ease-standard)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = 'var(--clr-cream)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = 'var(--clr-cream-70)';
-            }}
-          >
-            EXPLORE
-          </motion.button>
+        {/* Secondary — lighter, never competing */}
+        <motion.button
+          string="magnetic"
+          string-factor="0.3"
+          onClick={onExplore}
+          whileHover={reduceMotion ? {} : { y: -2 }}
+          style={{
+            background: 'transparent',
+            color: 'var(--clr-cream-70)',
+            border: 0,
+            borderRadius: 0,
+            padding: '15px 18px',
+            minHeight: '44px',
+            cursor: 'pointer',
+            fontFamily: 'var(--font-body)',
+            fontSize: 'var(--text-label)',
+            fontWeight: 700,
+            letterSpacing: '0.28em',
+            textTransform: 'uppercase',
+            textDecoration: 'underline',
+            textUnderlineOffset: '5px',
+            textDecorationColor: 'var(--clr-cream-30)',
+            transition: 'color var(--dur-fast) var(--ease-standard)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = 'var(--clr-cream)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = 'var(--clr-cream-70)';
+          }}
+        >
+          EXPLORE
+        </motion.button>
         </div>
 
         {/* Booking scope microcopy */}
@@ -333,6 +339,15 @@ export default function LandingHero({
         <br />
         <span style={{ opacity: 0.75 }}>FLAME CHAMBERS — HEI HEI</span>
       </div>
+
+      <SectionSticker
+        src="/sticker9.png"
+        alt="Hey Tiger RAAAAAR sticker"
+        position="bottom-right"
+        size="small"
+        rotate={0}
+        onClick={onReserve}
+      />
 
       <style>{`
         .ht-hero-panorama-track {

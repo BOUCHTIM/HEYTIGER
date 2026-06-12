@@ -3,10 +3,11 @@ import fs from "node:fs";
 import path from "node:path";
 import Script from "next/script";
 import "./globals.css";
-import Preloader from "@/components/Preloader";
-import StringTuneInit from "@/components/StringTuneInit";
+import Loader from "@/components/Loader";
 import SmoothScroll from "@/components/SmoothScroll";
 import GlobalGrain from "@/components/GlobalGrain";
+import CustomCursor from "@/components/CustomCursor";
+import ChopstickScroll from "@/components/ChopstickScroll";
 
 const BASE_URL = "https://heytigerdubai.com";
 const DBG_RENDER_TS = Date.now();
@@ -147,7 +148,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // #endregion
 
   return (
-    <html lang="en" className="h-full" data-scroll-behavior="smooth">
+    <html lang="en" className="h-full">
       <head>
         {process.env.NODE_ENV === "production" && (
           <Script
@@ -159,18 +160,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         )}
       </head>
       <body className="min-h-full antialiased">
-        {/* Global grain overlay removed — each section uses its own SectionGrain shader */}
-        {/* Scroll progress bar — StringTune sets --progress (0→1) on this element */}
-        <div
-          aria-hidden="true"
-          string="progress"
-          className="ht-scroll-progress-bar"
-        />
-        <Preloader />
+        <Loader />
+        <CustomCursor />
         <SmoothScroll />
         {children}
         <GlobalGrain />
-        <StringTuneInit />
+        <ChopstickScroll />
       </body>
     </html>
   );

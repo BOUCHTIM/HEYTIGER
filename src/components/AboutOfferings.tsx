@@ -45,18 +45,6 @@ export default function AboutOfferings({ reduceMotion }: { reduceMotion: boolean
           gap:           'clamp(18px, 2vw, 28px)',
         }}
       >
-        {/* Tiger mascot — top right area */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-8px' }}>
-          <Image
-            src="/heytiger-logo.png"
-            alt="Hey Tiger"
-            width={160}
-            height={160}
-            unoptimized
-            style={{ height: 'clamp(90px, 11vw, 150px)', width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)', opacity: 0.9 }}
-          />
-        </div>
-
         {/* HEY, / TIGER */}
         <h2
           style={{
@@ -69,7 +57,6 @@ export default function AboutOfferings({ reduceMotion }: { reduceMotion: boolean
             margin:        0,
             textTransform: 'uppercase',
             display:       'inline-block',
-            animation:     reduceMotion ? 'none' : 'neonFlickerYellow 4.5s infinite 0.1s',
           }}
         >
           HEY,<br />TIGER
@@ -229,7 +216,6 @@ export default function AboutOfferings({ reduceMotion }: { reduceMotion: boolean
               color:         'var(--clr-red)',
               margin:        '0 0 4px',
               display:       'inline-block',
-              animation:     reduceMotion ? 'none' : 'neonFlickerRed 4.5s infinite 0.3s',
             }}
           >
             HEY, TIGER
