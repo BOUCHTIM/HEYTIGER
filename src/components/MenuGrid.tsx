@@ -6,14 +6,11 @@
  * Motion approach: Framer Motion spring physics
  * - Shared pivot point at blade bottoms (transform-origin: bottom center)
  * - Left-to-right stagger (100ms per blade) mimics flicking a fan open
- * - Spring stiffness 58 / damping 11 / mass 0.8 → 2-3° natural overshoot + settle
- * - Hover: stiffer spring (150/18) for tactile response, blade lifts ~14% toward centre
- * - Other blades dim to 42% opacity on any-active state
- * - AnimatePresence cross-fades the detail panel between chapters
- * - Reduced-motion: static 3×2 card grid, no animation
+ * - Responsive geometry for mobile/tablet/desktop
+ * - Mobile: touch-optimized, smaller dimensions, reduced spread
  */
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import {
   motion,
   useInView,
@@ -64,17 +61,54 @@ const CHAPTERS = [
 
 type Chapter = (typeof CHAPTERS)[number];
 
-/* ─── fan geometry ──────────────────────────────────────────── */
-// Total arc: 110° symmetric (-55° … +55°) from vertical
-const FINAL_ANGLES  = [-55, -33, -11, 11, 33, 55] as const;
-// Stagger delays: left → right (like flicking a fan open with the right hand)
-const DELAYS        = [0, 0.10, 0.20, 0.30, 0.40, 0.50] as const;
+/* ─── responsive geometry hooks ─────────────────────────────── */
+function useBreakpoint() {
+  const [breakpoint, setBreakpoint] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
 
-const BW = 182;   // blade width  (px)
-const BH = 428;   // blade height (px) — pivot at bottom centre
+  useEffect(() => {
+    const updateBreakpoint = () => {
+      if (window.innerWidth < 520) setBreakpoint('mobile');
+      else if (window.innerWidth < 900) setBreakpoint('tablet');
+      else setBreakpoint('desktop');
+    };
+    updateBreakpoint();
+    window.addEventListener('resize', updateBreakpoint);
+    return () => window.removeEventListener('resize', updateBreakpoint);
+  }, []);
 
-// Trapezoid clip-path: full width at top, pinched to 26 px at pivot
-const BLADE_CLIP = `polygon(0% 0%, 100% 0%, calc(50% + 13px) 100%, calc(50% - 13px) 100%)`;
+  return breakpoint;
+}
+
+/* ─── responsive fan geometry ───────────────────────────────── */
+function getFanGeometry(breakpoint: 'mobile' | 'tablet' | 'desktop') {
+  let BW, BH, FINAL_ANGLES, pivotPinch;
+  
+  if (breakpoint === 'mobile') {
+    BW = 110;
+    BH = 280;
+    FINAL_ANGLES = [-30, -18, -6, 6, 18, 30];
+    pivotPinch = 18;
+  } else if (breakpoint === 'tablet') {
+    BW = 140;
+    BH = 360;
+    FINAL_ANGLES = [-45, -27, -9, 9, 27, 45];
+    pivotPinch = 22;
+  } else {
+    BW = 182;
+    BH = 428;
+    FINAL_ANGLES = [-55, -33, -11, 11, 33, 55];
+    pivotPinch = 26;
+  }
+
+  return {
+    BW, // blade width
+    BH, // blade height
+    FINAL_ANGLES: FINAL_ANGLES as readonly number[],
+    BLADE_CLIP: `polygon(0% 0%, 100% 0%, calc(50% + ${pivotPinch/2}px) 100%, calc(50% - ${pivotPinch/2}px) 100%)`,
+  };
+}
+
+const DELAYS = [0, 0.10, 0.20, 0.30, 0.40, 0.50] as const;
 
 /* ─── sub-components ─────────────────────────────────────────── */
 
@@ -87,6 +121,8 @@ function FanBlade({
   anyActive,
   onEnter,
   onLeave,
+  geometry,
+  breakpoint,
 }: {
   chapter: Chapter;
   index: number;
@@ -95,10 +131,13 @@ function FanBlade({
   anyActive: boolean;
   onEnter: () => void;
   onLeave: () => void;
+  geometry: ReturnType<typeof getFanGeometry>;
+  breakpoint: 'mobile' | 'tablet' | 'desktop';
 }) {
-  const angle  = FINAL_ANGLES[index];
-  // Active blade lifts 14% toward centre — subtle but perceptible
+  const { BW, BH, FINAL_ANGLES, BLADE_CLIP } = geometry;
+  const angle = FINAL_ANGLES[index];
   const target = isActive ? angle * 0.86 : angle;
+  const fontSizeScale = breakpoint === 'mobile' ? 0.75 : breakpoint === 'tablet' ? 0.85 : 1;
 
   return (
     <motion.div
@@ -112,9 +151,7 @@ function FanBlade({
         clipPath:        BLADE_CLIP,
         zIndex:          isActive ? 20 : index + 1,
         cursor:          'pointer',
-        // Lacquered panel finish
         background:      chapter.bg,
-        // drop-shadow follows clip-path shape — casts depth onto blade behind
         filter:          `drop-shadow(-3px 0 14px rgba(5,2,1,0.68))`,
       }}
       initial={{ rotate: 0, opacity: 0 }}
@@ -128,7 +165,6 @@ function FanBlade({
           stiffness: isActive ? 150 : 58,
           damping:   isActive ? 18  : 11,
           mass:      0.8,
-          // Only use stagger on the initial fan-open; not on hover transitions
           delay:     anyActive ? 0 : (inView ? DELAYS[index] : 0),
         },
         opacity: {
@@ -138,8 +174,9 @@ function FanBlade({
       }}
       onHoverStart={onEnter}
       onHoverEnd={onLeave}
+      onTouchStart={onEnter}
+      onTouchEnd={onLeave}
     >
-      {/* Accessible link — entire blade is the click target */}
       <Link
         href={`/menu#${chapter.slug}`}
         aria-label={`Chapter ${chapter.num}: ${chapter.title} — ${chapter.sub}`}
@@ -154,7 +191,6 @@ function FanBlade({
         onFocus={onEnter}
         onBlur={onLeave}
       >
-        {/* Brass / gold edge shimmer — brighter against cooler bg */}
         <div
           aria-hidden="true"
           style={{
@@ -164,8 +200,6 @@ function FanBlade({
             pointerEvents: 'none',
           }}
         />
-
-        {/* Lacquer sheen — bright hairline highlight at blade tip */}
         <div
           aria-hidden="true"
           style={{
@@ -177,8 +211,6 @@ function FanBlade({
             pointerEvents: 'none',
           }}
         />
-
-        {/* Ghost chapter number — texture layer, bottom half */}
         <div
           aria-hidden="true"
           style={{
@@ -200,8 +232,6 @@ function FanBlade({
         >
           {chapter.num}
         </div>
-
-        {/* Vertical content column — JP + chapter number */}
         <div
           style={{
             position:      'absolute',
@@ -216,12 +246,11 @@ function FanBlade({
             pointerEvents:  'none',
           }}
         >
-          {/* Japanese characters — vertical writing */}
           <span
             lang="ja"
             style={{
               fontFamily:      'var(--font-jp)',
-              fontSize:         13,
+              fontSize:         13 * fontSizeScale,
               fontWeight:       700,
               color:           `rgba(200,61,32,${isActive ? 0.95 : 0.5})`,
               writingMode:     'vertical-rl',
@@ -233,24 +262,20 @@ function FanBlade({
           >
             {chapter.jp}
           </span>
-
-          {/* Brass divider */}
           <div
             aria-hidden="true"
             style={{
               width:      1,
-              height:     20,
+              height:     20 * fontSizeScale,
               flexShrink: 0,
               background: `rgba(212,162,48,${isActive ? 0.70 : 0.24})`,
               transition: 'background 0.25s ease',
             }}
           />
-
-          {/* Chapter number label */}
           <span
             style={{
               fontFamily:      'var(--font-body)',
-              fontSize:         9,
+              fontSize:         9 * fontSizeScale,
               fontWeight:       900,
               letterSpacing:   '0.38em',
               color:           `rgba(200,61,32,${isActive ? 0.9 : 0.4})`,
@@ -278,7 +303,6 @@ function ChapterDetail({ chapter }: { chapter: Chapter }) {
       transition={{ duration: 0.28, ease: [0.22, 1, 0.3, 1] }}
       style={{ textAlign: 'center' }}
     >
-      {/* Eyebrow */}
       <div
         style={{
           display:        'flex',
@@ -314,8 +338,6 @@ function ChapterDetail({ chapter }: { chapter: Chapter }) {
           {chapter.sub}
         </span>
       </div>
-
-      {/* Title + JP */}
       <div
         style={{
           display:        'flex',
@@ -354,8 +376,6 @@ function ChapterDetail({ chapter }: { chapter: Chapter }) {
           {chapter.jp}
         </span>
       </div>
-
-      {/* Signature dishes */}
       <div
         style={{
           display:        'flex',
@@ -380,8 +400,6 @@ function ChapterDetail({ chapter }: { chapter: Chapter }) {
           </span>
         ))}
       </div>
-
-      {/* Price cue */}
       <span
         style={{
           fontFamily:    'var(--font-body)',
@@ -498,11 +516,24 @@ export default function MenuGrid() {
   const sectionRef  = useRef<HTMLElement>(null);
   const inView      = useInView(sectionRef, { once: true, margin: '-8%' });
   const prefersLess = useReducedMotion();
+  const breakpoint  = useBreakpoint();
+  const geometry    = getFanGeometry(breakpoint);
 
-  // Active chapter: null = no hover (shows first chapter as default)
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const displayChapter = CHAPTERS[activeIdx ?? 0];
   const anyActive      = activeIdx !== null;
+
+  // Adjust margin for tablet scaling
+  const getStageStyle = () => {
+    if (breakpoint === 'tablet') {
+      return {
+        transform: 'scale(1)',
+        transformOrigin: 'bottom center',
+        marginTop: 0,
+      };
+    }
+    return {};
+  };
 
   return (
     <section
@@ -518,7 +549,6 @@ export default function MenuGrid() {
         overflow:      'hidden',
       }}
     >
-      {/* ── Ember stage light — single warm source at pivot, animates with fan ── */}
       <motion.div
         aria-hidden="true"
         initial={{ opacity: 0 }}
@@ -535,8 +565,6 @@ export default function MenuGrid() {
           `,
         }}
       />
-
-      {/* ── Section header ── */}
       <div
         style={{
           maxWidth:  '1320px',
@@ -570,7 +598,6 @@ export default function MenuGrid() {
             </span>
           </span>
         </motion.div>
-
         <motion.h2
           initial={{ opacity: 0, y: 14 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -590,10 +617,7 @@ export default function MenuGrid() {
           <span style={{ color: 'var(--clr-red)' }}>ONE KITCHEN.</span>
         </motion.h2>
       </div>
-
-      {/* ── Content ── */}
       {prefersLess ? (
-        /* Reduced-motion: static grid */
         <div
           style={{
             maxWidth:  '1320px',
@@ -628,159 +652,120 @@ export default function MenuGrid() {
           </div>
         </div>
       ) : (
-        /* ── Interactive fan ── */
         <>
-          {/* ── Mobile (< 520px): static grid fallback ── */}
-          <div className="ht-fan-sm" style={{ position: 'relative', zIndex: 2 }}>
-            <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '0 clamp(20px,5vw,56px)' }}>
-              <StaticGrid />
-              <div style={{ marginTop: 40, textAlign: 'center' }}>
-                <Link
-                  href="/menu"
-                  style={{
-                    display:       'inline-flex',
-                    alignItems:    'center',
-                    gap:            10,
-                    fontFamily:    'var(--font-body)',
-                    fontSize:       11,
-                    fontWeight:     900,
-                    letterSpacing: '0.38em',
-                    color:         'var(--clr-void)',
-                    background:    'var(--clr-red)',
-                    padding:       '14px 32px',
-                    textDecoration:'none',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  VIEW FULL MENU <span style={{ fontSize: 15 }}>→</span>
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Tablet + desktop (≥ 520px): interactive fan ── */}
-          <div className="ht-fan-lg" style={{ position: 'relative', zIndex: 2 }}>
-          {/* Detail panel — fixed-height container prevents layout shift */}
-          <div
-            aria-live="polite"
-            aria-atomic="true"
-            style={{
-              position:       'relative',
-              height:          160,
-              display:        'flex',
-              alignItems:     'center',
-              justifyContent: 'center',
-              padding:        '0 clamp(20px,5vw,56px)',
-            }}
-          >
-            <AnimatePresence mode="wait">
-              <ChapterDetail key={displayChapter.num} chapter={displayChapter} />
-            </AnimatePresence>
-          </div>
-
-          {/* Invite hint — only shown before first interaction */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={inView ? { opacity: anyActive ? 0 : 0.35 } : {}}
-            transition={{ duration: 0.5, delay: 0.9 }}
-            style={{
-              textAlign:     'center',
-              marginBottom:   12,
-              fontFamily:    'var(--font-body)',
-              fontSize:       9,
-              fontWeight:     700,
-              letterSpacing: '0.38em',
-              color:         'rgba(240,235,216,0.6)',
-              textTransform: 'uppercase',
-              pointerEvents: 'none',
-              userSelect:    'none',
-            }}
-          >
-            ── HOVER A CHAPTER ──
-          </motion.div>
-
-          {/* Fan container */}
-          <div
-            id="ht-fan-stage"
-            style={{
-              position:       'relative',
-              zIndex:          2,
-              height:          BH + 24,
-              width:          '100%',
-              overflow:       'visible',
-              display:        'flex',
-              justifyContent: 'center',
-            }}
-          >
-            {/* Fan blades */}
-            {CHAPTERS.map((chapter, i) => (
-              <FanBlade
-                key={chapter.num}
-                chapter={chapter}
-                index={i}
-                inView={inView}
-                isActive={activeIdx === i}
-                anyActive={anyActive}
-                onEnter={() => setActiveIdx(i)}
-                onLeave={() => setActiveIdx(null)}
-              />
-            ))}
-
-            {/* Pivot rivet — the physical join point */}
+          <div style={{ position: 'relative', zIndex: 2 }}>
             <div
-              aria-hidden="true"
+              aria-live="polite"
+              aria-atomic="true"
               style={{
-                position:    'absolute',
-                bottom:       0,
-                left:        '50%',
-                transform:   'translateX(-50%)',
-                width:        16,
-                height:       16,
-                borderRadius: '50%',
-                background:  'radial-gradient(circle at 35% 35%, #d4a844, #8a6420)',
-                border:      '1px solid rgba(210,165,65,0.6)',
-                boxShadow:   '0 0 12px rgba(200,130,40,0.4), inset 0 1px 2px rgba(255,220,120,0.3)',
-                zIndex:       30,
+                position:       'relative',
+                minHeight:       160,
+                display:        'flex',
+                alignItems:     'center',
+                justifyContent: 'center',
+                padding:        '0 clamp(20px,5vw,56px)',
               }}
-            />
-          </div>
-
-          {/* CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.7, delay: 0.85 }}
-            style={{ textAlign: 'center', marginTop: 'clamp(36px,5vw,56px)' }}
-          >
-            <Link
-              href="/menu"
-              style={{
-                display:       'inline-flex',
-                alignItems:    'center',
-                gap:            10,
-                fontFamily:    'var(--font-body)',
-                fontSize:       11,
-                fontWeight:     900,
-                letterSpacing: '0.38em',
-                color:         'var(--clr-void)',
-                background:    'var(--clr-red)',
-                padding:       '14px 36px',
-                textDecoration:'none',
-                textTransform: 'uppercase',
-                transition:    'background 0.18s ease',
-              }}
-              onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--clr-red-dim)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--clr-red)'; }}
             >
-              VIEW FULL MENU{' '}
-              <span style={{ fontSize: 15, lineHeight: '1' }}>→</span>
-            </Link>
-          </motion.div>
-          </div>{/* end .ht-fan-lg */}
+              <AnimatePresence mode="wait">
+                <ChapterDetail key={displayChapter.num} chapter={displayChapter} />
+              </AnimatePresence>
+            </div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={inView ? { opacity: anyActive ? 0 : 0.35 } : {}}
+              transition={{ duration: 0.5, delay: 0.9 }}
+              style={{
+                textAlign:     'center',
+                marginBottom:   12,
+                fontFamily:    'var(--font-body)',
+                fontSize:       9,
+                fontWeight:     700,
+                letterSpacing: '0.38em',
+                color:         'rgba(240,235,216,0.6)',
+                textTransform: 'uppercase',
+                pointerEvents: 'none',
+                userSelect:    'none',
+              }}
+            >
+              {breakpoint === 'mobile' ? '── TAP A CHAPTER ──' : '── HOVER A CHAPTER ──'}
+            </motion.div>
+            <div
+              id="ht-fan-stage"
+              style={{
+                position:       'relative',
+                zIndex:          2,
+                height:          geometry.BH + 24,
+                width:          '100%',
+                overflow:       'visible',
+                display:        'flex',
+                justifyContent: 'center',
+                ...getStageStyle(),
+              }}
+            >
+              {CHAPTERS.map((chapter, i) => (
+                <FanBlade
+                  key={chapter.num}
+                  chapter={chapter}
+                  index={i}
+                  inView={inView}
+                  isActive={activeIdx === i}
+                  anyActive={anyActive}
+                  onEnter={() => setActiveIdx(i)}
+                  onLeave={() => setActiveIdx(null)}
+                  geometry={geometry}
+                  breakpoint={breakpoint}
+                />
+              ))}
+              <div
+                aria-hidden="true"
+                style={{
+                  position:    'absolute',
+                  bottom:       0,
+                  left:        '50%',
+                  transform:   'translateX(-50%)',
+                  width:        breakpoint === 'mobile' ? 14 : breakpoint === 'tablet' ? 15 : 16,
+                  height:       breakpoint === 'mobile' ? 14 : breakpoint === 'tablet' ? 15 : 16,
+                  borderRadius: '50%',
+                  background:  'radial-gradient(circle at 35% 35%, #d4a844, #8a6420)',
+                  border:      '1px solid rgba(210,165,65,0.6)',
+                  boxShadow:   '0 0 12px rgba(200,130,40,0.4), inset 0 1px 2px rgba(255,220,120,0.3)',
+                  zIndex:       30,
+                }}
+              />
+            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.7, delay: 0.85 }}
+              style={{ textAlign: 'center', marginTop: 'clamp(36px,5vw,56px)' }}
+            >
+              <Link
+                href="/menu"
+                style={{
+                  display:       'inline-flex',
+                  alignItems:    'center',
+                  gap:            10,
+                  fontFamily:    'var(--font-body)',
+                  fontSize:       11,
+                  fontWeight:     900,
+                  letterSpacing: '0.38em',
+                  color:         'var(--clr-void)',
+                  background:    'var(--clr-red)',
+                  padding:       '14px 36px',
+                  textDecoration:'none',
+                  textTransform: 'uppercase',
+                  transition:    'background 0.18s ease',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--clr-red-dim)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--clr-red)'; }}
+              >
+                VIEW FULL MENU{' '}
+                <span style={{ fontSize: 15, lineHeight: '1' }}>→</span>
+              </Link>
+            </motion.div>
+          </div>
         </>
       )}
-
-      {/* ── Edge vignette — pulls eye to centre, pointer-events: none ── */}
       <div
         aria-hidden="true"
         style={{
@@ -791,33 +776,7 @@ export default function MenuGrid() {
           background:    'radial-gradient(ellipse 80% 65% at 50% 50%, transparent 30%, rgba(5,3,2,0.48) 100%)',
         }}
       />
-
-      {/* ── Responsive fan scaling ── */}
       <style>{`
-        /* Default: show fan, hide static fallback */
-        .ht-fan-sm { display: none; }
-        .ht-fan-lg { display: block; }
-
-        /* Mobile < 520px: show static grid, hide fan */
-        @media (max-width: 519px) {
-          .ht-fan-sm { display: block; }
-          .ht-fan-lg { display: none; }
-        }
-
-        /* Tablet 520–900px: scale fan to 70%
-           transform-origin: bottom center means the empty layout space
-           is at the TOP of the stage div — pull it up with negative margin-top */
-        @media (min-width: 520px) and (max-width: 900px) {
-          #ht-fan-stage {
-            transform: scale(0.70);
-            transform-origin: bottom center;
-            margin-top: -136px;
-          }
-        }
-
-        /* ── Grain texture — SVG fractal noise at 3% overlay ──
-           Adds subtle material depth without an external asset.
-           z-index 55 keeps it above the vignette (50). */
         #menu::after {
           content: '';
           position: absolute;

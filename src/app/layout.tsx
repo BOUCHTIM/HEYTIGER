@@ -9,9 +9,21 @@ import GlobalGrain from "@/components/GlobalGrain";
 import CustomCursor from "@/components/CustomCursor";
 import ChopstickScroll from "@/components/ChopstickScroll";
 import NavOverlay from "@/components/NavOverlay";
+import { restaurantInfo } from "@/data/restaurant";
 
 const BASE_URL = "https://heytigerdubai.com";
 const DBG_RENDER_TS = Date.now();
+
+// Map ISO days to our opening hours days
+const DAY_MAP: Record<string, string> = {
+  'Monday': 'Monday',
+  'Tuesday': 'Tuesday',
+  'Wednesday': 'Wednesday',
+  'Thursday': 'Thursday',
+  'Friday': 'Friday',
+  'Saturday': 'Saturday',
+  'Sunday': 'Sunday',
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
@@ -21,11 +33,10 @@ export const metadata: Metadata = {
     shortcut: ["/heytiger-logo.png"],
   },
   title: {
-    default: "HEY, TIGER — RAAAAAAR CULTURE · Motor City Dubai",
+    default: `HEY, TIGER — ${restaurantInfo.tagline} · ${restaurantInfo.neighborhood} ${restaurantInfo.city}`,
     template: "%s · Hey Tiger Dubai",
   },
-  description:
-    "Japanese bar & restaurant in Motor City Dubai. Brunch, ramen and coffee by day. Sake, cocktails and DJ sets by night. A Brass Monkey Hospitality venue.",
+  description: restaurantInfo.description,
   keywords: [
     "Japanese restaurant Dubai", "bar Motor City Dubai",
     "ramen Dubai", "sake bar Dubai", "rooftop Dubai",
@@ -47,9 +58,8 @@ export const metadata: Metadata = {
     locale: "en_AE",
     url: BASE_URL,
     siteName: "Hey Tiger Dubai",
-    title: "HEY, TIGER — RAAAAAAR CULTURE · Motor City Dubai",
-    description:
-      "Three worlds. One address. Japanese bar & restaurant in Motor City Dubai — family brunch to after-hours rooftop.",
+    title: `HEY, TIGER — ${restaurantInfo.tagline} · ${restaurantInfo.neighborhood} ${restaurantInfo.city}`,
+    description: restaurantInfo.description,
     images: [
       {
         url: "/herophoto.png",
@@ -61,8 +71,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "HEY, TIGER — RAAAAAAR CULTURE",
-    description: "Japanese bar & restaurant. Motor City Dubai. Family by day. After-hours chaos by night.",
+    title: `HEY, TIGER — ${restaurantInfo.tagline}`,
+    description: restaurantInfo.description,
     images: ["/herophoto.png"],
   },
   alternates: {
@@ -70,7 +80,7 @@ export const metadata: Metadata = {
   },
   other: {
     "geo.region":   "AE-DU",
-    "geo.placename": "Dubai Motor City",
+    "geo.placename": `${restaurantInfo.neighborhood} ${restaurantInfo.city}`,
   },
 };
 
@@ -78,40 +88,39 @@ export const metadata: Metadata = {
 const restaurantJsonLd = {
   "@context": "https://schema.org",
   "@type": "BarOrPub",
-  name: "Hey Tiger",
+  name: restaurantInfo.name,
   alternateName: "おいトラ",
   url: BASE_URL,
   logo: `${BASE_URL}/heytiger-logo.png`,
   image: `${BASE_URL}/herophoto.png`,
-  description:
-    "Japanese bar and restaurant in Motor City Dubai. Ramen, robata, sushi, craft cocktails and 47 sake labels across three floors.",
+  description: restaurantInfo.description,
   servesCuisine: ["Japanese", "Izakaya", "Fusion"],
-  priceRange: "AED 65–420",
-  telephone: "+971-4-000-0000",
+  priceRange: "AED 28–160",
+  telephone: restaurantInfo.phone,
   address: {
     "@type": "PostalAddress",
-    streetAddress: "Motor City Club House",
-    addressLocality: "Dubai Motor City",
-    addressRegion: "Dubai",
-    addressCountry: "AE",
+    streetAddress: restaurantInfo.address,
+    addressLocality: restaurantInfo.neighborhood,
+    addressRegion: restaurantInfo.city,
+    addressCountry: restaurantInfo.country,
   },
   geo: {
     "@type": "GeoCoordinates",
-    latitude: 25.0417,
-    longitude: 55.2450,
+    latitude: restaurantInfo.latitude,
+    longitude: restaurantInfo.longitude,
   },
-  openingHoursSpecification: [
-    { "@type": "OpeningHoursSpecification", dayOfWeek: ["Tuesday","Wednesday","Thursday","Friday"], opens: "18:00", closes: "02:00" },
-    { "@type": "OpeningHoursSpecification", dayOfWeek: ["Saturday"], opens: "11:00", closes: "02:00" },
-    { "@type": "OpeningHoursSpecification", dayOfWeek: ["Sunday"], opens: "11:00", closes: "00:00" },
-  ],
-  hasMap: "https://www.google.com/maps/search/?api=1&query=Hey+Tiger+Motor+City+Dubai",
+  openingHoursSpecification: restaurantInfo.openingHours
+    .filter(h => h.opens !== 'CLOSED')
+    .map(h => ({
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: h.day,
+      opens: h.opens,
+      closes: h.closes,
+    })),
+  hasMap: restaurantInfo.googleMapsUrl,
   menu: `${BASE_URL}/menu`,
   acceptsReservations: "True",
-  sameAs: [
-    "https://www.instagram.com/heytigerdubai",
-    "https://www.tiktok.com/@heytigerdubai",
-  ],
+  sameAs: Object.values(restaurantInfo.socialLinks).filter(Boolean) as string[],
   founder: {
     "@type": "Organization",
     name: "Brass Monkey Hospitality",

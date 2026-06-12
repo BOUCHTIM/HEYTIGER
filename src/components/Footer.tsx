@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import Ticker from '@/components/Ticker';
+import { restaurantInfo } from '@/data/restaurant';
 
 const C = {
   void: 'var(--clr-void)',
@@ -15,22 +16,48 @@ const C = {
   faint: 'rgba(240,235,216,0.18)',
 };
 
-const HOURS = [
-  { day: 'MON',       time: 'CLOSED'          },
-  { day: 'TUE – FRI', time: '6PM – 2AM'       },
-  { day: 'SATURDAY',  time: '11AM – 2AM'      },
-  { day: 'SUNDAY',    time: '11AM – MIDNIGHT'  },
-];
+// Helper to format opening hours for display
+const formatHours = (opens: string, closes: string) => {
+  if (opens === 'CLOSED') return 'CLOSED';
+  const formatTime = (t: string) => {
+    const [h, m] = t.split(':');
+    const hour = parseInt(h, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+    return `${displayHour}${m === '00' ? '' : `:${m}`}${ampm}`;
+  };
+  return `${formatTime(opens)} – ${formatTime(closes)}`;
+};
 
-const SOCIAL = [
-  { label: 'Instagram', href: 'https://instagram.com/heytigerdubai' },
-  { label: 'TikTok',    href: 'https://tiktok.com/@heytigerdubai'   },
-];
+// Helper to group days for display (TUE-FRI etc.)
+const getDisplayHours = () => {
+  const hours = restaurantInfo.openingHours;
+  const display: { day: string; time: string }[] = [];
+  let i = 0;
+  while (i < hours.length) {
+    const current = hours[i];
+    if (current.opens === 'CLOSED') {
+      display.push({ day: current.day, time: 'CLOSED' });
+      i++;
+      continue;
+    }
+    // Find consecutive days with same hours
+    let end = i;
+    while (end + 1 < hours.length && hours[end + 1].opens === current.opens && hours[end + 1].closes === current.closes) {
+      end++;
+    }
+    const dayLabel = i === end ? current.day : `${current.day} – ${hours[end].day}`;
+    display.push({ day: dayLabel, time: formatHours(current.opens, current.closes) });
+    i = end + 1;
+  }
+  return display;
+};
 
 export default function Footer({ onReserve }: { onReserve: () => void }) {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const reduceMotion = !!useReducedMotion();
+  const displayHours = getDisplayHours();
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const subscribe = () => { if (!emailValid) return; setSubscribed(true); };
@@ -50,22 +77,22 @@ export default function Footer({ onReserve }: { onReserve: () => void }) {
             </div>
 
             <p style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(14px, 1.2vw, 16px)', letterSpacing: '0.02em', lineHeight: '1.8', color: C.muted, marginBottom: '28px' }}>
-              Motor City Club House, Dubai. 47 sake labels. Open till 2AM.
+              {restaurantInfo.address}, {restaurantInfo.city}. 47 sake labels. Open till 2AM.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '28px' }}>
-              <a href="mailto:hello@heytiger.ae" style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-label)', letterSpacing: '0.26em', color: C.red, textDecoration: 'none', fontWeight: 900 }}>
-                hello@heytiger.ae
+              <a href={`mailto:${restaurantInfo.email}`} style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-label)', letterSpacing: '0.26em', color: C.red, textDecoration: 'none', fontWeight: 900 }}>
+                {restaurantInfo.email}
               </a>
             </div>
 
             <div style={{ display: 'flex', gap: '14px' }}>
-              {SOCIAL.map((s) => (
-                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
+              {Object.entries(restaurantInfo.socialLinks).filter(([, href]) => href).map(([platform, href]) => (
+                <a key={platform} href={href!} target="_blank" rel="noopener noreferrer"
                   style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-label)', fontWeight: 900, letterSpacing: '0.3em', color: C.muted, textDecoration: 'none', borderBottom: `1px solid ${C.border}`, paddingBottom: '4px', transition: 'color 0.15s, border-color 0.15s' }}
                   onMouseEnter={e => { e.currentTarget.style.color = C.red; e.currentTarget.style.borderBottomColor = C.red; }}
                   onMouseLeave={e => { e.currentTarget.style.color = C.muted; e.currentTarget.style.borderBottomColor = C.border; }}
-                >{s.label}</a>
+                >{platform.charAt(0).toUpperCase() + platform.slice(1)}</a>
               ))}
             </div>
           </div>
@@ -76,7 +103,7 @@ export default function Footer({ onReserve }: { onReserve: () => void }) {
               Hours
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {HOURS.map(h => (
+              {displayHours.map(h => (
                 <div key={h.day} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', fontWeight: 700, letterSpacing: 'var(--tracking-wide)', color: h.time === 'CLOSED' ? 'var(--clr-cream-30)' : C.cream }}>{h.day}</span>
                   <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', fontWeight: 700, letterSpacing: '0.1em', color: h.time === 'CLOSED' ? 'rgba(240,235,216,0.3)' : C.red }}>{h.time}</span>
