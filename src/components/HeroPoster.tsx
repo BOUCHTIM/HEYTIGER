@@ -1,7 +1,9 @@
 'use client';
 
+import { useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 
 interface Props {
   onReserve: () => void;
@@ -17,16 +19,29 @@ interface Props {
  * echoes the reference poster's twin "力寿司" boxes).
  */
 export default function HeroPoster({ onReserve }: Props) {
+  const reduceMotion = !!useReducedMotion();
+  const sectionRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end start'] });
+
+  const ghostY = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [0, 80]);
+  const photoY = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [0, -40]);
+
   return (
-    <section id="hero" aria-label="Hey Tiger — Hero" className="ht-poster">
+    <section ref={sectionRef} id="hero" aria-label="Hey Tiger — Hero" className="ht-poster">
       <div className="ht-poster-frame">
         {/* ghost kanji — bleeds off the top/left edge */}
-        <span className="ht-poster-ghost" aria-hidden="true" lang="ja">
+        <motion.span className="ht-poster-ghost" aria-hidden="true" lang="ja" style={{ y: ghostY }}>
           虎
-        </span>
+        </motion.span>
 
         {/* framed photo */}
-        <div className="ht-poster-photo">
+        <motion.div
+          className="ht-poster-photo"
+          style={{ y: photoY }}
+          initial={reduceMotion ? undefined : { opacity: 0, scale: 1.06 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+        >
           <Image
             src="/images/HERO.png"
             alt="Hey Tiger table — branded coasters, sake and wine"
@@ -37,20 +52,37 @@ export default function HeroPoster({ onReserve }: Props) {
             style={{ objectFit: 'cover' }}
           />
 
-          <span className="ht-poster-rim-label" lang="ja">
+          <motion.span
+            className="ht-poster-rim-label"
+            lang="ja"
+            initial={reduceMotion ? undefined : { opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+          >
             ヘイ・タイガー
-          </span>
+          </motion.span>
 
-          <span className="ht-poster-callout" aria-hidden="true">
+          <motion.span
+            className="ht-poster-callout"
+            aria-hidden="true"
+            initial={reduceMotion ? undefined : { opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.65 }}
+          >
             <span className="ht-poster-callout-arrow">↑</span>
             <span lang="ja" className="ht-poster-callout-text">
               本日も営業中!!
             </span>
-          </span>
-        </div>
+          </motion.span>
+        </motion.div>
 
         {/* price / CTA band */}
-        <div className="ht-poster-band">
+        <motion.div
+          className="ht-poster-band"
+          initial={reduceMotion ? undefined : { opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        >
           <span className="ht-poster-stamp" aria-hidden="true">
             <Image src="/heytiger-logo.png" alt="" width={120} height={112} unoptimized style={{ width: '100%', height: 'auto' }} />
           </span>
@@ -75,7 +107,7 @@ export default function HeroPoster({ onReserve }: Props) {
           <span className="ht-poster-stamp" aria-hidden="true">
             <Image src="/heytiger-logo.png" alt="" width={120} height={112} unoptimized style={{ width: '100%', height: 'auto' }} />
           </span>
-        </div>
+        </motion.div>
       </div>
 
       <style>{`
@@ -187,6 +219,11 @@ export default function HeroPoster({ onReserve }: Props) {
           border: 2px solid var(--ht-void);
           padding: 0.4rem;
           background: var(--ht-red);
+          transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .ht-poster-band:hover .ht-poster-stamp {
+          transform: rotate(-4deg);
+          box-shadow: 4px 4px 0 var(--ht-void);
         }
 
         .ht-poster-band-copy {

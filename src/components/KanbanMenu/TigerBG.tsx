@@ -13,9 +13,9 @@ export default function TigerBG() {
     <motion.div
       aria-hidden="true"
       initial={{ opacity: 0 }}
-      animate={{ opacity: 0.17 }} // ghost layer
+      animate={{ opacity: 0.1 }} // ghost layer
       transition={{ duration: 2, ease: 'easeOut' }}
-      style={{ position: 'absolute', right: '-8%', bottom: '-2%', height: '72vh', width: 'auto', zIndex: 1, pointerEvents: 'none' }}
+      style={{ position: 'absolute', right: '-12%', bottom: '-8%', height: '42vh', width: 'auto', zIndex: 0, pointerEvents: 'none' }}
     >
       <svg viewBox="0 0 600 700" height="100%" width="auto" fill="none" style={{ display: 'block' }}>
         <g stroke={TOKENS.void} strokeWidth="4" strokeLinejoin="round" strokeLinecap="round">

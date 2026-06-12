@@ -13,11 +13,11 @@ import { motion } from 'framer-motion';
  */
 
 // nail ≈ (left% + halfWidthAs%, top% − a touch for the 16px nail rise)
-const IZAKAYA = { x: 11.6, y: 16 }; // top 18% / left 3% / w240
-const SAKE = { x: 37.5, y: 4.5 }; //  top 6%  / left 30% / w210
-const LATE = { x: 62, y: 2.5 }; //   top 4%  / left 55% / w195
+const IZAKAYA = { x: 13.3, y: 6 }; // top 8% / left 4% / w260
+const SAKE = { x: 45.9, y: 4 }; //  top 8% / left 37% / w250
+const LATE = { x: 78.2, y: 6 }; //  top 8% / left 70% / w230
 
-const PATH = `M${IZAKAYA.x} ${IZAKAYA.y} Q24.5 13.3 ${SAKE.x} ${SAKE.y} Q49.8 6.5 ${LATE.x} ${LATE.y}`;
+const PATH = `M${IZAKAYA.x} ${IZAKAYA.y} Q29.6 9 ${SAKE.x} ${SAKE.y} Q62 8 ${LATE.x} ${LATE.y}`;
 
 export default function RopeString() {
   return (

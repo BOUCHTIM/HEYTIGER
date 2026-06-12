@@ -22,11 +22,11 @@ interface StickerCfg {
 }
 
 const STICKERS: StickerCfg[] = [
-  { id: 's1', top: '18%', left: '75%', rotate: 14, delay: 0.6, entrance: 'pop', mobile: false },
-  { id: 's2', top: '62%', left: '6%', rotate: -8, delay: 0.8, entrance: 'pop', mobile: false },
-  { id: 's3', top: '38%', left: '82%', rotate: 6, delay: 1.0, entrance: 'pop', mobile: false },
-  { id: 's4', top: '78%', left: '82%', rotate: -5, delay: 1.2, entrance: 'fade', mobile: true },
-  { id: 's5', top: '52%', left: '88%', rotate: 22, delay: 1.4, entrance: 'seal', mobile: false },
+  { id: 's1', top: '4%', left: '93%', rotate: 14, delay: 0.6, entrance: 'pop', mobile: false },
+  { id: 's2', top: '46%', left: '21%', rotate: -8, delay: 0.8, entrance: 'pop', mobile: false },
+  { id: 's3', top: '44%', left: '57%', rotate: 6, delay: 1.0, entrance: 'pop', mobile: false },
+  { id: 's4', top: '90%', left: '85%', rotate: -5, delay: 1.2, entrance: 'fade', mobile: true },
+  { id: 's5', top: '64%', left: '93%', rotate: 22, delay: 1.4, entrance: 'seal', mobile: false },
 ];
 
 const POP = { type: 'spring', stiffness: 200, damping: 11 } as const;
