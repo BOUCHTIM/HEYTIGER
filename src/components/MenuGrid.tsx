@@ -1,15 +1,5 @@
 'use client';
 
-/**
- * MenuGrid — Japanese Fan (扇子 / Sensu) menu preview
- *
- * Motion approach: Framer Motion spring physics
- * - Shared pivot point at blade bottoms (transform-origin: bottom center)
- * - Left-to-right stagger (100ms per blade) mimics flicking a fan open
- * - Responsive geometry for mobile/tablet/desktop
- * - Mobile: touch-optimized, smaller dimensions, reduced spread
- */
-
 import { useRef, useState, useEffect } from 'react';
 import {
   motion,
@@ -25,94 +15,112 @@ const CHAPTERS = [
     num: '01', title: 'ROBATA',    jp: '炉端焼き', sub: 'Binchotan Fire',
     dishes: ['A5 Wagyu Skewer', 'Miso Black Cod', 'Tiger Bone Marrow'],
     price: 'From AED 65',  slug: 'robata',
-    bg: 'linear-gradient(175deg,#401C0C 0%,#1A0806 100%)',
+    bg: 'linear-gradient(175deg,#5A2411 0%,#230B06 100%)',
   },
   {
     num: '02', title: 'IZAKAYA',   jp: '居酒屋',   sub: 'Share the Table',
     dishes: ['Wagyu Gyoza', 'Truffle Karaage', 'Crispy Rice Stack'],
     price: 'From AED 65',  slug: 'izakaya',
-    bg: 'linear-gradient(175deg,#3A1A0A 0%,#170705 100%)',
+    bg: 'linear-gradient(175deg,#52220F 0%,#200905 100%)',
   },
   {
     num: '03', title: 'SUSHI BAR', jp: '鮨バー',   sub: 'Ocean-First',
     dishes: ['Omakase Nigiri', 'RAAAAAR Roll', 'Toro Tartare'],
     price: 'From AED 110', slug: 'sushi-bar',
-    bg: 'linear-gradient(175deg,#361809 0%,#150604 100%)',
+    bg: 'linear-gradient(175deg,#4D200D 0%,#1D0804 100%)',
   },
   {
     num: '04', title: 'RAMEN',     jp: '拉麺',     sub: 'Late-Night Craving',
     dishes: ['Tiger Broth', 'Red Dragon', 'Cold Tiger'],
-    price: 'AED 145 — 185', slug: 'ramen',
-    bg: 'linear-gradient(175deg,#361809 0%,#150604 100%)',
+    price: 'AED 145 – 185', slug: 'ramen',
+    bg: 'linear-gradient(175deg,#4D200D 0%,#1D0804 100%)',
   },
   {
     num: '05', title: 'COCKTAILS', jp: 'カクテル', sub: '47 Sake Labels',
     dishes: ['Tokyo Negroni', 'The Cage', 'RAAAAAR'],
-    price: 'AED 130 — 180', slug: 'cocktails',
-    bg: 'linear-gradient(175deg,#3A1A0A 0%,#170705 100%)',
+    price: 'AED 130 – 180', slug: 'cocktails',
+    bg: 'linear-gradient(175deg,#52220F 0%,#200905 100%)',
   },
   {
     num: '06', title: 'DESSERTS',  jp: '甘味',     sub: 'No Portion Control',
     dishes: ['Miso Lava Cake', 'Black Sesame Parfait', 'Yuzu Cheesecake'],
-    price: 'AED 75 — 95',  slug: 'desserts',
-    bg: 'linear-gradient(175deg,#401C0C 0%,#1A0806 100%)',
+    price: 'AED 75 – 95',  slug: 'desserts',
+    bg: 'linear-gradient(175deg,#5A2411 0%,#230B06 100%)',
   },
 ] as const;
 
 type Chapter = (typeof CHAPTERS)[number];
 
-/* ─── responsive geometry hooks ─────────────────────────────── */
+/* ─── responsive hooks ──────────────────────────────────────────── */
 function useBreakpoint() {
-  const [breakpoint, setBreakpoint] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
+  const [breakpoint, setBreakpoint] = useState<'xs' | 'sm' | 'md' | 'lg' | 'xl'>('xl');
+  const [windowWidth, setWindowWidth] = useState(1200);
 
   useEffect(() => {
-    const updateBreakpoint = () => {
-      if (window.innerWidth < 520) setBreakpoint('mobile');
-      else if (window.innerWidth < 900) setBreakpoint('tablet');
-      else setBreakpoint('desktop');
+    const update = () => {
+      const w = typeof window !== 'undefined' ? window.innerWidth : 1200;
+      setWindowWidth(w);
+      if (w < 390) setBreakpoint('xs');
+      else if (w < 430) setBreakpoint('sm');
+      else if (w < 480) setBreakpoint('md');
+      else if (w < 768) setBreakpoint('lg');
+      else setBreakpoint('xl');
     };
-    updateBreakpoint();
-    window.addEventListener('resize', updateBreakpoint);
-    return () => window.removeEventListener('resize', updateBreakpoint);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
   }, []);
 
-  return breakpoint;
+  return { breakpoint, windowWidth };
 }
 
-/* ─── responsive fan geometry ───────────────────────────────── */
-function getFanGeometry(breakpoint: 'mobile' | 'tablet' | 'desktop') {
-  let BW, BH, FINAL_ANGLES, pivotPinch;
-  
-  if (breakpoint === 'mobile') {
-    BW = 110;
-    BH = 280;
-    FINAL_ANGLES = [-30, -18, -6, 6, 18, 30];
+function useGeometry(breakpoint: string, windowWidth: number) {
+  let bladeWidth, bladeHeight, spreadAngle, pivotPinch;
+
+  if (breakpoint === 'xs') {
+    bladeWidth = Math.min(windowWidth * 0.30, 110);
+    bladeHeight = Math.min(windowWidth * 0.72, 260);
+    spreadAngle = 58;
     pivotPinch = 18;
-  } else if (breakpoint === 'tablet') {
-    BW = 140;
-    BH = 360;
-    FINAL_ANGLES = [-45, -27, -9, 9, 27, 45];
+  } else if (breakpoint === 'sm') {
+    bladeWidth = Math.min(windowWidth * 0.28, 120);
+    bladeHeight = Math.min(windowWidth * 0.68, 280);
+    spreadAngle = 62;
+    pivotPinch = 20;
+  } else if (breakpoint === 'md') {
+    bladeWidth = Math.min(windowWidth * 0.26, 130);
+    bladeHeight = Math.min(windowWidth * 0.64, 300);
+    spreadAngle = 64;
+    pivotPinch = 21;
+  } else if (breakpoint === 'lg') {
+    bladeWidth = Math.min(windowWidth * 0.20, 150);
+    bladeHeight = Math.min(windowWidth * 0.52, 340);
+    spreadAngle = 70;
     pivotPinch = 22;
   } else {
-    BW = 182;
-    BH = 428;
-    FINAL_ANGLES = [-55, -33, -11, 11, 33, 55];
+    bladeWidth = Math.min(windowWidth * 0.15, 182);
+    bladeHeight = Math.min(windowWidth * 0.36, 428);
+    spreadAngle = 110;
     pivotPinch = 26;
   }
 
+  const halfAngle = spreadAngle / 2;
+  const angleStep = spreadAngle / (CHAPTERS.length - 1);
+  const angles = [];
+  for (let i = 0; i < CHAPTERS.length; i++) {
+    angles.push(-halfAngle + i * angleStep);
+  }
+
   return {
-    BW, // blade width
-    BH, // blade height
-    FINAL_ANGLES: FINAL_ANGLES as readonly number[],
-    BLADE_CLIP: `polygon(0% 0%, 100% 0%, calc(50% + ${pivotPinch/2}px) 100%, calc(50% - ${pivotPinch/2}px) 100%)`,
+    bladeWidth,
+    bladeHeight,
+    angles,
+    pivotPinch,
   };
 }
 
-const DELAYS = [0, 0.10, 0.20, 0.30, 0.40, 0.50] as const;
+/* ─── sub-components ──────────────────────────────────────────── */
 
-/* ─── sub-components ─────────────────────────────────────────── */
-
-/** Single lacquered fan blade */
 function FanBlade({
   chapter,
   index,
@@ -122,7 +130,7 @@ function FanBlade({
   onEnter,
   onLeave,
   geometry,
-  breakpoint,
+  delay,
 }: {
   chapter: Chapter;
   index: number;
@@ -131,133 +139,134 @@ function FanBlade({
   anyActive: boolean;
   onEnter: () => void;
   onLeave: () => void;
-  geometry: ReturnType<typeof getFanGeometry>;
-  breakpoint: 'mobile' | 'tablet' | 'desktop';
+  geometry: ReturnType<typeof useGeometry>;
+  delay: number;
 }) {
-  const { BW, BH, FINAL_ANGLES, BLADE_CLIP } = geometry;
-  const angle = FINAL_ANGLES[index];
-  const target = isActive ? angle * 0.86 : angle;
-  const fontSizeScale = breakpoint === 'mobile' ? 0.75 : breakpoint === 'tablet' ? 0.85 : 1;
+  const { bladeWidth, bladeHeight, angles, pivotPinch } = geometry;
+  const angle = angles[index];
+  const targetAngle = isActive ? angle * 0.86 : angle;
+  const scale = isActive ? 1.03 : 1;
+  const fontSizeScale = pivotPinch / 26;
 
   return (
-    <motion.div
+    <motion.button
+      aria-label={`Chapter ${chapter.num}: ${chapter.title} — ${chapter.sub}`}
       style={{
-        position:        'absolute',
-        bottom:          0,
-        left:            `calc(50% - ${BW / 2}px)`,
-        width:           BW,
-        height:          BH,
+        position: 'absolute',
+        bottom: 0,
+        left: `calc(50% - ${bladeWidth / 2}px)`,
+        width: bladeWidth,
+        height: bladeHeight,
         transformOrigin: 'bottom center',
-        clipPath:        BLADE_CLIP,
-        zIndex:          isActive ? 20 : index + 1,
-        cursor:          'pointer',
-        background:      chapter.bg,
-        filter:          `drop-shadow(-3px 0 14px rgba(5,2,1,0.68))`,
+        clipPath: `polygon(0% 0%, 100% 0%, calc(50% + ${pivotPinch / 2}px) 100%, calc(50% - ${pivotPinch / 2}px) 100%)`,
+        zIndex: isActive ? 30 : index + 2,
+        background: chapter.bg,
+        cursor: 'pointer',
+        border: 'none',
+        outline: 'none',
+        padding: 0,
+        margin: 0,
+        filter: isActive
+          ? 'drop-shadow(0 0 24px rgba(255,120,60,.45)) drop-shadow(0 0 70px rgba(255,90,40,.22))'
+          : 'drop-shadow(-3px 0 16px rgba(5,2,1,0.75))',
       }}
-      initial={{ rotate: 0, opacity: 0 }}
+      initial={{ rotate: 0, opacity: 0, scale: 0.9 }}
       animate={{
-        rotate:  inView ? target : 0,
-        opacity: inView ? (anyActive && !isActive ? 0.42 : 1) : 0,
+        rotate: inView ? targetAngle : 0,
+        opacity: inView ? (anyActive && !isActive ? 0.48 : 1) : 0,
+        scale: inView ? scale : 0.9,
       }}
       transition={{
-        rotate: {
-          type:      'spring',
-          stiffness: isActive ? 150 : 58,
-          damping:   isActive ? 18  : 11,
-          mass:      0.8,
-          delay:     anyActive ? 0 : (inView ? DELAYS[index] : 0),
-        },
-        opacity: {
-          duration: 0.3,
-          delay:    anyActive ? 0 : (inView ? DELAYS[index] + 0.15 : 0),
-        },
+        type: 'spring',
+        stiffness: isActive ? 160 : 60,
+        damping: isActive ? 18 : 12,
+        mass: 0.75,
+        delay: anyActive ? 0 : delay,
+        opacity: { duration: 0.28, delay: anyActive ? 0 : delay + 0.1 },
       }}
-      onHoverStart={onEnter}
-      onHoverEnd={onLeave}
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
       onTouchStart={onEnter}
       onTouchEnd={onLeave}
+      onFocus={onEnter}
+      onBlur={onLeave}
     >
-      <Link
-        href={`/menu#${chapter.slug}`}
-        aria-label={`Chapter ${chapter.num}: ${chapter.title} — ${chapter.sub}`}
-        style={{
-          display:        'block',
-          width:          '100%',
-          height:         '100%',
-          position:       'relative',
-          textDecoration: 'none',
-          outline:        'none',
-        }}
-        onFocus={onEnter}
-        onBlur={onLeave}
-      >
+      <Link href={`/menu#${chapter.slug}`} style={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        height: '100%',
+        textDecoration: 'none',
+        color: 'inherit',
+        pointerEvents: 'none',
+      }} aria-hidden="true">
+        {/* Brass Edge Shimmer */}
         <div
           aria-hidden="true"
           style={{
-            position:   'absolute',
-            inset:       0,
-            background: 'linear-gradient(to right, rgba(210,168,60,0.28) 0px, transparent 12px, transparent calc(100% - 12px), rgba(210,168,60,0.28) 100%)',
-            pointerEvents: 'none',
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(to right, rgba(255,180,100,0.24) 0px, transparent 14px, transparent calc(100% - 14px), rgba(255,180,100,0.24) 100%)',
           }}
         />
+        {/* Lacquer Sheen */}
         <div
           aria-hidden="true"
           style={{
-            position:   'absolute',
+            position: 'absolute',
             top: 0, left: '8%', right: '8%',
-            height:     '1px',
-            background: `linear-gradient(to right, transparent, rgba(225,182,72,${isActive ? 0.85 : 0.62}), transparent)`,
-            transition: 'background 0.25s ease',
-            pointerEvents: 'none',
+            height: '1px',
+            background: `linear-gradient(to right, transparent, rgba(255,200,130,${isActive ? 0.9 : 0.65}), transparent)`,
+            transition: 'background 0.2s ease',
           }}
         />
+        {/* Ghost Chapter Number */}
         <div
           aria-hidden="true"
           style={{
-            position:    'absolute',
-            bottom:      '6%',
-            left:        '50%',
-            transform:   'translateX(-50%)',
-            fontFamily:  'var(--font-display)',
-            fontWeight:   900,
-            fontSize:    `${Math.round(BW * 0.68)}px`,
-            lineHeight:   1,
-            color:       `rgba(200,61,32,${isActive ? 0.11 : 0.07})`,
+            position: 'absolute',
+            bottom: '6%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            fontFamily: 'var(--font-display)',
+            fontWeight: 900,
+            fontSize: `${Math.round(bladeWidth * 0.72)}px`,
+            lineHeight: 1,
+            color: `rgba(255,90,40,${isActive ? 0.16 : 0.10})`,
             letterSpacing: '-0.04em',
-            userSelect:  'none',
-            pointerEvents: 'none',
-            whiteSpace:  'nowrap',
-            transition:  'color 0.3s ease',
+            userSelect: 'none',
+            whiteSpace: 'nowrap',
+            transition: 'color 0.2s ease',
           }}
         >
           {chapter.num}
         </div>
+        {/* Vertical Text */}
         <div
           style={{
-            position:      'absolute',
-            top:            '10%',
-            bottom:         '20%',
-            left:           '50%',
-            transform:      'translateX(-50%)',
-            display:        'flex',
-            flexDirection:  'column',
-            alignItems:     'center',
-            gap:             6,
-            pointerEvents:  'none',
+            position: 'absolute',
+            top: '10%',
+            bottom: '20%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 6 * fontSizeScale,
           }}
         >
           <span
             lang="ja"
             style={{
-              fontFamily:      'var(--font-jp)',
-              fontSize:         13 * fontSizeScale,
-              fontWeight:       700,
-              color:           `rgba(200,61,32,${isActive ? 0.95 : 0.5})`,
-              writingMode:     'vertical-rl',
+              fontFamily: 'var(--font-jp)',
+              fontSize: 14 * fontSizeScale,
+              fontWeight: 700,
+              color: `rgba(255,130,80,${isActive ? 0.98 : 0.58})`,
+              writingMode: 'vertical-rl',
               textOrientation: 'mixed',
-              letterSpacing:   '0.08em',
-              lineHeight:       1.3,
-              transition:      'color 0.25s ease',
+              letterSpacing: '0.08em',
+              lineHeight: 1.3,
+              transition: 'color 0.2s ease',
             }}
           >
             {chapter.jp}
@@ -265,73 +274,76 @@ function FanBlade({
           <div
             aria-hidden="true"
             style={{
-              width:      1,
-              height:     20 * fontSizeScale,
+              width: 1,
+              height: 22 * fontSizeScale,
               flexShrink: 0,
-              background: `rgba(212,162,48,${isActive ? 0.70 : 0.24})`,
-              transition: 'background 0.25s ease',
+              background: `rgba(255,170,100,${isActive ? 0.75 : 0.28})`,
+              transition: 'background 0.2s ease',
             }}
           />
           <span
             style={{
-              fontFamily:      'var(--font-body)',
-              fontSize:         9 * fontSizeScale,
-              fontWeight:       900,
-              letterSpacing:   '0.38em',
-              color:           `rgba(200,61,32,${isActive ? 0.9 : 0.4})`,
-              writingMode:     'vertical-rl',
+              fontFamily: 'var(--font-body)',
+              fontSize: 10 * fontSizeScale,
+              fontWeight: 900,
+              letterSpacing: '0.38em',
+              color: `rgba(255,120,70,${isActive ? 0.92 : 0.48})`,
+              writingMode: 'vertical-rl',
               textOrientation: 'mixed',
-              transition:      'color 0.25s ease',
+              transition: 'color 0.2s ease',
             }}
           >
             {chapter.num}
           </span>
         </div>
       </Link>
-    </motion.div>
+    </motion.button>
   );
 }
 
-/** Chapter detail panel — cross-fades above the fan */
 function ChapterDetail({ chapter }: { chapter: Chapter }) {
   return (
     <motion.div
       key={chapter.num}
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -6 }}
-      transition={{ duration: 0.28, ease: [0.22, 1, 0.3, 1] }}
-      style={{ textAlign: 'center' }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.3, 1] }}
+      style={{
+        textAlign: 'center',
+        maxWidth: '620px',
+        padding: '0 clamp(16px,5vw,24px)',
+      }}
     >
       <div
         style={{
-          display:        'flex',
-          alignItems:     'center',
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: 'center',
-          gap:             12,
-          marginBottom:    12,
+          gap: 'clamp(10px,2vw,14px)',
+          marginBottom: 'clamp(10px,1.5vw,14px)',
         }}
       >
         <span
           style={{
-            fontFamily:    'var(--font-body)',
-            fontSize:       10,
-            fontWeight:     900,
-            letterSpacing: '0.44em',
-            color:         'var(--clr-red)',
+            fontFamily: 'var(--font-body)',
+            fontSize: 'clamp(10px,1.4vw,12px)',
+            fontWeight: 900,
+            letterSpacing: '0.48em',
+            color: 'var(--clr-red)',
             textTransform: 'uppercase',
           }}
         >
           {chapter.num}
         </span>
-        <span style={{ width: 28, height: 1, background: 'rgba(200,61,32,0.35)', display:'block', flexShrink:0 }} />
+        <span style={{ width: 28, height: 1, background: 'rgba(255,110,50,0.45)', display: 'block', flexShrink: 0 }} />
         <span
           style={{
-            fontFamily:    'var(--font-body)',
-            fontSize:       10,
-            fontWeight:     700,
-            letterSpacing: '0.24em',
-            color:         'rgba(240,235,216,0.36)',
+            fontFamily: 'var(--font-body)',
+            fontSize: 'clamp(10px,1.4vw,12px)',
+            fontWeight: 700,
+            letterSpacing: '0.26em',
+            color: 'rgba(255,240,210,0.52)',
             textTransform: 'uppercase',
           }}
         >
@@ -340,23 +352,23 @@ function ChapterDetail({ chapter }: { chapter: Chapter }) {
       </div>
       <div
         style={{
-          display:        'flex',
-          alignItems:     'baseline',
+          display: 'flex',
+          alignItems: 'baseline',
           justifyContent: 'center',
-          gap:            'clamp(8px,1.5vw,18px)',
-          flexWrap:       'wrap',
-          marginBottom:    14,
+          gap: 'clamp(8px,1.5vw,18px)',
+          flexWrap: 'wrap',
+          marginBottom: 'clamp(12px,1.8vw,16px)',
         }}
       >
         <h3
           style={{
-            margin:        0,
-            fontFamily:    'var(--font-display)',
-            fontWeight:     900,
-            fontSize:      'clamp(32px,4.2vw,60px)',
-            letterSpacing: '-0.025em',
-            lineHeight:     1,
-            color:         'var(--clr-cream)',
+            margin: 0,
+            fontFamily: 'var(--font-display)',
+            fontWeight: 900,
+            fontSize: 'clamp(34px,4.5vw,66px)',
+            letterSpacing: '-0.03em',
+            lineHeight: 0.92,
+            color: '#FFF8E7',
             textTransform: 'uppercase',
           }}
         >
@@ -365,12 +377,12 @@ function ChapterDetail({ chapter }: { chapter: Chapter }) {
         <span
           lang="ja"
           style={{
-            fontFamily:  'var(--font-jp)',
-            fontSize:    'clamp(13px,1.7vw,20px)',
-            fontWeight:   700,
-            color:       'var(--clr-red)',
-            opacity:      0.9,
-            letterSpacing:'0.1em',
+            fontFamily: 'var(--font-jp)',
+            fontSize: 'clamp(14px,1.8vw,22px)',
+            fontWeight: 700,
+            color: '#FF6D3D',
+            opacity: 0.95,
+            letterSpacing: '0.12em',
           }}
         >
           {chapter.jp}
@@ -378,21 +390,21 @@ function ChapterDetail({ chapter }: { chapter: Chapter }) {
       </div>
       <div
         style={{
-          display:        'flex',
+          display: 'flex',
           justifyContent: 'center',
-          gap:            'clamp(14px,2.5vw,32px)',
-          flexWrap:       'wrap',
-          marginBottom:    10,
+          gap: 'clamp(14px,2.5vw,34px)',
+          flexWrap: 'wrap',
+          marginBottom: 'clamp(10px,1.5vw,12px)',
         }}
       >
         {chapter.dishes.map(d => (
           <span
             key={d}
             style={{
-              fontFamily:    'var(--font-body)',
-              fontSize:      'clamp(10px,0.9vw,12px)',
-              letterSpacing: '0.16em',
-              color:         'rgba(240,235,216,0.56)',
+              fontFamily: 'var(--font-body)',
+              fontSize: 'clamp(11px,1.1vw,14px)',
+              letterSpacing: '0.18em',
+              color: 'rgba(255,240,210,0.68)',
               textTransform: 'uppercase',
             }}
           >
@@ -402,11 +414,11 @@ function ChapterDetail({ chapter }: { chapter: Chapter }) {
       </div>
       <span
         style={{
-          fontFamily:    'var(--font-body)',
-          fontSize:       10,
-          fontWeight:     700,
-          letterSpacing: '0.24em',
-          color:         'rgba(240,235,216,0.26)',
+          fontFamily: 'var(--font-body)',
+          fontSize: 'clamp(10px,1.1vw,12px)',
+          fontWeight: 700,
+          letterSpacing: '0.26em',
+          color: 'rgba(255,230,190,0.40)',
           textTransform: 'uppercase',
         }}
       >
@@ -416,17 +428,16 @@ function ChapterDetail({ chapter }: { chapter: Chapter }) {
   );
 }
 
-/** Reduced-motion fallback — accessible static grid */
 function StaticGrid() {
   return (
     <div>
       <div
         style={{
-          display:             'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-          gap:                  '1px',
-          background:          'rgba(240,235,216,0.07)',
-          border:              '1px solid rgba(240,235,216,0.07)',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(260px,1fr))',
+          gap: '1px',
+          background: 'rgba(240,235,216,0.07)',
+          border: '1px solid rgba(240,235,216,0.07)',
         }}
       >
         {CHAPTERS.map(ch => (
@@ -434,21 +445,21 @@ function StaticGrid() {
             key={ch.num}
             href={`/menu#${ch.slug}`}
             style={{
-              display:        'flex',
-              flexDirection:  'column',
-              padding:        'clamp(28px,4vw,44px) clamp(24px,3.5vw,36px)',
-              background:      ch.bg,
+              display: 'flex',
+              flexDirection: 'column',
+              padding: 'clamp(28px,4vw,44px) clamp(24px,3.5vw,36px)',
+              background: ch.bg,
               textDecoration: 'none',
-              gap:             12,
+              gap: 12,
             }}
           >
             <span
               style={{
-                fontFamily:    'var(--font-body)',
-                fontSize:       10,
-                fontWeight:     900,
+                fontFamily: 'var(--font-body)',
+                fontSize: 10,
+                fontWeight: 900,
                 letterSpacing: '0.4em',
-                color:         'var(--clr-red)',
+                color: 'var(--clr-red)',
                 textTransform: 'uppercase',
               }}
             >
@@ -457,11 +468,11 @@ function StaticGrid() {
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
               <span
                 style={{
-                  fontFamily:    'var(--font-display)',
-                  fontWeight:     900,
-                  fontSize:      'clamp(22px,2.4vw,32px)',
+                  fontFamily: 'var(--font-display)',
+                  fontWeight: 900,
+                  fontSize: 'clamp(22px,2.4vw,32px)',
                   letterSpacing: '-0.02em',
-                  color:         'var(--clr-cream)',
+                  color: '#FFF8E7',
                   textTransform: 'uppercase',
                 }}
               >
@@ -470,11 +481,11 @@ function StaticGrid() {
               <span
                 lang="ja"
                 style={{
-                  fontFamily:  'var(--font-jp)',
-                  fontSize:     14,
-                  fontWeight:   700,
-                  color:       'var(--clr-red)',
-                  opacity:      0.85,
+                  fontFamily: 'var(--font-jp)',
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: 'var(--clr-red)',
+                  opacity: 0.85,
                 }}
               >
                 {ch.jp}
@@ -482,24 +493,24 @@ function StaticGrid() {
             </div>
             <span
               style={{
-                fontFamily:    'var(--font-body)',
-                fontSize:      'clamp(11px,1vw,13px)',
+                fontFamily: 'var(--font-body)',
+                fontSize: 'clamp(11px,1vw,13px)',
                 letterSpacing: '0.04em',
-                color:         'rgba(240,235,216,0.5)',
-                lineHeight:     1.55,
+                color: 'rgba(255,240,210,0.65)',
+                lineHeight: 1.55,
               }}
             >
               {ch.dishes.join(' · ')}
             </span>
             <span
               style={{
-                fontFamily:    'var(--font-body)',
-                fontSize:       10,
-                fontWeight:     700,
+                fontFamily: 'var(--font-body)',
+                fontSize: 10,
+                fontWeight: 700,
                 letterSpacing: '0.22em',
-                color:         'rgba(240,235,216,0.26)',
+                color: 'rgba(255,230,190,0.38)',
                 textTransform: 'uppercase',
-                marginTop:      4,
+                marginTop: 4,
               }}
             >
               {ch.price}
@@ -511,29 +522,16 @@ function StaticGrid() {
   );
 }
 
-/* ─── main export ────────────────────────────────────────────── */
 export default function MenuGrid() {
-  const sectionRef  = useRef<HTMLElement>(null);
-  const inView      = useInView(sectionRef, { once: true, margin: '-8%' });
+  const sectionRef = useRef<HTMLElement>(null);
+  const inView = useInView(sectionRef, { once: true, margin: '-8%' });
   const prefersLess = useReducedMotion();
-  const breakpoint  = useBreakpoint();
-  const geometry    = getFanGeometry(breakpoint);
+  const { breakpoint, windowWidth } = useBreakpoint();
+  const geometry = useGeometry(breakpoint, windowWidth);
 
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const displayChapter = CHAPTERS[activeIdx ?? 0];
-  const anyActive      = activeIdx !== null;
-
-  // Adjust margin for tablet scaling
-  const getStageStyle = () => {
-    if (breakpoint === 'tablet') {
-      return {
-        transform: 'scale(1)',
-        transformOrigin: 'bottom center',
-        marginTop: 0,
-      };
-    }
-    return {};
-  };
+  const anyActive = activeIdx !== null;
 
   return (
     <section
@@ -541,90 +539,90 @@ export default function MenuGrid() {
       ref={sectionRef}
       aria-label="Menu chapters"
       style={{
-        background:    'var(--clr-void)',
-        position:      'relative',
-        borderTop:     '1px solid var(--border-structural)',
-        paddingTop:    'clamp(72px,9vw,120px)',
+        background: '#0A0808',
+        position: 'relative',
+        borderTop: '1px solid rgba(255,110,50,0.12)',
+        paddingTop: 'clamp(72px,9vw,120px)',
         paddingBottom: 'clamp(72px,9vw,120px)',
-        overflow:      'hidden',
+        overflow: 'hidden',
       }}
     >
+      {/* Warm Radial Background Glow */}
       <motion.div
         aria-hidden="true"
         initial={{ opacity: 0 }}
         animate={inView ? { opacity: 1 } : {}}
-        transition={{ duration: 1.4, delay: 0.3, ease: 'easeOut' }}
+        transition={{ duration: 1.6, delay: 0.2, ease: 'easeOut' }}
         style={{
-          position:      'absolute',
-          inset:          0,
+          position: 'absolute',
+          inset: 0,
           pointerEvents: 'none',
-          zIndex:         0,
-          background:    `
-            radial-gradient(ellipse 55% 38% at 50% 100%, rgba(190,90,20,0.30) 0%, transparent 60%),
-            radial-gradient(ellipse 88% 56% at 50% 100%, rgba(150,55,10,0.14) 0%, transparent 70%)
+          zIndex: 0,
+          background: `
+            radial-gradient(circle at 50% 120%, rgba(255,90,40,0.16) 0%, rgba(0,0,0,0) 55%),
+            radial-gradient(circle at 50% 100%, rgba(190,80,30,0.10) 0%, rgba(0,0,0,0) 65%),
+            radial-gradient(circle at 50% 95%, rgba(150,60,20,0.07) 0%, rgba(0,0,0,0) 75%)
           `,
         }}
       />
+
       <div
         style={{
-          maxWidth:  '1320px',
-          margin:    '0 auto',
-          padding:   '0 clamp(20px,5vw,56px)',
+          maxWidth: '1320px',
+          margin: '0 auto',
+          padding: '0 clamp(16px,5vw,24px)',
           textAlign: 'center',
-          marginBottom: 'clamp(40px,5vw,60px)',
-          position:  'relative',
-          zIndex:     2,
+          marginBottom: 'clamp(36px,5vw,56px)',
+          position: 'relative',
+          zIndex: 2,
         }}
       >
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7 }}
-          style={{ marginBottom: 18 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
+          style={{ marginBottom: 'clamp(12px,1.8vw,16px)' }}
         >
           <span
             style={{
-              fontFamily:    'var(--font-body)',
-              fontSize:       10,
-              fontWeight:     900,
-              letterSpacing: '0.48em',
-              color:         'var(--clr-red)',
+              fontFamily: 'var(--font-body)',
+              fontSize: 'clamp(10px,1.3vw,12px)',
+              fontWeight: 900,
+              letterSpacing: '0.5em',
+              color: '#FF7240',
               textTransform: 'uppercase',
             }}
           >
-            THE MENU ·{' '}
-            <span lang="ja" style={{ fontFamily: 'var(--font-jp)', letterSpacing: '0.2em' }}>
-              料理
-            </span>
+            THE MENU · <span lang="ja" style={{ fontFamily: 'var(--font-jp)', letterSpacing: '0.2em' }}>料理</span>
           </span>
         </motion.div>
         <motion.h2
           initial={{ opacity: 0, y: 14 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.85, delay: 0.08, ease: [0.22, 1, 0.3, 1] }}
+          transition={{ duration: 1.0, delay: 0.2, ease: [0.22, 1, 0.3, 1] }}
           style={{
-            margin:        0,
-            fontFamily:    'var(--font-display)',
-            fontWeight:     900,
-            fontSize:      'clamp(40px,5.5vw,80px)',
-            letterSpacing: '-0.03em',
-            lineHeight:     0.94,
-            color:         'var(--clr-cream)',
+            margin: 0,
+            fontFamily: 'var(--font-display)',
+            fontWeight: 900,
+            fontSize: 'clamp(36px,5.2vw,86px)',
+            letterSpacing: '-0.035em',
+            lineHeight: 0.90,
+            color: '#FFF8E7',
             textTransform: 'uppercase',
           }}
         >
-          SIX CHAPTERS.{' '}
-          <span style={{ color: 'var(--clr-red)' }}>ONE KITCHEN.</span>
+          SIX CHAPTERS. <span style={{ color: '#FF6D3D' }}>ONE KITCHEN.</span>
         </motion.h2>
       </div>
+
       {prefersLess ? (
         <div
           style={{
-            maxWidth:  '1320px',
-            margin:    '0 auto',
-            padding:   '0 clamp(20px,5vw,56px)',
-            position:  'relative',
-            zIndex:     2,
+            maxWidth: '1320px',
+            margin: '0 auto',
+            padding: '0 clamp(16px,5vw,24px)',
+            position: 'relative',
+            zIndex: 2,
           }}
         >
           <StaticGrid />
@@ -632,148 +630,160 @@ export default function MenuGrid() {
             <Link
               href="/menu"
               style={{
-                display:       'inline-flex',
-                alignItems:    'center',
-                gap:            10,
-                fontFamily:    'var(--font-body)',
-                fontSize:       11,
-                fontWeight:     900,
-                letterSpacing: '0.38em',
-                color:         'var(--clr-void)',
-                background:    'var(--clr-red)',
-                padding:       '14px 32px',
-                textDecoration:'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 10,
+                fontFamily: 'var(--font-body)',
+                fontSize: 'clamp(11px,1.2vw,13px)',
+                fontWeight: 900,
+                letterSpacing: '0.4em',
+                color: '#0A0808',
+                background: '#FF6D3D',
+                padding: '18px 40px',
+                minHeight: '56px',
+                textDecoration: 'none',
                 textTransform: 'uppercase',
+                borderRadius: 0,
+                WebkitTapHighlightColor: 'transparent',
               }}
             >
-              VIEW FULL MENU{' '}
-              <span style={{ fontSize: 15, lineHeight: '1' }}>→</span>
+              VIEW FULL MENU <span style={{ fontSize: 16, lineHeight: '1' }}>→</span>
             </Link>
           </div>
         </div>
       ) : (
-        <>
-          <div style={{ position: 'relative', zIndex: 2 }}>
-            <div
-              aria-live="polite"
-              aria-atomic="true"
-              style={{
-                position:       'relative',
-                minHeight:       160,
-                display:        'flex',
-                alignItems:     'center',
-                justifyContent: 'center',
-                padding:        '0 clamp(20px,5vw,56px)',
-              }}
-            >
-              <AnimatePresence mode="wait">
-                <ChapterDetail key={displayChapter.num} chapter={displayChapter} />
-              </AnimatePresence>
-            </div>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={inView ? { opacity: anyActive ? 0 : 0.35 } : {}}
-              transition={{ duration: 0.5, delay: 0.9 }}
-              style={{
-                textAlign:     'center',
-                marginBottom:   12,
-                fontFamily:    'var(--font-body)',
-                fontSize:       9,
-                fontWeight:     700,
-                letterSpacing: '0.38em',
-                color:         'rgba(240,235,216,0.6)',
-                textTransform: 'uppercase',
-                pointerEvents: 'none',
-                userSelect:    'none',
-              }}
-            >
-              {breakpoint === 'mobile' ? '── TAP A CHAPTER ──' : '── HOVER A CHAPTER ──'}
-            </motion.div>
-            <div
-              id="ht-fan-stage"
-              style={{
-                position:       'relative',
-                zIndex:          2,
-                height:          geometry.BH + 24,
-                width:          '100%',
-                overflow:       'visible',
-                display:        'flex',
-                justifyContent: 'center',
-                ...getStageStyle(),
-              }}
-            >
-              {CHAPTERS.map((chapter, i) => (
-                <FanBlade
-                  key={chapter.num}
-                  chapter={chapter}
-                  index={i}
-                  inView={inView}
-                  isActive={activeIdx === i}
-                  anyActive={anyActive}
-                  onEnter={() => setActiveIdx(i)}
-                  onLeave={() => setActiveIdx(null)}
-                  geometry={geometry}
-                  breakpoint={breakpoint}
-                />
-              ))}
-              <div
-                aria-hidden="true"
-                style={{
-                  position:    'absolute',
-                  bottom:       0,
-                  left:        '50%',
-                  transform:   'translateX(-50%)',
-                  width:        breakpoint === 'mobile' ? 14 : breakpoint === 'tablet' ? 15 : 16,
-                  height:       breakpoint === 'mobile' ? 14 : breakpoint === 'tablet' ? 15 : 16,
-                  borderRadius: '50%',
-                  background:  'radial-gradient(circle at 35% 35%, #d4a844, #8a6420)',
-                  border:      '1px solid rgba(210,165,65,0.6)',
-                  boxShadow:   '0 0 12px rgba(200,130,40,0.4), inset 0 1px 2px rgba(255,220,120,0.3)',
-                  zIndex:       30,
-                }}
-              />
-            </div>
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.7, delay: 0.85 }}
-              style={{ textAlign: 'center', marginTop: 'clamp(36px,5vw,56px)' }}
-            >
-              <Link
-                href="/menu"
-                style={{
-                  display:       'inline-flex',
-                  alignItems:    'center',
-                  gap:            10,
-                  fontFamily:    'var(--font-body)',
-                  fontSize:       11,
-                  fontWeight:     900,
-                  letterSpacing: '0.38em',
-                  color:         'var(--clr-void)',
-                  background:    'var(--clr-red)',
-                  padding:       '14px 36px',
-                  textDecoration:'none',
-                  textTransform: 'uppercase',
-                  transition:    'background 0.18s ease',
-                }}
-                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--clr-red-dim)'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--clr-red)'; }}
-              >
-                VIEW FULL MENU{' '}
-                <span style={{ fontSize: 15, lineHeight: '1' }}>→</span>
-              </Link>
-            </motion.div>
+        <div style={{ position: 'relative', zIndex: 2 }}>
+          <div
+            aria-live="polite"
+            aria-atomic="true"
+            style={{
+              position: 'relative',
+              minHeight: '150px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <AnimatePresence mode="wait">
+              <ChapterDetail key={displayChapter.num} chapter={displayChapter} />
+            </AnimatePresence>
           </div>
-        </>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: anyActive ? 0 : 0.42 } : {}}
+            transition={{ duration: 0.5, delay: 0.9 }}
+            style={{
+              textAlign: 'center',
+              marginBottom: 'clamp(12px,1.8vw,16px)',
+              fontFamily: 'var(--font-body)',
+              fontSize: 'clamp(9px,1.1vw,11px)',
+              fontWeight: 700,
+              letterSpacing: '0.42em',
+              color: 'rgba(255,220,180,0.70)',
+              textTransform: 'uppercase',
+              pointerEvents: 'none',
+              userSelect: 'none',
+            }}
+          >
+            {breakpoint === 'xl' ? '── HOVER A CHAPTER ──' : '── TAP A CHAPTER ──'}
+          </motion.div>
+          <div
+            id="ht-fan-stage"
+            style={{
+              position: 'relative',
+              zIndex: 2,
+              height: geometry.bladeHeight + 32,
+              width: '100%',
+              maxWidth: 'min(92vw, 920px)',
+              margin: '0 auto',
+              overflow: 'visible',
+              display: 'flex',
+              justifyContent: 'center',
+            }}
+          >
+            {CHAPTERS.map((chapter, i) => (
+              <FanBlade
+                key={chapter.num}
+                chapter={chapter}
+                index={i}
+                inView={inView}
+                isActive={activeIdx === i}
+                anyActive={anyActive}
+                onEnter={() => setActiveIdx(i)}
+                onLeave={() => setActiveIdx(null)}
+                geometry={geometry}
+                delay={i * 0.1}
+              />
+            ))}
+            <div
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: Math.max(14, Math.min(18, windowWidth * 0.02)),
+                height: Math.max(14, Math.min(18, windowWidth * 0.02)),
+                borderRadius: '50%',
+                background: 'radial-gradient(circle at 35% 35%, #FFC37A, #8A5C20)',
+                border: '1px solid rgba(255,180,100,0.65)',
+                boxShadow: '0 0 16px rgba(255,140,70,0.45), inset 0 1px 3px rgba(255,230,170,0.35)',
+                zIndex: 40,
+              }}
+            />
+          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.85 }}
+            style={{
+              textAlign: 'center',
+              marginTop: 'clamp(40px,5.5vw,60px)',
+            }}
+          >
+            <Link
+              href="/menu"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 10,
+                fontFamily: 'var(--font-body)',
+                fontSize: 'clamp(11px,1.2vw,13px)',
+                fontWeight: 900,
+                letterSpacing: '0.4em',
+                color: '#0A0808',
+                background: '#FF6D3D',
+                padding: '18px 44px',
+                minHeight: '56px',
+                textDecoration: 'none',
+                textTransform: 'uppercase',
+                transition: 'background 0.18s ease, transform 0.08s ease',
+                borderRadius: 0,
+                WebkitTapHighlightColor: 'transparent',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = '#FF8A59'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = '#FF6D3D'; }}
+              onMouseDown={e => { (e.currentTarget as HTMLAnchorElement).style.transform = 'scale(0.985)'; }}
+              onMouseUp={e => { (e.currentTarget as HTMLAnchorElement).style.transform = 'scale(1)'; }}
+              onTouchStart={e => { (e.currentTarget as HTMLAnchorElement).style.background = '#FF8A59'; }}
+              onTouchEnd={e => { (e.currentTarget as HTMLAnchorElement).style.background = '#FF6D3D'; }}
+            >
+              VIEW FULL MENU <span style={{ fontSize: 16, lineHeight: '1' }}>→</span>
+            </Link>
+          </motion.div>
+        </div>
       )}
+
       <div
         aria-hidden="true"
         style={{
-          position:      'absolute',
-          inset:          0,
+          position: 'absolute',
+          inset: 0,
           pointerEvents: 'none',
-          zIndex:         50,
-          background:    'radial-gradient(ellipse 80% 65% at 50% 50%, transparent 30%, rgba(5,3,2,0.48) 100%)',
+          zIndex: 50,
+          background: 'radial-gradient(ellipse 80% 65% at 50% 50%, transparent 30%, rgba(0,0,0,0.55) 100%)',
         }}
       />
       <style>{`
