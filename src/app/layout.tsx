@@ -8,6 +8,7 @@ import SmoothScroll from "@/components/SmoothScroll";
 import GlobalGrain from "@/components/GlobalGrain";
 import CustomCursor from "@/components/CustomCursor";
 import ChopstickScroll from "@/components/ChopstickScroll";
+import NavOverlay from "@/components/NavOverlay";
 
 const BASE_URL = "https://heytigerdubai.com";
 const DBG_RENDER_TS = Date.now();
@@ -166,6 +167,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <GlobalGrain />
         <ChopstickScroll />
+        <NavOverlay />
       </body>
     </html>
   );
