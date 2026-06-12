@@ -1,10 +1,13 @@
 'use client';
 
 import { useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import FilmGrain from './FilmGrain';
 import LetterboxBars from './LetterboxBars';
+
+const EmberCanvas = dynamic(() => import('@/three/EmberCanvas'), { ssr: false });
 
 interface Props {
   onComplete?: () => void;
@@ -76,6 +79,18 @@ export default function HeroCinematic({ onComplete }: Props) {
           }}
         />
       </motion.div>
+
+      {/* Signature three.js moment — rising embers, additive glow */}
+      <EmberCanvas
+        density={1}
+        span={7}
+        spread={[10, 4]}
+        colorHot="#f5c089"
+        colorCool="#c83d20"
+        opacity={0.85}
+        parallax={0.5}
+        style={{ zIndex: 1 }}
+      />
 
       <FilmGrain />
       <LetterboxBars />

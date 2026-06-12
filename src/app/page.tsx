@@ -9,7 +9,7 @@ import Footer           from '@/components/Footer';
 import StorySection           from '@/components/StorySection';
 import MenuGrid               from '@/components/MenuGrid';
 import SpaceSection           from '@/components/SpaceSection';
-import HeroCinematic         from '@/components/HeroCinematic';
+import HeroPoster             from '@/components/HeroPoster';
 import AboutOfferingsRedesign from '@/components/AboutOfferingsRedesign';
 
 
@@ -35,8 +35,7 @@ export default function Page() {
       <a href="#hero" className="sr-only-focusable">SKIP TO MAIN CONTENT</a>
 
       <main style={{ background: 'var(--clr-void)', display: 'flex', flexDirection: 'column' }}>
-        <h1 className="sr-only">Hey Tiger — Bar &amp; Restaurant, Motor City Dubai</h1>
-        <HeroCinematic />
+        <HeroPoster onReserve={openReserve} />
 
         {/* Scroll target for the hero's "EXPLORE" link */}
         <div id="explore" aria-hidden="true" />

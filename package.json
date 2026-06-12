@@ -12,6 +12,8 @@
     "@fiddle-digital/string-tune": "^1.2.0",
     "@paper-design/shaders-react": "^0.0.76",
     "@radix-ui/react-slot": "^1.2.4",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
     "@shadergradient/react": "^2.4.20",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",

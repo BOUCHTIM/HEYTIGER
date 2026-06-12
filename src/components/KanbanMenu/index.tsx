@@ -1,10 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { AnimatePresence, motion, useReducedMotion, type Variants } from 'framer-motion';
 import Link from 'next/link';
 
 import FilmGrain from '@/components/FilmGrain';
+import { TOKENS } from './signs';
+
+const EmberCanvas = dynamic(() => import('@/three/EmberCanvas'), { ssr: false });
 import PaperTextureFilter from './PaperTexture';
 import TigerBG from './TigerBG';
 import Stickers from './Stickers';
@@ -73,6 +77,21 @@ export default function KanbanMenu() {
 
       {/* ── THE WALL ── */}
       {!isMobile && <TigerBG />}
+
+      {/* subtle ember drift — same signature three.js scene, low density */}
+      {!isMobile && (
+        <EmberCanvas
+          density={0.4}
+          span={5}
+          spread={[12, 3]}
+          colorHot={TOKENS.gold}
+          colorCool={TOKENS.orange}
+          opacity={0.4}
+          parallax={0.25}
+          sizeRange={[2, 5]}
+          style={{ zIndex: 1 }}
+        />
+      )}
 
       {/* preserved ghost wordmark (the おいトラ base type) */}
       <span
