@@ -373,7 +373,7 @@ export default function AboutOfferingsRedesign({
                 onMouseEnter={e => { e.currentTarget.style.background = 'var(--clr-red-dim)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'var(--clr-red)'; }}
               >
-                BOOK TABLE
+                BOOK A TABLE
                 <span aria-hidden="true" style={{ fontSize: '14px', lineHeight: 1 }}>→</span>
               </button>
 
@@ -438,7 +438,7 @@ export default function AboutOfferingsRedesign({
                     textTransform: 'uppercase',
                   }}
                 >
-                  ALSO AT HEY TIGER
+                  WHILE YOU'RE HERE
                 </span>
                 <div
                   style={{

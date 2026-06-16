@@ -191,8 +191,8 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
     if (step === 4) {
       if (!form.name.trim())            errs.name  = 'We\'ll need a name for the reservation.';
       if (!isValidEmail(form.email))    errs.email = 'That email doesn\'t look right. Try again.';
-      if (!isValidPhone(form.phone))    errs.phone = 'Enter a valid phone number (7–15 digits, e.g. +971 50 000 0000).';
-      if (!form.agree)                  errs.agree = 'Please accept the reservation terms to continue.';
+      if (!isValidPhone(form.phone))    errs.phone = 'Phone number not recognised. Try +971 50 000 0000.';
+      if (!form.agree)                  errs.agree = 'You\'ll need to accept the terms to hold your seat.';
       // Prevent the same guest double-booking the same date & time.
       if (isValidEmail(form.email) && form.date && form.time && hasDuplicate(form.email, form.date, form.time)) {
         errs.email = 'You already hold a table for this date & time. One booking per slot — pick another time or date.';
@@ -320,8 +320,8 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
                   STEP {step} OF 4
                 </p>
                 {step > 1 && (
-                  <p style={{ fontFamily: 'var(--font-jp)', fontSize: '10px', color: 'var(--clr-amber)', letterSpacing: '0.15em' }}>
-                    ✓ Step {step - 1} complete
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color: 'var(--clr-amber)', letterSpacing: '0.22em', textTransform: 'uppercase' }}>
+                    LINE {step - 1} CLEAR
                   </p>
                 )}
               </div>
@@ -382,7 +382,7 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
               onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--clr-red)'; e.currentTarget.style.color = 'var(--clr-cream)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--clr-amber)'; e.currentTarget.style.color = 'var(--clr-void)'; e.currentTarget.style.transform = 'none'; }}
               >
-                {step === 4 ? 'BOOK' : 'NEXT'}
+                {step === 4 ? 'CONFIRM BOOKING' : 'NEXT'}
               </button>
             </div>
           )}
@@ -448,7 +448,7 @@ function CallGate({ onPickUp, onClose, muted, onToggleMute }: {
       </div>
 
       <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'rgba(245,239,224,0.6)', lineHeight: 1.6, maxWidth: '30ch', margin: '0 auto 24px' }}>
-        Pick up to book your table. The kitchen&apos;s on the line — sound on for the full call.
+        Pick up to hold your table. Sound on for the full experience.
       </p>
 
       <button
@@ -464,7 +464,7 @@ function CallGate({ onPickUp, onClose, muted, onToggleMute }: {
         onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
         onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; }}
       >
-        📞 PICK UP
+        ANSWER THE CALL
       </button>
     </div>
   );
@@ -478,7 +478,7 @@ function StepWhen({ form, setForm, today, errors }: {
   return (
     <div>
       <h3 style={stepTitle}>Pick your night.</h3>
-      <p style={stepSub}>Open Tuesday → Sunday. The broth never stops.</p>
+      <p style={stepSub}>Open Tuesday → Sunday. Last seating at 2AM.</p>
       <input
         type="date"
         min={today}
@@ -591,7 +591,7 @@ function StepInfo({ form, setForm, errors }: {
         onChange={(v) => setForm({ ...form, phone: v })} error={errors.phone as string} placeholder="+971 50 000 0000" />
 
       <div>
-        <p style={fieldLabel}>Dietary needs — select all that apply</p>
+        <p style={fieldLabel}>Anything we should know about?</p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
           {DIETARY.map(d => (
             <button key={d} onClick={() => toggleDietary(d)} style={{
@@ -613,7 +613,7 @@ function StepInfo({ form, setForm, errors }: {
       </div>
 
       <div>
-        <p style={fieldLabel}>Any occasion? (optional)</p>
+        <p style={fieldLabel}>What's the occasion?</p>
         <select
           value={form.occasion}
           onChange={(e) => setForm({ ...form, occasion: e.target.value })}
@@ -648,8 +648,7 @@ function StepInfo({ form, setForm, errors }: {
             style={{ marginTop: '2px', accentColor: 'var(--clr-red)', width: '14px', height: '14px' }}
           />
           <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-label)', color: 'rgba(245,239,224,0.72)', lineHeight: 1.5 }}>
-            I agree to the reservation terms: tables are held 15 minutes past the booking time,
-            parties of 7+ may require a deposit, and cancellations should be made at least 24 hours ahead.
+            I understand tables are held for 15 minutes. Groups of 7+ may require a deposit.
             <span aria-hidden="true" style={{ color: 'var(--clr-red)', marginLeft: '4px' }}>*</span>
           </span>
         </label>
@@ -748,7 +747,7 @@ function StepConfirm({ form, confirmNum, onClose, onBookAnother }: {
         onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(250,175,63,0.08)'; e.currentTarget.style.color = 'var(--clr-amber)'; }}
         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--clr-amber)'; }}
         >
-          BOOK AGAIN
+          BOOK ANOTHER TABLE
         </button>
         <button onClick={onClose} style={{
           width: '100%',
