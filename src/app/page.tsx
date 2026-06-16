@@ -1,3 +1,32 @@
+/**
+ * HEY TIGER — NUMEROLOGY REFACTOR
+ *
+ * Navigation:       6 → 7  (added THE PASS; restructured order)
+ * MenuGrid chapters: 6 → 7  (added BRUNCH)
+ * KanbanMenu signs:  6 → 7  (added RAMEN 麺)
+ * Cinematic shots:   4 → 5  (added AFTER HOURS 宴 — critical: 4/shi avoided)
+ * Menu categories:   6 → 7  (brunch category + 8 items in data/menu.ts)
+ *
+ * Unchanged (already auspicious):
+ *   HorizontalScroll panels: 5
+ *   SpaceSection rooms: 5
+ *   StorySection beats: 3
+ *   AboutOfferings pillars: 3 + 3
+ *   Menu items per category: 8
+ *
+ * Motion tokens: src/lib/motion.ts
+ *   Durations: 0.3 · 0.5 · 0.7 · 1.3 · 1.5 · 1.7
+ *   Stagger:   0.07 · 0.08 · 0.13 · 0.17
+ *   Loops:     7.8 · 8.0 · 8.8
+ *
+ * Animation hooks: src/hooks/
+ *   useGalleryAnimations — pinned cross-dissolve gallery (CinematicCamera)
+ *   useSectionReveal     — scroll-triggered [data-reveal] elements
+ *   useHeroAnimations    — Framer Motion helpers with token timing
+ *
+ * TODO: Replace CinematicCamera shot 5 image with dedicated after-hours photo
+ * TODO: Confirm BRUNCH chapter live menu items with kitchen team before launch
+ */
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
@@ -11,6 +40,8 @@ import MenuGrid               from '@/components/MenuGrid';
 import SpaceSection           from '@/components/SpaceSection';
 import HeroPoster             from '@/components/HeroPoster';
 import AboutOfferingsRedesign from '@/components/AboutOfferingsRedesign';
+import HorizontalScroll        from '@/components/HorizontalScroll';
+import CinematicCamera         from '@/components/CinematicCamera';
 
 
 
@@ -42,10 +73,11 @@ export default function Page() {
         <AboutOfferingsRedesign reduceMotion={reduceMotion} onReserve={openReserve} />
 
         <StorySection   reduceMotion={reduceMotion} />
+        <CinematicCamera />
         <MenuGrid />
-        <BookingBand id="booking-band-1" jp="予約" headline="READY TO ORDER?" onReserve={openReserve} microcopy="Reserve for tonight — the kitchen's waiting." />
+        <HorizontalScroll />
         <SpaceSection   reduceMotion={reduceMotion} />
-        <BookingBand id="booking-band-2" jp="お席へ" headline="FOUND YOUR ROOM?" onReserve={openReserve} sticker="/sticker4.png" stickerWhite microcopy="Reserve your room. We hold it for you." />
+        <BookingBand id="booking-band" jp="予約" headline="READY FOR THE NIGHT?" onReserve={openReserve} sticker="/sticker4.png" stickerWhite microcopy="Table, room, the whole night — reserved in one." />
 
       </main>
 
@@ -104,7 +136,7 @@ function BookingBand({ id, jp, headline, onReserve, sticker, stickerWhite, micro
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,8,8,0.85)'; e.currentTarget.style.borderColor = 'var(--clr-void)'; }}
           onMouseLeave={e => { e.currentTarget.style.background = 'var(--clr-void)'; e.currentTarget.style.borderColor = 'var(--clr-void)'; }}
         >
-          BOOK TABLE
+          RESERVE NOW
         </button>
         <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-micro)', letterSpacing: '0.12em', color: 'rgba(10,8,8,0.6)', fontWeight: 700 }}>
           {microcopy ?? 'Dinner, drinks & brunch reservations.'}

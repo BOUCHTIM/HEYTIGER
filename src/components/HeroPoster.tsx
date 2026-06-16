@@ -180,6 +180,7 @@ export default function HeroPoster({ onReserve }: Props) {
 
             <m.div
               className="ht-poster-callout"
+              aria-live="polite"
               initial={playCinema ? { opacity: 0, y: -10 } : false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: delay(800) }}
@@ -189,9 +190,11 @@ export default function HeroPoster({ onReserve }: Props) {
                 本日も営業中
               </span>
               <StatusDot open={isOpen} size={9} />
-              <span className="sr-only">
-                {isOpen === null ? 'Checking opening hours' : isOpen ? 'Open now — until 2AM' : 'Currently closed — opens 12PM'}
-              </span>
+              {isOpen !== null && (
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: '8px', letterSpacing: '0.2em', color: 'rgba(240,235,216,0.75)', textAlign: 'center' }}>
+                  {isOpen ? 'OPEN' : 'CLOSED'}
+                </span>
+              )}
             </m.div>
 
             {/* tiger sticker — slapped on the corner, last to land */}
@@ -593,9 +596,9 @@ export default function HeroPoster({ onReserve }: Props) {
             writing-mode: vertical-rl;
             transform: rotate(180deg);
             font-family: var(--font-body);
-            font-size: 9px;
+            font-size: 11px;
             letter-spacing: 0.3em;
-            color: rgba(240, 235, 216, 0.4);
+            color: rgba(240, 235, 216, 0.7);
             text-align: center;
             white-space: nowrap;
           }
@@ -611,12 +614,12 @@ export default function HeroPoster({ onReserve }: Props) {
           .ht-poster-eyebrow {
             margin: 0;
             font-family: var(--font-body);
-            font-size: clamp(0.6rem, 1vw, 0.74rem);
+            font-size: clamp(0.7rem, 1vw, 0.74rem);
             font-weight: 800;
             letter-spacing: 0.25em;
             text-transform: uppercase;
             color: var(--red);
-            opacity: 0.7;
+            opacity: 0.9;
             white-space: nowrap;
           }
           .ht-poster-eyebrow-text {
@@ -641,15 +644,11 @@ export default function HeroPoster({ onReserve }: Props) {
             vertical-align: top;
           }
           .ht-poster-word { display: inline-block; }
+          /* Restraint pass: neon-flicker removed — kept red letterpress
+             pop without the readability/photosensitivity cost; the two
+             offset-breathing kanji + Ken Burns carry the "alive" feel. */
           .ht-poster-line--accent .ht-poster-word--neon {
             color: var(--red);
-            animation: ht-neon-flicker 4s ease-in-out infinite;
-          }
-          @keyframes ht-neon-flicker {
-            0%, 95%, 100% { opacity: 1; }
-            96% { opacity: 0.85; }
-            97% { opacity: 1; }
-            98% { opacity: 0.9; }
           }
 
           .ht-poster-ctas {
@@ -745,7 +744,7 @@ export default function HeroPoster({ onReserve }: Props) {
             bottom: clamp(0.6rem, 1.6vw, 1.2rem);
             left: 50%;
             transform: translateX(-50%);
-            z-index: 21;
+            z-index: 5;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -792,7 +791,6 @@ export default function HeroPoster({ onReserve }: Props) {
             .ht-poster-img { animation: none; }
             .ht-poster-kanji-glyph--tl,
             .ht-poster-kanji-glyph--br { animation: none; }
-            .ht-poster-word--neon { animation: none; }
             .ht-poster-cursor { animation: none; opacity: 1; }
             .ht-poster-status-ping { animation: none; display: none; }
             .ht-poster-frame-draw {

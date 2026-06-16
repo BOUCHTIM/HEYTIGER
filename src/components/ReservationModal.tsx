@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import PhoneSVG from '@/components/call/PhoneSVG';
+import { useCallSound } from '@/hooks/useCallSound';
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -71,6 +73,28 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
   const [form, setForm]   = useState<FormData>(defaultForm);
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [confirmationNum, setConfirmationNum] = useState('');
+
+  // ── "Call to book" concept ──
+  // The booking opens as an incoming call. The guest picks up the phone (which
+  // is also the gesture that unlocks audio), then the line connects to the form.
+  const [picked, setPicked] = useState(false);
+  const sound = useCallSound();
+
+  // Try to ring on open (we're inside the click that opened the modal, so most
+  // browsers allow it; if blocked, the phone still rings visually).
+  useEffect(() => {
+    sound.play('ring');
+    return () => sound.stopAll();
+  }, [sound]);
+
+  const pickUp = useCallback(() => {
+    sound.stop('ring');
+    sound.play('pickup');
+    window.setTimeout(() => sound.play('connect'), 160);
+    setPicked(true);
+  }, [sound]);
+
+  const tone = useCallback(() => sound.play('key'), [sound]);
 
   // Reset form state when modal closes
   const handleClose = useCallback(() => {
@@ -187,6 +211,8 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
       saveReservation({ email: form.email, date: form.date, time: form.time, ref });
     }
     const newStep = step < 5 ? (step + 1) as Step : step;
+    // Keypad blip stepping forward; warm "line connected" chime on confirm.
+    sound.play(newStep === 5 ? 'connect' : 'key');
     setStep(newStep);
     if (newStep > maxUnlockedStep && newStep < 5) {
       setMaxUnlockedStep(newStep);
@@ -234,6 +260,10 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
           aria-modal="true"
           aria-labelledby="reservation-modal-title"
         >
+          {!picked ? (
+            <CallGate onPickUp={pickUp} onClose={handleClose} muted={sound.muted} onToggleMute={sound.toggleMute} />
+          ) : (
+          <>
           {/* Header */}
           <div style={{
             padding: '24px 28px 20px',
@@ -244,9 +274,11 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
             <div>
               <p lang="ja" style={{ fontFamily: 'var(--font-jp)', fontSize: 'var(--text-label)', letterSpacing: '0.22em', color: 'var(--clr-amber)', marginBottom: '4px' }}>おいトラ</p>
               <h2 id="reservation-modal-title" style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '26px', color: 'var(--clr-cream)', letterSpacing: 'var(--tracking-tight)' }}>
-                The door opens<br />for you.
+                You&apos;re on<br />the line.
               </h2>
             </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <MuteButton muted={sound.muted} onToggle={sound.toggleMute} />
             <button
               onClick={handleClose}
               aria-label="Close reservation modal"
@@ -260,6 +292,7 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
             >
               ✕
             </button>
+            </div>
           </div>
 
           {/* Step progress */}
@@ -306,8 +339,8 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
                 transition={{ duration: 0.25 }}
               >
                 {step === 1 && <StepWhen form={form} setForm={setForm} today={today} errors={errors} />}
-                {step === 2 && <StepTime form={form} setForm={setForm} />}
-                {step === 3 && <StepGuests form={form} setForm={setForm} />}
+                {step === 2 && <StepTime form={form} setForm={setForm} tone={tone} />}
+                {step === 3 && <StepGuests form={form} setForm={setForm} tone={tone} />}
                 {step === 4 && <StepInfo form={form} setForm={setForm} errors={errors} />}
                 {step === 5 && <StepConfirm form={form} confirmNum={confirmationNum || 'HT-……'} onClose={handleClose} onBookAnother={resetReservation} />}
               </motion.div>
@@ -353,9 +386,87 @@ export default function ReservationModal({ onClose }: { onClose: () => void }) {
               </button>
             </div>
           )}
+          </>
+          )}
         </motion.div>
       </motion.div>
     </AnimatePresence>
+  );
+}
+
+/* ── Call gate — the incoming call, before the form ──────────────── */
+
+function MuteButton({ muted, onToggle }: { muted: boolean; onToggle: () => void }) {
+  return (
+    <button
+      onClick={onToggle}
+      aria-label={muted ? 'Unmute call sound' : 'Mute call sound'}
+      aria-pressed={muted}
+      style={{
+        background: 'none', border: 'none', cursor: 'pointer',
+        color: muted ? 'rgba(245,239,224,0.4)' : 'var(--clr-amber)',
+        fontSize: '16px', lineHeight: 1, padding: '4px',
+        transition: 'color var(--dur-fast) var(--ease-standard)',
+      }}
+    >
+      {muted ? '🔇' : '🔊'}
+    </button>
+  );
+}
+
+function CallGate({ onPickUp, onClose, muted, onToggleMute }: {
+  onPickUp: () => void; onClose: () => void; muted: boolean; onToggleMute: () => void;
+}) {
+  return (
+    <div style={{ position: 'relative', padding: '36px 28px 40px', textAlign: 'center' }}>
+      {/* top controls */}
+      <div style={{ position: 'absolute', top: '16px', right: '18px', display: 'flex', gap: '6px' }}>
+        <MuteButton muted={muted} onToggle={onToggleMute} />
+        <button
+          onClick={onClose}
+          aria-label="Decline call"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(245,239,224,0.5)', fontSize: '22px', lineHeight: 1, padding: '4px' }}
+        >
+          ✕
+        </button>
+      </div>
+
+      <motion.p
+        lang="ja"
+        animate={{ opacity: [0.5, 1, 0.5] }}
+        transition={{ duration: 1.4, repeat: Infinity }}
+        style={{ fontFamily: 'var(--font-jp)', fontSize: '12px', letterSpacing: '0.3em', color: 'var(--clr-amber)', marginBottom: '6px' }}
+      >
+        着信中 — INCOMING CALL
+      </motion.p>
+      <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '30px', color: 'var(--clr-cream)', letterSpacing: '-0.01em', lineHeight: 1, marginBottom: '20px' }}>
+        Hey Tiger is<br />calling.
+      </h2>
+
+      <div style={{ display: 'flex', justifyContent: 'center', margin: '4px 0 26px' }}>
+        <PhoneSVG ringing size={150} />
+      </div>
+
+      <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'rgba(245,239,224,0.6)', lineHeight: 1.6, maxWidth: '30ch', margin: '0 auto 24px' }}>
+        Pick up to book your table. The kitchen&apos;s on the line — sound on for the full call.
+      </p>
+
+      <button
+        onClick={onPickUp}
+        style={{
+          width: '100%', maxWidth: '280px',
+          fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', fontWeight: 800, letterSpacing: '0.26em',
+          background: 'var(--clr-red)', border: 'none', color: 'var(--clr-cream)',
+          padding: '16px', borderRadius: 0, cursor: 'pointer', minHeight: '52px',
+          boxShadow: '0 8px 26px rgba(192,39,26,0.45)',
+          transition: 'transform 0.12s, box-shadow 0.2s',
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; }}
+      >
+        📞 PICK UP
+      </button>
+    </div>
   );
 }
 
@@ -386,14 +497,14 @@ function StepWhen({ form, setForm, today, errors }: {
   );
 }
 
-function StepTime({ form, setForm }: { form: FormData; setForm: (f: FormData) => void }) {
+function StepTime({ form, setForm, tone }: { form: FormData; setForm: (f: FormData) => void; tone?: () => void }) {
   return (
     <div>
       <h3 style={stepTitle}>When should we expect you?</h3>
       <p style={stepSub}>Golden slots glow — rooftop opens at 21:00.</p>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '16px' }}>
         {TIMES.map(t => (
-          <button key={t} onClick={() => setForm({ ...form, time: t })} style={{
+          <button key={t} onClick={() => { tone?.(); setForm({ ...form, time: t }); }} style={{
             padding: '10px 4px',
             borderRadius: 0,
             fontFamily: 'var(--font-body)',
@@ -414,7 +525,7 @@ function StepTime({ form, setForm }: { form: FormData; setForm: (f: FormData) =>
   );
 }
 
-function StepGuests({ form, setForm }: { form: FormData; setForm: (f: FormData) => void }) {
+function StepGuests({ form, setForm, tone }: { form: FormData; setForm: (f: FormData) => void; tone?: () => void }) {
   return (
     <div>
       <h3 style={stepTitle}>How many coming through?</h3>
@@ -422,7 +533,7 @@ function StepGuests({ form, setForm }: { form: FormData; setForm: (f: FormData) 
       <div style={{ margin: '32px 0 16px' }}>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '28px', marginBottom: '24px' }}>
           <button
-            onClick={() => setForm({ ...form, guests: Math.max(1, form.guests - 1) })}
+            onClick={() => { tone?.(); setForm({ ...form, guests: Math.max(1, form.guests - 1) }); }}
             aria-label="Decrease guests"
             disabled={form.guests <= 1}
             style={guestBtn}
@@ -435,7 +546,7 @@ function StepGuests({ form, setForm }: { form: FormData; setForm: (f: FormData) 
             {form.guests}
           </span>
           <button
-            onClick={() => setForm({ ...form, guests: Math.min(12, form.guests + 1) })}
+            onClick={() => { tone?.(); setForm({ ...form, guests: Math.min(12, form.guests + 1) }); }}
             aria-label="Increase guests"
             disabled={form.guests >= 12}
             style={guestBtn}

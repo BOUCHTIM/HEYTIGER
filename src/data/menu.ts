@@ -61,6 +61,16 @@ export const menuCategories: MenuCategory[] = [
     order: 6,
     sectionType: 'dessert',
   },
+  {
+    id: 'brunch',
+    slug: 'brunch',
+    titleEn: 'BRUNCH',
+    titleJp: '朝食',
+    description: 'Weekend brunch. Saturday & Sunday, 11AM – 4PM.',
+    chapterNumber: 7,
+    order: 7,
+    sectionType: 'food',
+  },
 ];
 
 export const menuItems: MenuItem[] = [
@@ -123,6 +133,16 @@ export const menuItems: MenuItem[] = [
   { id: 'dessert-6', categoryId: 'desserts', name: 'FRUIT PLATTER', subtitle: 'Seasonal', description: 'Seasonal Japanese fruits.', priceAED: 58, tags: ['vegan', 'vegetarian'], isAvailable: true, featured: false },
   { id: 'dessert-7', categoryId: 'desserts', name: 'YOGURT PARFAIT', subtitle: 'Granola', description: 'Japanese yogurt, granola, fruit, honey.', priceAED: 40, tags: ['vegetarian'], isAvailable: true, featured: false },
   { id: 'dessert-8', categoryId: 'desserts', name: 'CHEESECAKE', subtitle: 'Japanese Style', description: 'Light and fluffy Japanese cheesecake.', priceAED: 45, tags: [], isAvailable: true, featured: false },
+
+  // BRUNCH — Sat & Sun 11AM–4PM
+  { id: 'brunch-1', categoryId: 'brunch', name: 'TEISHOKU SET',     subtitle: 'Morning Classic',  description: 'Rice, miso soup, grilled fish, seasonal pickles.',           priceAED: 85,  tags: ['signature'],               isAvailable: true, featured: true  },
+  { id: 'brunch-2', categoryId: 'brunch', name: 'TAMAGOYAKI',       subtitle: 'Rolled Omelette',  description: 'Dashi-sweet rolled egg, daikon radish.',                    priceAED: 42,  tags: ['vegetarian'],              isAvailable: true, featured: false },
+  { id: 'brunch-3', categoryId: 'brunch', name: 'MATCHA PANCAKES',  subtitle: 'Ceremonial Grade', description: 'Ceremonial matcha pancakes with red bean cream.',           priceAED: 68,  tags: ['vegetarian', 'signature'], isAvailable: true, featured: true  },
+  { id: 'brunch-4', categoryId: 'brunch', name: 'CHIRASHI BOWL',    subtitle: 'Market Fish',      description: 'Market fish over seasoned sushi rice with tamago.',        priceAED: 128, tags: ['chef-pick'],               isAvailable: true, featured: true  },
+  { id: 'brunch-5', categoryId: 'brunch', name: 'MORNING RAMEN',    subtitle: 'Shoyu',            description: 'Light shoyu broth with chashu and soft-boiled egg.',       priceAED: 72,  tags: [],                          isAvailable: true, featured: false },
+  { id: 'brunch-6', categoryId: 'brunch', name: 'WAGYU BENEDICT',   subtitle: 'Luxury Brunch',    description: 'A5 wagyu, poached egg, miso hollandaise.',                  priceAED: 145, tags: ['signature', 'chef-pick'],  isAvailable: true, featured: false },
+  { id: 'brunch-7', categoryId: 'brunch', name: 'MENTAIKO TOAST',   subtitle: 'Spicy Roe',        description: 'Thick-cut brioche, spicy cod roe butter, pickled cucumber.',priceAED: 62,  tags: ['spicy'],                   isAvailable: true, featured: false },
+  { id: 'brunch-8', categoryId: 'brunch', name: 'ONSEN TAMAGO',     subtitle: 'Slow Egg',         description: 'Temperature-controlled egg, dashi, truffle oil, rice.',    priceAED: 48,  tags: ['vegetarian'],              isAvailable: true, featured: false },
 ];
 
 export const getMenuItemsByCategory = (categoryId: string): MenuItem[] => {

@@ -66,7 +66,7 @@ export default function SignCard({
   return (
     <motion.button
       type="button"
-      aria-label={`${sign.en} — open menu`}
+      aria-label={`${sign.en} — view`}
       onClick={onSelect}
       layoutId={`sign-${sign.id}`}
       variants={cardVariants}
@@ -193,7 +193,7 @@ export default function SignCard({
             color: sign.color,
           }}
         >
-          タップして開く
+          {isMobile ? 'タップ' : 'ひらく'}
         </motion.span>
       </span>
     </motion.button>

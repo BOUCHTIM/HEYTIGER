@@ -47,6 +47,12 @@ const CHAPTERS = [
     price: 'AED 75 – 95',  slug: 'desserts',
     bg: 'linear-gradient(175deg,#5A2411 0%,#230B06 100%)',
   },
+  {
+    num: '07', title: 'BRUNCH',    jp: '朝食',     sub: 'Sat & Sun · 11AM–4PM',
+    dishes: ['Matcha Pancakes', 'Chirashi Bowl', 'Wagyu Benedict'],
+    price: 'From AED 68',  slug: 'brunch',
+    bg: 'linear-gradient(175deg,#3D2514 0%,#1A0C05 100%)',
+  },
 ] as const;
 
 type Chapter = (typeof CHAPTERS)[number];
