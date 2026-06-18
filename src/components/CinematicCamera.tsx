@@ -15,46 +15,46 @@ const SHOTS: Shot[] = [
     title: 'THE ROOM, BEFORE THE NOISE',
     line: 'Tables wiped, lights low, the smell of charcoal just starting to wake.',
     accent: '#C17B3F',
-    img: '/images/brand/venue/p08_011_736x981.png',
+    img: '/images/spaces/dining.jpg',
   },
   {
     jp: '昼', eyebrow: 'AFTERNOON',
     title: 'FAMILY BY DAY',
     line: 'Long lunches, loud tables, the regulars already arguing over the bill.',
     accent: '#C8B890',
-    img: '/images/brand/interiors/p14_039_1143x1714.png',
+    img: '/images/spaces/terrace-day.jpg',
   },
   {
     jp: '宵', eyebrow: 'DUSK',
     title: 'THE LIGHTS DROP',
     line: 'Steel catches the gold. The first bottle of sake hits the table.',
     accent: '#CC4A2C',
-    img: '/images/brand/interiors/p13_033_735x1054.png',
+    img: '/images/spaces/bar.jpg',
   },
   {
     jp: '夜', eyebrow: 'NIGHT',
     title: 'CHAOS BY NIGHT',
     line: 'Sake, smoke, and the room at full volume — this is Hey Tiger after dark.',
     accent: '#C83D20',
-    img: '/images/brand/venue/p08_013_2095x2793.png',
+    img: '/images/spaces/dining-night.jpg',
   },
   {
     jp: '宴', eyebrow: 'AFTER HOURS',
     title: 'THE FLOOR IS YOURS',
     line: 'Last call called. No one left. This is the hour that belongs only to regulars.',
     accent: '#8B3A2C',
-    // TODO: Replace with dedicated after-hours shot
-    img: '/images/brand/art-direction/p12_030_736x983.png',
+    img: '/images/spaces/den.jpg',
   },
 ];
 
 export default function CinematicCamera() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const wrapRefs   = useRef<(HTMLDivElement | null)[]>([]);
-  const imgRefs    = useRef<(HTMLDivElement | null)[]>([]);
-  const textRefs   = useRef<(HTMLDivElement | null)[]>([]);
+  const sectionRef  = useRef<HTMLElement>(null);
+  const wrapRefs    = useRef<(HTMLDivElement | null)[]>([]);
+  const imgRefs     = useRef<(HTMLDivElement | null)[]>([]);
+  const textRefs    = useRef<(HTMLDivElement | null)[]>([]);
+  const progressRef = useRef<HTMLDivElement>(null);
 
-  useGalleryAnimations(sectionRef, wrapRefs, imgRefs, textRefs, SHOTS.length);
+  useGalleryAnimations(sectionRef, wrapRefs, imgRefs, textRefs, SHOTS.length, progressRef);
 
   return (
     <section
@@ -68,6 +68,30 @@ export default function CinematicCamera() {
         borderTop: '1px solid rgba(255,110,50,0.12)',
       }}
     >
+      {/* Progress bar — scrub-driven, fills left-to-right across all shots */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '2px',
+          background: 'rgba(240,235,216,0.10)',
+          zIndex: 20,
+        }}
+      >
+        <div
+          ref={progressRef}
+          style={{
+            height: '100%',
+            background: 'var(--clr-cream)',
+            transformOrigin: 'left center',
+            transform: 'scaleX(0)',
+          }}
+        />
+      </div>
+
       {SHOTS.map((shot, i) => (
         <div
           key={shot.title}
