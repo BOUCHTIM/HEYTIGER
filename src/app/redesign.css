@@ -666,16 +666,16 @@
   .rd-about__kicker { order: 1; margin: 0 0 4px; font-size: 13px; }
   .rd-about__title { order: 2; margin: 0; font-size: clamp(18px, 5.6vw, 28px); max-width: none; line-height: 1; white-space: nowrap; }
   /* body copy sits over the foot of the photo (the section ends with the 230vw sticker zone) */
-  .rd-about__body { position: absolute; left: calc(28px + 16px); right: 16px; bottom: calc(196vw + 40px); z-index: 2; max-width: 26ch; font-size: 13px; margin: 0; }
+  .rd-about__body { position: absolute; left: calc(28px + 16px); right: 16px; bottom: calc(142vw + 40px); z-index: 2; max-width: 26ch; font-size: 13px; margin: 0; }
   .rd-about__photo { grid-column: 2; min-height: 108vw; }
   .rd-about__img--desktop { display: none; }
   .rd-about__img--phone { display: block; object-position: 50% 20%; }
   .rd-about__photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(23,11,18,0.85) 0%, rgba(23,11,18,0) 45%); }
-  .rd-about__stickers { display: block; grid-column: 1 / -1; height: 196vw; background: var(--rd-night); }   /* Page 4: night sticker (108vw wide ≈ 189vw tall) sits on the night below the photo; barcode crosses into the ivory teaser */
+  .rd-about__stickers { display: block; grid-column: 1 / -1; height: 142vw; background: var(--rd-night); }   /* night sticker (72vw wide ≈ 126vw tall) sits on the night below the photo; barcode crosses into the ivory teaser */
   .rd-about { border-bottom: 0; }
   .rd-sticker { filter: drop-shadow(0 10px 18px rgba(0,0,0,0.35)); }
-  .rd-sticker--night { left: 50%; top: auto; bottom: 6vw; width: 108vw; --rot: -4deg; transform: translateX(-50%) rotate(var(--rot)) scale(var(--s, 1)); }
-  .rd-sticker--barcode { left: auto; right: -14vw; top: auto; bottom: -40vw; width: 46vw; --rot: -78deg; transform: rotate(var(--rot)) scale(var(--s, 1)); z-index: 3; }
+  .rd-sticker--night { left: 50%; top: auto; bottom: 8vw; width: 72vw; --rot: -4deg; transform: translateX(-50%) rotate(var(--rot)) scale(var(--s, 1)); }
+  .rd-sticker--barcode { left: auto; right: -8vw; top: auto; bottom: -30vw; width: 38vw; --rot: -78deg; transform: rotate(var(--rot)) scale(var(--s, 1)); z-index: 3; }
 
   /* menu teaser: centred stack, illustration below */
   .rd-teaser { display: flex; flex-direction: column; align-items: center; text-align: center; min-height: 0; padding: 10vw var(--rd-gutter) 0; gap: 0; overflow: visible; clip-path: inset(0 0 -60vw 0); }
