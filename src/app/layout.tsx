@@ -3,6 +3,7 @@ import Script from "next/script";
 import "./globals.css";
 import Loader from "@/components/Loader";
 import SmoothScroll from "@/components/SmoothScroll";
+import PageSweep from "@/components/redesign/PageSweep";
 import { restaurantInfo } from "@/data/restaurant";
 
 const BASE_URL = "https://heytigerdubai.com";
@@ -125,7 +126,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-full antialiased">
         <Loader />
         <SmoothScroll />
-        {children}
+        <PageSweep>{children}</PageSweep>
       </body>
     </html>
   );

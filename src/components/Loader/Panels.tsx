@@ -32,7 +32,7 @@ export default function Panels({ exiting, reduceMotion = false, wipeSec = 0.8 }:
     bottom: 0,
     // 1px overlap at the centre line prevents any sub-pixel seam during cover.
     width: 'calc(50% + 1px)',
-    backgroundColor: 'var(--clr-void)',
+    backgroundColor: 'var(--rd-ivory)',
     zIndex: 9999,
     willChange: 'transform',
   };

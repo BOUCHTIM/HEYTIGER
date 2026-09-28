@@ -44,17 +44,15 @@ export default function LoaderContent({ fading, reduceMotion = false, children }
         style={{ lineHeight: 0 }}
       >
         <Image
-          src="/heytiger-logo.png"
+          src="/images/logos/heytiger-lockup-red.png"
           alt="Hey Tiger"
-          width={300}
-          height={281}
+          width={1032}
+          height={968}
           priority
           unoptimized
           style={{
-            width: 'clamp(140px, 16vw, 230px)',
+            width: 'clamp(200px, 24vw, 340px)',
             height: 'auto',
-            // Force pure white regardless of the source asset's colour.
-            filter: 'brightness(0) invert(1)',
           }}
         />
       </motion.div>
@@ -74,7 +72,7 @@ export default function LoaderContent({ fading, reduceMotion = false, children }
                 display: 'inline-block',
                 fontFamily: 'var(--font-jp-rough)',
                 fontSize: 'clamp(26px, 4.4vw, 60px)',
-                color: 'var(--clr-cream)',
+                color: 'var(--rd-red)',
               }}
             >
               {char}
@@ -95,7 +93,8 @@ export default function LoaderContent({ fading, reduceMotion = false, children }
           fontWeight: 800,
           letterSpacing: '0.34em',
           textTransform: 'uppercase',
-          color: 'var(--amber-wood)',
+          color: 'var(--rd-red)',
+          opacity: 0.75,
         }}
       >
         {TAGLINE}

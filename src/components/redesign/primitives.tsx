@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode, ButtonHTMLAttributes, AnchorHTMLAttributes } from 'react';
 import { FOOTER } from '@/data/site';
+import { useSweep } from './PageSweep';
 
 /* ── Arrow used in every CTA (long shaft, small head) ─────────── */
 export function Arrow({ className = 'rd-btn__arrow' }: { className?: string }) {
@@ -23,6 +24,7 @@ type ButtonProps = { variant?: Variant; children: ReactNode; className?: string 
 
 /* ── Button / link with the design's arrow tail ───────────────── */
 export function RdButton({ variant = 'outline-red', children, className = '', ...rest }: ButtonProps) {
+  const sweep = useSweep();
   const cls = `rd-btn rd-btn--${variant} ${className}`.trim();
   if ('href' in rest && rest.href) {
     const { href, ...a } = rest as { href: string } & AnchorHTMLAttributes<HTMLAnchorElement>;
@@ -34,8 +36,9 @@ export function RdButton({ variant = 'outline-red', children, className = '', ..
         </a>
       );
     }
+    const label = typeof children === 'string' ? children : '';
     return (
-      <Link className={cls} href={href} {...a}>
+      <Link className={cls} href={href} {...a} onClick={e => { a.onClick?.(e); sweep(e, href, label); }}>
         <span>{children}</span><Arrow />
       </Link>
     );
@@ -50,8 +53,9 @@ export function RdButton({ variant = 'outline-red', children, className = '', ..
 
 /* ── Wordmark: tiger mark + "HEY, TIGER" + tag lines ──────────── */
 export function Logo({ href = '/', tone = 'red' }: { href?: string; tone?: 'red' | 'ivory' }) {
+  const sweep = useSweep();
   return (
-    <Link href={href} className="rd-nav__logo" aria-label="Hey Tiger — home">
+    <Link href={href} className="rd-nav__logo" aria-label="Hey Tiger — home" onClick={e => sweep(e, href, 'HEY, TIGER', 'おいトラ')}>
       {/* horizontal lockup as in the frame: tiger mark · HEY, TIGER · SOCIAL HOUSE / EST. 2024 */}
       <Image
         src={`/images/logos/tiger-mark-${tone}.png`}

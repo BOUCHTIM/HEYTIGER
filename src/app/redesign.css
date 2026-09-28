@@ -401,6 +401,7 @@
 /* ── Poster band ──────────────────────────────────────────────── */
 .rd-poster {
   position: relative;
+  z-index: 2;   /* above the teaser illustration's overhang */
   display: grid;
   grid-template-columns: 1fr;
   background: var(--rd-ivory);
@@ -566,6 +567,8 @@
   font-family: var(--rd-display); font-size: 17px; letter-spacing: 0.02em; color: var(--rd-red); cursor: pointer;
 }
 .rd-cats__btn .rd-jp { font-size: 11px; }
+.rd-cats__btn { transition: background 0.25s var(--rd-ease), color 0.25s var(--rd-ease), padding-left 0.25s var(--rd-ease); }
+.rd-cats__btn:hover { background: rgba(242,65,51,0.12); }
 .rd-cats__btn[aria-current="true"] { background: var(--rd-red); color: var(--rd-ivory); }
 .rd-menu__main { padding: 18px var(--rd-gutter) 64px; }
 .rd-menu__top { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; padding-bottom: 12px; border-bottom: var(--rd-rule); margin-bottom: 18px; }
@@ -805,7 +808,9 @@
   .rd-sticker--night   { left: 37.6%; top: 45%; width: 19.1%; --rot: 4.5deg; transform: rotate(var(--rot)) scale(var(--s, 1)); }   /* bottom edge overhangs the section by ~23px, as in the frame */
 
   /* menu teaser: 875 tall; illustration 516 wide at (839, 112), inside the section, no overhang */
-  .rd-teaser { display: block; min-height: clamp(520px, 60.8vw, 875px); padding: var(--rd-gutter); overflow: hidden; }   /* proto: illustration bleeds off the right edge and is cut at the section bottom */
+  /* proto: the illustration bleeds off the right edge and its paws run UNDER the poster band's torn top edge —
+     clip left/right/top at the box, leave the bottom open, and let the poster (z-index 2) sit on top */
+  .rd-teaser { display: block; min-height: clamp(520px, 60.8vw, 875px); padding: var(--rd-gutter); overflow: visible; clip-path: inset(0 0 -60vw 0); }
   .rd-teaser > div:first-child { max-width: 60%; }
   .rd-teaser__intro { font-size: 13px; max-width: 24ch; }
   .rd-teaser__jp { margin-top: clamp(60px, 8.3vw, 120px); font-size: clamp(20px, 2.1vw, 30px); }
@@ -900,3 +905,32 @@
 .rd-btn:hover .rd-btn__arrow, .rd-card:hover .rd-btn__arrow { transform: translateX(5px); }
 .rd-btn { transition: transform 0.3s var(--rd-ease), background 0.2s, color 0.2s; }
 .rd-filter__btn { transition: opacity 0.25s, border-color 0.25s; }
+
+/* ── Route sweep (PageSweep.tsx) ──────────────────────────────── */
+.rd-sweep {
+  position: fixed; inset: 0; z-index: 90;
+  background: var(--rd-red);
+  color: var(--rd-ivory);
+  display: grid; place-items: center;
+  pointer-events: none;
+  clip-path: inset(0 100% 0 0);
+  visibility: hidden;
+}
+.rd-sweep--cover  { visibility: visible; pointer-events: auto; animation: rd-sweep-cover 0.6s var(--rd-ease) forwards; }
+.rd-sweep--reveal { visibility: visible; animation: rd-sweep-reveal 0.7s var(--rd-ease) forwards; }
+@keyframes rd-sweep-cover  { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes rd-sweep-reveal { from { clip-path: inset(0 0 0 0); }    to { clip-path: inset(0 0 0 100%); } }
+.rd-sweep__label { display: grid; justify-items: center; gap: 6px; }
+.rd-sweep__label .rd-display { font-size: clamp(56px, 9vw, 150px); line-height: 0.9; letter-spacing: -0.02em; }
+.rd-sweep__label .rd-jp { font-size: clamp(14px, 1.6vw, 24px); }
+.rd-sweep--cover .rd-sweep__label { animation: rd-sweep-label-in 0.6s var(--rd-ease) both; }
+.rd-sweep--reveal .rd-sweep__label { animation: rd-sweep-label-out 0.45s var(--rd-ease) both; }
+@keyframes rd-sweep-label-in  { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+@keyframes rd-sweep-label-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-16px); } }
+@media (prefers-reduced-motion: reduce) { .rd-sweep { display: none; } }
+
+/* ── Menu page: category switch ──────────────────────────────── */
+.rd-menu__section { min-height: 60vh; }
+.rd-motion .rd-menu__section { animation: rd-menu-in 0.5s var(--rd-ease) both; }
+.rd-motion .rd-menu__section .rd-dish { animation: rd-menu-in 0.6s var(--rd-ease) both; animation-delay: calc(var(--i, 0) * 45ms); }
+@keyframes rd-menu-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }

@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { NAV, RESERVE_NAV, HERO } from '@/data/site';
 import { Logo } from './primitives';
+import { useSweep } from './PageSweep';
 
 export default function TopNav({ onReserve }: { onReserve: () => void }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const sweep = useSweep();
 
   // escape closes the overlay; lock scroll while open (links close it on click)
   useEffect(() => {
@@ -33,6 +35,7 @@ export default function TopNav({ onReserve }: { onReserve: () => void }) {
                 href={item.href}
                 className="rd-nav__link"
                 aria-current={isCurrent(item.href) ? 'page' : undefined}
+                onClick={e => sweep(e, item.href, item.label, item.jp)}
               >
                 <span className="rd-jp" lang="ja">{item.jp}</span>
                 <span>{item.label}</span>
@@ -61,7 +64,7 @@ export default function TopNav({ onReserve }: { onReserve: () => void }) {
           <ul className="rd-overlay__list">
             {NAV.map(item => (
               <li key={item.id}>
-                <Link href={item.href} className="rd-overlay__link" onClick={() => setOpen(false)}>
+                <Link href={item.href} className="rd-overlay__link" onClick={e => { setOpen(false); sweep(e, item.href, item.label, item.jp); }}>
                   <span className="rd-jp" lang="ja">{item.jp}</span>
                   <span>{item.label}</span>
                 </Link>

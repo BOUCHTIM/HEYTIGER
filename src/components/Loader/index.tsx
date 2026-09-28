@@ -136,7 +136,7 @@ export default function Loader({ onComplete }: LoaderProps) {
             position: 'fixed',
             inset: 0,
             zIndex: 9998,
-            backgroundColor: phase === 'exit' ? 'transparent' : 'var(--clr-void)',
+            backgroundColor: phase === 'exit' ? 'transparent' : 'var(--rd-ivory)',
             overflow: 'hidden',
             // Stop intercepting input as soon as the reveal begins.
             pointerEvents: phase === 'exit' ? 'none' : 'auto',

@@ -68,16 +68,16 @@ export default function Counter({ durationMs = 1800, reduceMotion = false, onCom
   return (
     <span
       style={{
-        fontFamily: 'var(--font-display)',
-        fontWeight: 900,
+        fontFamily: 'var(--rd-display)',
+        fontWeight: 400,
         fontSize: 'clamp(72px, 15vw, 260px)',
         lineHeight: 1,
-        color: '#FFFFFF',
+        color: 'var(--rd-red)',
         fontVariantNumeric: 'tabular-nums',
         width: '3ch',
         textAlign: 'center',
         display: 'inline-block',
-        letterSpacing: '0.01em',
+        letterSpacing: '-0.02em',
       }}
     >
       {value}
