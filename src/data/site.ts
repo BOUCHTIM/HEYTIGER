@@ -115,8 +115,8 @@ export const WHATS_ON_INTRO = {
 
 /** Scooter rider illustration layered over the WHERE WE AT collage (Figma: layer 417 × 686, placed ≈395 wide at (323, 251) on desktop). */
 // Source: HEYTIGER NEW ASSETS/figma-2026-09/home/rider-scooter.png (designer exports composited, 2026-09-28).
-// Served as rider-scooter-sticker.png: the dev image optimizer kept serving the first (hole-faced) version under the old name.
-export const LOCATION_RIDER: string | null = '/images/home/rider-scooter-sticker.png';
+// Served as rider-scooter-figma.png: the designer's own flattened export, used untouched (new name = fresh cache key).
+export const LOCATION_RIDER: string | null = '/images/home/rider-scooter-figma.png';
 
 export const LOCATION = {
   jp: 'ロケーション',

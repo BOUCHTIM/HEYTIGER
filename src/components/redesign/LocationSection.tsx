@@ -35,8 +35,8 @@ export default function LocationSection({ onReserve }: { onReserve: () => void }
         <Image
           src={LOCATION_RIDER}
           alt=""
-          width={834}
-          height={1372}
+          width={417}
+          height={686}
           className="rd-location__rider"
           sizes="(max-width: 900px) 62vw, 29vw"
           aria-hidden="true"
