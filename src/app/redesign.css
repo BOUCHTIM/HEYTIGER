@@ -675,7 +675,8 @@
   .rd-about { border-bottom: 0; }
   .rd-sticker { filter: drop-shadow(0 10px 18px rgba(0,0,0,0.35)); }
   .rd-sticker--night { left: 50%; top: auto; bottom: 8vw; width: 72vw; --rot: -4deg; transform: translateX(-50%) rotate(var(--rot)) scale(var(--s, 1)); }
-  .rd-sticker--barcode { left: auto; right: -8vw; top: auto; bottom: -30vw; width: 38vw; --rot: -78deg; transform: rotate(var(--rot)) scale(var(--s, 1)); z-index: 3; }
+  /* same proportion as the desktop frame: barcode = 0.65 × night sticker width (178 / 275) */
+  .rd-sticker--barcode { left: auto; right: -10vw; top: auto; bottom: -34vw; width: 47vw; --rot: -78deg; transform: rotate(var(--rot)) scale(var(--s, 1)); z-index: 3; }
 
   /* menu teaser: centred stack, illustration below */
   .rd-teaser { display: flex; flex-direction: column; align-items: center; text-align: center; min-height: 0; padding: 10vw var(--rd-gutter) 0; gap: 0; overflow: visible; clip-path: inset(0 0 -60vw 0); }
