@@ -6,11 +6,17 @@ export default function MenuTeaser() {
   return (
     <section className="rd-teaser" aria-labelledby="teaser-title">
       <div style={{ display: 'flex', flexDirection: 'column' }} data-reveal-group>
+        {/* phone frame only (Figma Page 4): ramen bowl bleeding right above the title,
+            black cod bleeding left beside the CTA */}
+        <Image src="/images/menu/ramen-bowl.webp" alt="" width={1122} height={1402} sizes="62vw"
+          className="rd-teaser__photo rd-teaser__photo--a" aria-hidden="true" data-reveal="fade" />
         <p className="rd-teaser__intro rd-label" data-reveal>{MENU_TEASER.intro}</p>
         <p className="rd-teaser__jp rd-jp" lang="ja" data-reveal>{MENU_TEASER.jp}</p>
         <h2 id="teaser-title" className="rd-teaser__title rd-display" data-reveal="mask">
           {MENU_TEASER.titleA}<br />{MENU_TEASER.titleB}
         </h2>
+        <Image src="/images/menu/miso-black-cod.webp" alt="" width={1122} height={1402} sizes="52vw"
+          className="rd-teaser__photo rd-teaser__photo--b" aria-hidden="true" data-reveal="fade" />
         <div className="rd-teaser__cta" data-reveal>
           <RdButton variant="outline-red" href="/menu">{MENU_TEASER.cta}</RdButton>
         </div>

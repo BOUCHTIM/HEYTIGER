@@ -397,6 +397,7 @@
 .rd-teaser__art img, .rd-teaser__art video { width: min(100%, 460px); height: auto; object-fit: contain; }
 .rd-teaser__illo { width: min(80%, 440px); height: auto; }
 .rd-teaser__still { display: none; }
+.rd-teaser__photo { display: none; }
 
 /* ── Poster band ──────────────────────────────────────────────── */
 .rd-poster {
@@ -651,10 +652,10 @@
   /* pillar strip: one column, four rows */
   .rd-pillars { grid-template-columns: 1fr; }
   .rd-pillars__lead, .rd-pillars__cap { display: none; }
-  .rd-pillar { border-right: 0; border-bottom: var(--rd-rule); min-height: clamp(84px, 31vw, 122px); padding: 26px 30px; }
+  .rd-pillar { border-right: 0; border-bottom: var(--rd-rule); min-height: clamp(100px, 34vw, 134px); padding: 26px 30px; justify-content: center; }
   .rd-pillar:last-of-type { border-bottom: 0; }
-  .rd-pillar .rd-label { font-size: 15px; }
-  .rd-pillar .rd-jp { font-size: 11px; }
+  .rd-pillar .rd-label { font-size: 18px; }
+  .rd-pillar .rd-jp { font-size: 13px; }
 
   /* about: rail + night header, mural photo with the body copy over its foot, then a sticker collage zone */
   .rd-about { grid-template-columns: 28px 1fr; grid-template-rows: auto auto auto; }
@@ -664,30 +665,37 @@
   .rd-about__kicker { order: 1; margin: 0 0 4px; font-size: 13px; }
   .rd-about__title { order: 2; margin: 0; font-size: clamp(18px, 5.6vw, 28px); max-width: none; line-height: 1; white-space: nowrap; }
   /* body copy sits over the foot of the photo (the section ends with the 230vw sticker zone) */
-  .rd-about__body { position: absolute; left: calc(28px + 16px); right: 16px; bottom: calc(230vw + 44px); z-index: 2; max-width: 26ch; font-size: 12px; margin: 0; }
+  .rd-about__body { position: absolute; left: calc(28px + 16px); right: 16px; bottom: calc(196vw + 40px); z-index: 2; max-width: 26ch; font-size: 13px; margin: 0; }
   .rd-about__photo { grid-column: 2; min-height: 108vw; }
   .rd-about__img--desktop { display: none; }
   .rd-about__img--phone { display: block; object-position: 50% 20%; }
   .rd-about__photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(23,11,18,0.85) 0%, rgba(23,11,18,0) 45%); }
-  .rd-about__stickers { display: block; grid-column: 1 / -1; height: 230vw; background: var(--rd-ivory); }
+  .rd-about__stickers { display: block; grid-column: 1 / -1; height: 196vw; background: var(--rd-night); }   /* Page 4: night sticker (108vw wide ≈ 189vw tall) sits on the night below the photo; barcode crosses into the ivory teaser */
   .rd-about { border-bottom: 0; }
   .rd-sticker { filter: drop-shadow(0 10px 18px rgba(0,0,0,0.35)); }
-  .rd-sticker--night { left: 50%; top: auto; bottom: 54vw; width: 104vw; --rot: 8deg; transform: translateX(-50%) rotate(var(--rot)) scale(var(--s, 1)); }
-  .rd-sticker--barcode { left: 50%; right: auto; top: auto; bottom: -6vw; width: 60vw; --rot: -65deg; transform: translateX(-50%) rotate(var(--rot)) scale(var(--s, 1)); }
+  .rd-sticker--night { left: 50%; top: auto; bottom: 6vw; width: 108vw; --rot: -4deg; transform: translateX(-50%) rotate(var(--rot)) scale(var(--s, 1)); }
+  .rd-sticker--barcode { left: auto; right: -14vw; top: auto; bottom: -40vw; width: 46vw; --rot: -78deg; transform: rotate(var(--rot)) scale(var(--s, 1)); z-index: 3; }
 
   /* menu teaser: centred stack, illustration below */
-  .rd-teaser { display: flex; flex-direction: column; align-items: center; text-align: center; min-height: 0; padding: 14vw var(--rd-gutter) 12vw; gap: 0; }
+  .rd-teaser { display: flex; flex-direction: column; align-items: center; text-align: center; min-height: 0; padding: 10vw var(--rd-gutter) 0; gap: 0; overflow: visible; clip-path: inset(0 0 -60vw 0); }
   .rd-teaser > div:first-child { display: flex; flex-direction: column; align-items: center; max-width: none; width: 100%; }
+  /* the alpha-WebM loop doesn't paint on some phone engines — the phone frame uses the still */
+  .rd-teaser__video { display: none; }
+  .rd-teaser__still { display: block; }
+  .rd-teaser__photo { display: block; height: auto; object-fit: cover; }
+  .rd-teaser__photo--a { order: 0; align-self: flex-end; width: 62vw; aspect-ratio: 4 / 5; margin: 8vw calc(-1 * var(--rd-gutter)) 0 0; }
+  .rd-teaser__photo--b { order: 4; align-self: flex-start; width: 52vw; aspect-ratio: 4 / 5; margin: 6vw 0 0 calc(-1 * var(--rd-gutter)); }
   .rd-teaser__jp { order: 1; margin: 0; font-size: 22px; }
   .rd-teaser__title { order: 2; margin: 8px 0 0; font-size: clamp(41px, 14.6vw, 63px); line-height: 0.95; }
   .rd-teaser__intro { order: 3; margin-top: 22px; max-width: 26ch; font-size: 15px; font-family: var(--rd-display); letter-spacing: 0.01em; line-height: 1.3; }
-  .rd-teaser__cta { order: 4; margin-top: 24px; }
-  .rd-teaser__art { position: relative; right: auto; top: auto; order: 5; width: 87vw; margin: 30px 0 0; justify-content: center; }
+  .rd-teaser__cta { order: 5; align-self: flex-end; width: 78vw; margin: -14vw calc(-1 * var(--rd-gutter) + 4vw) 0 0; position: relative; z-index: 2; }
+  .rd-teaser__cta .rd-btn { width: 100%; --btn-bg: var(--rd-ivory); background: var(--rd-ivory); }   /* solid so it reads over the black cod photo (Page 4) */
+  .rd-teaser__art { position: relative; right: auto; top: auto; order: 6; align-self: flex-end; width: 74vw; margin: -6vw calc(-1 * var(--rd-gutter) - 10vw) -16vw 0; justify-content: center; z-index: 1; }
   .rd-teaser__art img, .rd-teaser__art video, .rd-teaser__illo { width: 100%; }
 
   /* poster band: wider than the viewport, overlapping the night section below */
-  .rd-poster { height: auto; overflow: hidden; padding: 4vw 0 0; margin-bottom: -12vw; }
-  .rd-poster__img { width: 160vw; max-width: none; margin: 0 0 0 -30vw; }
+  .rd-poster { height: auto; overflow: hidden; padding: 0; margin-bottom: -4vw; }
+  .rd-poster__img { width: 104%; max-width: none; margin: 0 0 0 -2%; }
 
   /* what's on: イベント over a centred title, intro copy, centred filters */
   .rd-whatson { padding: calc(12vw + 34px) 0 32vw; text-align: center; }
@@ -697,7 +705,9 @@
   .rd-whatson__intro { display: grid; gap: 14px; margin: 22px auto 0; padding: 0 var(--rd-gutter); max-width: 30ch; font-family: var(--rd-display); font-size: 15px; letter-spacing: 0.01em; line-height: 1.3; color: var(--rd-red); }
   .rd-whatson__bar { justify-content: center; margin-top: 22px; }
   .rd-whatson__bar .rd-whatson__jp { display: none; }
-  .rd-filter { padding: 0 0 14px; }
+  .rd-filter { display: inline-flex; gap: 4px; padding: 4px; margin-bottom: 14px; border: var(--rd-rule); border-radius: 999px; background: var(--rd-ivory); }
+  .rd-filter__btn { padding: 9px 18px; border: 0; border-radius: 999px; opacity: 1; color: var(--rd-red); font-family: var(--rd-display); font-size: 14px; letter-spacing: 0.04em; transition: background 0.25s, color 0.25s; }
+  .rd-filter__btn[aria-pressed="true"] { background: var(--rd-red); color: var(--rd-ivory); }
   .rd-cards { padding-left: var(--rd-gutter); }
   .rd-card { flex-basis: 62vw; aspect-ratio: 241 / 359; }
 

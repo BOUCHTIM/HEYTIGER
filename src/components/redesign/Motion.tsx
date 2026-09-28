@@ -90,6 +90,18 @@ export default function Motion() {
     const main = document.querySelector('main');
     if (main) mo.observe(main, { childList: true, subtree: true });
 
+    // safety net: anything inside the viewport is revealed even if the observer never fired for it
+    const sweepViewport = () => {
+      const vh = window.innerHeight;
+      document.querySelectorAll<HTMLElement>('[data-reveal]:not(.is-in)').forEach(el => {
+        if (!heroArmed.current && el.closest(HERO)) return;
+        const r = el.getBoundingClientRect();
+        if (r.width === 0 && r.height === 0) return;
+        if (r.bottom > 0 && r.top < vh) reveal(el);
+      });
+    };
+    const safety = window.setTimeout(sweepViewport, 1200);
+
     // parallax
     const layers = [...document.querySelectorAll<HTMLElement>('[data-parallax]')].map(el => ({
       el, f: parseFloat(el.dataset.parallax || '0'),
@@ -97,6 +109,7 @@ export default function Motion() {
     let raf = 0;
     const tick = () => {
       raf = 0;
+      sweepViewport();
       const vh = window.innerHeight;
       for (const { el, f } of layers) {
         const r = el.getBoundingClientRect();
@@ -117,6 +130,7 @@ export default function Motion() {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
       if (raf) cancelAnimationFrame(raf);
+      window.clearTimeout(safety);
     };
   }, []);
 
