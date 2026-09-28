@@ -4,18 +4,18 @@ import { SHOP } from '@/data/site';
 export default function ShopSection() {
   return (
     <section id="shop" className="rd-shop" aria-labelledby="shop-title">
-      <div>
-        <span className="rd-shop__jp rd-jp" lang="ja">{SHOP.jp}</span>
-        <h2 id="shop-title" className="rd-shop__title rd-groovy">
+      <div data-reveal-group>
+        <span className="rd-shop__jp rd-jp" lang="ja" data-reveal>{SHOP.jp}</span>
+        <h2 id="shop-title" className="rd-shop__title rd-groovy" data-reveal="mask">
           {SHOP.title.map((line, i) => (
             <span key={line}>{line}{i < SHOP.title.length - 1 && <br />}</span>
           ))}
         </h2>
       </div>
 
-      <ul className="rd-products" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+      <ul className="rd-products" style={{ listStyle: 'none', margin: 0, padding: 0 }} data-reveal-group>
         {SHOP.items.map(p => (
-          <li key={p.id}>
+          <li key={p.id} data-reveal>
             <a className="rd-product" href={`#${p.id}`} onClick={e => e.preventDefault()} aria-label={`${p.name}, AED ${p.priceAED}`}>
               <div className={`rd-product__media rd-product__media--${p.tone}`}>
                 {p.image ? (

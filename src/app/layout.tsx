@@ -3,7 +3,6 @@ import Script from "next/script";
 import "./globals.css";
 import Loader from "@/components/Loader";
 import SmoothScroll from "@/components/SmoothScroll";
-import CustomCursor from "@/components/CustomCursor";
 import { restaurantInfo } from "@/data/restaurant";
 
 const BASE_URL = "https://heytigerdubai.com";
@@ -125,7 +124,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-full antialiased">
         <Loader />
-        <CustomCursor />
         <SmoothScroll />
         {children}
       </body>

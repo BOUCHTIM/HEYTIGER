@@ -14,15 +14,15 @@ export default function WhatsOn() {
 
   return (
     <section id="whats-on" className="rd-whatson" aria-labelledby="whatson-title">
-      <div className="rd-whatson__head">
-        <span className="rd-whatson__jp rd-whatson__jp--top rd-jp" lang="ja" aria-hidden="true">イベント</span>
-        <h2 id="whatson-title" className="rd-whatson__title rd-display">WHAT&rsquo;S ON</h2>
+      <div className="rd-whatson__head" data-reveal-group>
+        <span className="rd-whatson__jp rd-whatson__jp--top rd-jp" lang="ja" aria-hidden="true" data-reveal>イベント</span>
+        <h2 id="whatson-title" className="rd-whatson__title rd-display" data-reveal="mask">WHAT&rsquo;S ON</h2>
       </div>
-      <div className="rd-whatson__intro rd-label">
+      <div className="rd-whatson__intro rd-label" data-reveal>
         {WHATS_ON_INTRO.lines.map(l => <p key={l}>{l}</p>)}
       </div>
 
-      <div className="rd-whatson__bar">
+      <div className="rd-whatson__bar" data-reveal>
         <ul className="rd-filter" role="group" aria-label="Filter events">
           {FILTERS.map(f => (
             <li key={f}>
@@ -40,10 +40,10 @@ export default function WhatsOn() {
         <span className="rd-whatson__jp rd-jp" lang="ja">イベント</span>
       </div>
 
-      <ul className="rd-cards" aria-live="polite">
+      <ul className="rd-cards" aria-live="polite" data-reveal-group>
         {items.map(e => (
           <li key={e.id} style={{ display: 'contents' }}>
-            <a className={`rd-card${e.image ? '' : ' rd-card--empty'}`} href={`#${e.id}`} onClick={ev => ev.preventDefault()}>
+            <a className={`rd-card${e.image ? '' : ' rd-card--empty'}`} href={`#${e.id}`} onClick={ev => ev.preventDefault()} data-reveal>
               {e.image ? (
                 <Image
                   src={e.image}

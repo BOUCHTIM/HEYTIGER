@@ -21,6 +21,7 @@ import LocationSection from '@/components/redesign/LocationSection';
 import ShopSection from '@/components/redesign/ShopSection';
 import SaveASeat from '@/components/redesign/SaveASeat';
 import SiteFooter from '@/components/redesign/SiteFooter';
+import Motion from '@/components/redesign/Motion';
 
 export default function Page() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -38,6 +39,7 @@ export default function Page() {
 
   return (
     <div className="rd-page">
+      <Motion />
       <a href="#hero" className="sr-only-focusable">SKIP TO MAIN CONTENT</a>
       <TopNav onReserve={openReserve} />
       <main>

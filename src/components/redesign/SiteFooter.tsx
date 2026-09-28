@@ -22,7 +22,7 @@ function Facebook() {
 /* Matches the frame: red band, wordmark bottom-left, FOLLOW US + icons bottom-right. */
 export default function SiteFooter() {
   return (
-    <footer className="rd-footer">
+    <footer className="rd-footer" data-reveal="fade">
       <Logo tone="ivory" />
       <div className="rd-footer__follow rd-label">
         <span>{FOOTER.follow}</span>

@@ -11,6 +11,7 @@ export default function PosterBand() {
         sizes="100vw"
         quality={90}
         className="rd-poster__img"
+        data-reveal="fade"
       />
     </div>
   );

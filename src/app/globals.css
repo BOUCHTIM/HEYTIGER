@@ -317,7 +317,6 @@ body {
   overflow-y: visible;
   overflow-wrap: break-word;
   text-rendering: optimizeLegibility;
-  cursor: url('/cursors/chopsticks.svg') 6 35, auto;
   position: relative;
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
@@ -344,7 +343,7 @@ input[type="radio"],
 input[type="range"],
 input[type="submit"],
 input[type="button"] {
-  cursor: url('/cursors/chopsticks.svg') 6 35, pointer !important;
+  cursor: pointer;
 }
 
 /* Text cursor stays native on text inputs */
@@ -793,44 +792,6 @@ input, select, textarea {
   will-change: opacity, transform;
 }
 
-/* ── StringTune Magnetic Cursor Effects ─────────────────────── */
-[data-magnetic],
-[string="magnetic"] {
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: transform;
-}
-
-/* Custom cursor glow effect */
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  body {
-    cursor: none;
-  }
-
-  /* Desktop runs the JS chopsticks cursor — hide the native cursor on
-     interactive elements too, otherwise the system pointer shows under it
-     (the a/button rule above sets one with !important). */
-  a, button, [role="button"], [role="link"], summary, label, select,
-  input[type="checkbox"], input[type="radio"], input[type="range"],
-  input[type="submit"], input[type="button"] {
-    cursor: none !important;
-  }
-
-  .custom-cursor {
-    position: fixed;
-    width: 36px;
-    height: 36px;
-    pointer-events: none;
-    z-index: 9999;
-    transition: transform 0.15s ease-out;
-    /* hotspot ≈ chopstick tips (lower-left of the art) sits on the pointer */
-    transform: translate(-10%, -84%);
-  }
-
-  body:hover .custom-cursor {
-    opacity: 1;
-  }
-}
-
 /* ═══════════════════════════════════════════════════════════════════
    9. EFFECTS
    ═══════════════════════════════════════════════════════════════════ */
@@ -898,16 +859,6 @@ input, select, textarea {
 .ht-btn-secondary:focus-visible {
   background: var(--clr-red) !important;
   color: #120D14 !important;
-}
-
-/* ── Cursor magnetic offset ─────────────────────────────────────── */
-[data-magnetic] {
-  will-change: translate;
-}
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  [data-magnetic] {
-    translate: var(--ht-mag-x, 0) var(--ht-mag-y, 0);
-  }
 }
 
 /* ── Focus system (WCAG 2.1 AA compliant) ───────────────────────── */

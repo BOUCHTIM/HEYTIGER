@@ -37,7 +37,7 @@ export default function SmoothScroll() {
 
     // Initialize Lenis
     const lenis = new Lenis({
-      duration: 0.4,
+      duration: 1.0,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       touchMultiplier: 2,

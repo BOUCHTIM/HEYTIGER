@@ -4,21 +4,21 @@ import { ABOUT, HERO } from '@/data/site';
 export default function AboutSection() {
   return (
     <section id="about" className="rd-about" aria-labelledby="about-title">
-      <div className="rd-about__rail" aria-hidden="true">
+      <div className="rd-about__rail" aria-hidden="true" data-reveal="fade">
         <span className="rd-jp" lang="ja">{HERO.jpRail}</span>
         <span className="rd-about__barcode" />
       </div>
 
-      <div className="rd-about__text">
-        <p className="rd-about__jp rd-jp" lang="ja">
+      <div className="rd-about__text" data-reveal-group>
+        <p className="rd-about__jp rd-jp" lang="ja" data-reveal>
           {ABOUT.jp.map(line => <span key={line}>{line}</span>)}
         </p>
-        <p className="rd-about__kicker">{ABOUT.kicker}</p>
-        <h2 id="about-title" className="rd-about__title rd-groovy">{ABOUT.title}</h2>
-        <p className="rd-about__body rd-label">{ABOUT.body}</p>
+        <p className="rd-about__kicker" data-reveal>{ABOUT.kicker}</p>
+        <h2 id="about-title" className="rd-about__title rd-groovy" data-reveal="mask">{ABOUT.title}</h2>
+        <p className="rd-about__body rd-label" data-reveal>{ABOUT.body}</p>
       </div>
 
-      <div className="rd-about__photo">
+      <div className="rd-about__photo" data-reveal="fade">
         {/* desktop frame: glass-brick wall · phone frame: tiger-mural wall */}
         <Image
           src="/images/home/about-people-glassbrick.webp"
@@ -48,8 +48,9 @@ export default function AboutSection() {
         height={980}
         className="rd-sticker rd-sticker--barcode"
         aria-hidden="true"
+        data-reveal="stamp"
       />
-      <div className="rd-sticker rd-sticker--night" aria-hidden="true">
+      <div className="rd-sticker rd-sticker--night" aria-hidden="true" data-reveal="stamp">
         {/* still first so the sticker paints even where autoplay/video is blocked or motion is reduced */}
         <Image
           src="/images/stickers/sticker-night-is-still-young.webp"
