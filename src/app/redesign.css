@@ -820,7 +820,7 @@
   .rd-location__block { margin-top: clamp(40px, 8.2vw, 118px); }
   .rd-location__block + .rd-location__block { margin-top: clamp(80px, 15.9vw, 229px); }
   .rd-location__art { left: 17%; right: auto; top: clamp(140px, 19.7vw, 284px); width: 83vw; max-width: none; }
-  .rd-location__rider { left: 23.6%; top: clamp(110px, 15.2vw, 219px); width: clamp(200px, 29vw, 417px); }
+  .rd-location__rider { left: 22.4%; top: clamp(126px, 17.4vw, 251px); width: clamp(190px, 27.4vw, 395px); }   /* frame: mirror just right of GOOGLE MAP, head 40% down the caps, wheel ~10px under RESERVE */
 
   /* shop: products block 867 wide, right-aligned; 3 × 275 with 21px gaps; 66 / 129 padding */
   .rd-shop { grid-template-columns: 1fr minmax(0, 60.2vw); gap: 40px; padding: clamp(40px, 4.6vw, 66px) var(--rd-gutter) clamp(64px, 9vw, 129px); }
