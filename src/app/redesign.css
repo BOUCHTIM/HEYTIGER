@@ -816,7 +816,9 @@
   .rd-teaser__jp { margin-top: clamp(60px, 8.3vw, 120px); font-size: clamp(20px, 2.1vw, 30px); }
   .rd-teaser__title { font-size: clamp(68px, 9.8vw, 141px); line-height: 0.95; white-space: nowrap; }   /* proto: 'BOLD FLAVOURS.' = 714px wide at 1440 (5.06em) */
   .rd-teaser__cta { margin-top: clamp(28px, 3.8vw, 55px); }
-  .rd-teaser__art { position: absolute; left: 72.5%; right: auto; top: clamp(70px, 10.4vw, 150px); width: 50vw; margin: 0; z-index: 1; }   /* proto @1440: tiger head from x≈1044, ≈720px wide */
+  /* whole illustration inside the right gutter; at 40vw × 1.249 aspect from top 12vw its paws end ~1.2vw below the
+     section (min-height 60.8vw), i.e. just under the poster band's torn edge */
+  .rd-teaser__art { position: absolute; right: var(--rd-gutter); left: auto; top: 12vw; width: 40vw; margin: 0; z-index: 1; }
   .rd-teaser__art img, .rd-teaser__art video, .rd-teaser__illo { width: 100%; }
 
   /* what's on: 916 tall; 338px title; filters + イベント on one row; cards 241 × 359 */
