@@ -13,7 +13,7 @@ export default function ShopSection() {
         </h2>
       </div>
 
-      <ul className="rd-products" style={{ listStyle: 'none', margin: 0, padding: 0 }} data-reveal-group>
+      <ul className="rd-products" style={{ listStyle: 'none', margin: 0, padding: 0 }} data-reveal-group data-reveal-proxy>
         {SHOP.items.map(p => (
           <li key={p.id} data-reveal>
             <a className="rd-product" href={`#${p.id}`} onClick={e => e.preventDefault()} aria-label={`${p.name}, AED ${p.priceAED}`}>

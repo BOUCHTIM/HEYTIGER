@@ -40,7 +40,7 @@ export default function WhatsOn() {
         <span className="rd-whatson__jp rd-jp" lang="ja">イベント</span>
       </div>
 
-      <ul className="rd-cards" aria-live="polite" data-reveal-group>
+      <ul className="rd-cards" aria-live="polite" data-reveal-group data-reveal-proxy>
         {items.map(e => (
           <li key={e.id} style={{ display: 'contents' }}>
             <a className={`rd-card${e.image ? '' : ' rd-card--empty'}`} href={`#${e.id}`} onClick={ev => ev.preventDefault()} data-reveal>

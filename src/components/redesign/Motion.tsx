@@ -8,6 +8,7 @@ import { useLoaderDone } from '@/hooks/useLoaderDone';
  *
  *   data-reveal="up|fade|right|mask|zoom|stamp"  — plays once when the element enters the viewport
  *   data-reveal-group                             — children with data-reveal get a stagger index (--i)
+ *   data-reveal-proxy                             — children reveal when THIS box enters (horizontal rows)
  *   data-parallax="0.08"                          — vertical drift proportional to distance from viewport centre
  *
  * Hero reveals wait for the loader curtain; everything is inert under prefers-reduced-motion.
@@ -52,14 +53,22 @@ export default function Motion() {
       { rootMargin: '0px 0px -10% 0px', threshold: 0.01 },
     );
 
+    // nearest ancestor that actually has a box (skips display: contents wrappers)
+    const boxed = (start: HTMLElement | null) => {
+      let p = start;
+      while (p && (getComputedStyle(p).display === 'contents' || p.getBoundingClientRect().height === 0)) p = p.parentElement;
+      return p;
+    };
+
     observeEl.current = (el: HTMLElement) => {
       if (el.classList.contains('is-in')) return;
-      if (el.dataset.reveal === 'mask' && el.parentElement) {
-        const p = el.parentElement;
-        const set = proxied.get(p) ?? new Set<HTMLElement>();
+      const row = el.parentElement?.closest('[data-reveal-proxy]') ?? null;
+      const proxy = row ?? (el.dataset.reveal === 'mask' ? boxed(el.parentElement) : null);
+      if (proxy && proxy !== el) {
+        const set = proxied.get(proxy) ?? new Set<HTMLElement>();
         set.add(el);
-        proxied.set(p, set);
-        io.observe(p);
+        proxied.set(proxy, set);
+        io.observe(proxy);
         return;
       }
       io.observe(el);
