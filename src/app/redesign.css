@@ -332,7 +332,7 @@
 /* ── About ────────────────────────────────────────────────────── */
 .rd-about {
   display: grid;
-  grid-template-columns: 40px 1fr 1fr;
+  grid-template-columns: 40px 1fr 1.6fr;   /* frame: copy panel ≈ ⅓, photo ≈ ⅔ */
   background: var(--rd-night);
   color: var(--rd-ivory);
   border-bottom: var(--rd-rule);
@@ -355,13 +355,16 @@
 .rd-about__jp { display: grid; gap: 2px; font-size: 12px; color: var(--rd-red); }
 .rd-about__kicker { margin: auto 0 8px; font-family: var(--rd-display); font-size: clamp(22px, 2.2vw, 29px); letter-spacing: 0.01em; color: var(--rd-red); }
 .rd-about__title { margin: 0; font-size: clamp(38px, 4.6vw, 64px); color: var(--rd-ivory); max-width: 9ch; }
-.rd-about__body { margin: auto 0 0; max-width: 30ch; font-size: 11px; letter-spacing: 0.1em; line-height: 1.55; color: var(--rd-ivory); }
+.rd-about__body { margin: auto 0 0; max-width: 24ch; font-family: var(--rd-display); font-size: 13px; letter-spacing: 0.02em; line-height: 1.2; color: var(--rd-ivory); }
 .rd-about__photo { position: relative; overflow: hidden; min-height: 320px; }
 .rd-about__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
 .rd-about__img--phone { display: none; }
 .rd-about__stickers { display: none; }
 .rd-about { position: relative; }
 .rd-sticker { position: absolute; z-index: 2; height: auto; filter: drop-shadow(0 14px 24px rgba(0,0,0,0.5)); pointer-events: none; }
+.rd-sticker__still, .rd-sticker__video { display: block; width: 100%; height: auto; }
+.rd-sticker__video { position: absolute; inset: 0; height: 100%; object-fit: cover; }
+@media (prefers-reduced-motion: reduce) { .rd-sticker__video { display: none; } }
 /* seam sits at 40px rail + 50% of the remaining width */
 .rd-sticker--barcode { left: calc(20px + 50% - 4vw); top: -4%;  width: clamp(110px, 9.5vw, 150px); transform: rotate(14deg); }
 .rd-sticker--night   { left: calc(20px + 50% - 12vw); top: 42%; width: clamp(150px, 16vw, 230px); transform: rotate(-9deg); }
@@ -784,16 +787,16 @@
   .rd-pillar .rd-jp { font-size: 13px; }
 
   /* about: 834 tall, 80px rail, 43px inset, stickers at 38% / 35% */
-  .rd-about { grid-template-columns: 80px 1fr 1fr; }
+  .rd-about { grid-template-columns: 80px 1fr 2fr; }
   .rd-about__rail { padding: 40px 0; }
   .rd-about__rail .rd-jp { font-size: 16px; }
   .rd-about__text { min-height: clamp(560px, 57.9vw, 834px); padding: clamp(28px, 3vw, 43px); }
   .rd-about__jp { font-size: 14px; }
   .rd-about__kicker { font-size: clamp(18px, 1.7vw, 24px); }
   .rd-about__title { font-size: clamp(34px, 3.05vw, 44px); line-height: 1; }
-  .rd-about__body { font-size: 13px; max-width: 22ch; }
-  .rd-sticker--barcode { left: 38%; top: 1%; width: clamp(110px, 10.4vw, 150px); transform: rotate(15deg); }
-  .rd-sticker--night   { left: 35%; top: 40%; width: clamp(160px, 18.4vw, 265px); transform: rotate(-12deg); }
+  .rd-about__body { font-size: clamp(13px, 1.1vw, 16px); max-width: 24ch; }
+  .rd-sticker--barcode { left: 41%; top: 1%; width: clamp(110px, 10.4vw, 150px); transform: rotate(15deg); }
+  .rd-sticker--night   { left: 38%; top: 49%; width: clamp(160px, 18.4vw, 265px); transform: rotate(-12deg); }   /* frame: bottom edge overhangs the section by ~20px */
 
   /* menu teaser: 875 tall; illustration 516 wide at (839, 112), inside the section, no overhang */
   .rd-teaser { display: block; min-height: clamp(520px, 60.8vw, 875px); padding: var(--rd-gutter); }

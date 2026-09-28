@@ -49,20 +49,29 @@ export default function AboutSection() {
         className="rd-sticker rd-sticker--barcode"
         aria-hidden="true"
       />
-      <video
-        className="rd-sticker rd-sticker--night"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        poster="/images/stickers/sticker-night-is-still-young.webp"
-        width={640}
-        height={1120}
-        aria-hidden="true"
-      >
-        <source src="/videos/sticker-night-is-still-young.mp4" type="video/mp4" />
-      </video>
+      <div className="rd-sticker rd-sticker--night" aria-hidden="true">
+        {/* still first so the sticker paints even where autoplay/video is blocked or motion is reduced */}
+        <Image
+          src="/images/stickers/sticker-night-is-still-young.webp"
+          alt=""
+          width={640}
+          height={1120}
+          className="rd-sticker__still"
+        />
+        <video
+          className="rd-sticker__video"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster="/images/stickers/sticker-night-is-still-young.webp"
+          width={640}
+          height={1120}
+        >
+          <source src="/videos/sticker-night-is-still-young.mp4" type="video/mp4" />
+        </video>
+      </div>
     </section>
   );
 }
