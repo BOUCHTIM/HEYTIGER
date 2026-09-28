@@ -455,7 +455,7 @@
 }
 .rd-card__jp { position: absolute; top: 12px; right: 12px; writing-mode: vertical-rl; font-size: 10px; letter-spacing: 0.1em; }
 .rd-card__body { position: relative; padding: 12px 10px 10px; display: grid; gap: 8px; }
-.rd-card__title { margin: 0; font-size: 19px; line-height: 1; text-wrap: balance; }
+.rd-card__title { margin: 0; font-size: 27px; line-height: 0.95; text-wrap: balance; }   /* proto: two-line groovy title, 'HIGHBALL' = 161px wide (5.92em in TAN Nimbus) */
 .rd-card__desc { font-size: 9px; letter-spacing: 0.08em; line-height: 1.5; opacity: 0.9; }
 .rd-card__when { display: flex; justify-content: space-between; align-items: center; padding-top: 7px; border-top: 1px solid rgba(237,231,201,0.35); font-size: 9.5px; letter-spacing: 0.12em; }
 .rd-card__when .rd-btn__arrow { width: 14px; height: 6px; }
@@ -786,13 +786,13 @@
   .rd-pillar .rd-jp { font-size: 13px; }
 
   /* about: 834 tall, 80px rail, 43px inset, stickers at 38% / 35% */
-  .rd-about { grid-template-columns: 80px 1fr 2fr; }
+  .rd-about { grid-template-columns: 80px 32.9% 1fr; }   /* proto: seam at 553px of 1440 (473px panel; % resolves against the full grid width) */
   .rd-about__rail { padding: 40px 0; }
   .rd-about__rail .rd-jp { font-size: 16px; }
-  .rd-about__text { min-height: clamp(560px, 57.9vw, 834px); padding: clamp(28px, 3vw, 43px); }
+  .rd-about__text { min-height: clamp(560px, 57.9vw, 834px); padding: clamp(28px, 2.8vw, 40px); }
   .rd-about__jp { font-size: 14px; }
-  .rd-about__kicker { font-size: clamp(18px, 1.7vw, 24px); }
-  .rd-about__title { font-size: clamp(34px, 3.05vw, 44px); line-height: 1; }
+  .rd-about__kicker { font-size: clamp(28px, 2.68vw, 39px); }   /* proto: 'NOT JUST A RESTAURANT.' = 296px wide at 1440 (7.68em in Jandus Condensed) */
+  .rd-about__title { font-size: clamp(40px, 3.4vw, 49px); line-height: 1; max-width: none; }   /* 'A CULTURAL' = 7.74em in TAN Nimbus -> 392px, fills the panel like the proto */
   .rd-about__body { font-size: clamp(13px, 1.1vw, 16px); max-width: 24ch; }
   /* Sticker boxes measured off HT_HOMEPAGE_DESKTOP with a min-area rotated-rectangle fit, expressed as % of the
      section box (1440 × 834): barcode 178 × 363 centred (648, 190) at −6.25°; night 275 × 481 centred (654, 616) at +4.5°. */
@@ -800,13 +800,13 @@
   .rd-sticker--night   { left: 35.9%; top: 45%; width: 19.1%; transform: rotate(4.5deg); }   /* bottom edge overhangs the section by ~23px, as in the frame */
 
   /* menu teaser: 875 tall; illustration 516 wide at (839, 112), inside the section, no overhang */
-  .rd-teaser { display: block; min-height: clamp(520px, 60.8vw, 875px); padding: var(--rd-gutter); }
+  .rd-teaser { display: block; min-height: clamp(520px, 60.8vw, 875px); padding: var(--rd-gutter); overflow: hidden; }   /* proto: illustration bleeds off the right edge and is cut at the section bottom */
   .rd-teaser > div:first-child { max-width: 60%; }
   .rd-teaser__intro { font-size: 13px; max-width: 24ch; }
   .rd-teaser__jp { margin-top: clamp(60px, 8.3vw, 120px); font-size: clamp(20px, 2.1vw, 30px); }
-  .rd-teaser__title { font-size: clamp(68px, 10vw, 144px); line-height: 0.95; }
+  .rd-teaser__title { font-size: clamp(68px, 9.8vw, 141px); line-height: 0.95; white-space: nowrap; }   /* proto: 'BOLD FLAVOURS.' = 714px wide at 1440 (5.06em) */
   .rd-teaser__cta { margin-top: clamp(28px, 3.8vw, 55px); }
-  .rd-teaser__art { position: absolute; right: clamp(24px, 6vw, 86px); top: clamp(48px, 7.8vw, 112px); width: clamp(260px, 35.8vw, 516px); margin: 0; z-index: 1; }
+  .rd-teaser__art { position: absolute; left: 72.5%; right: auto; top: clamp(70px, 10.4vw, 150px); width: 50vw; margin: 0; z-index: 1; }   /* proto @1440: tiger head from x≈1044, ≈720px wide */
   .rd-teaser__art img, .rd-teaser__art video, .rd-teaser__illo { width: 100%; }
 
   /* what's on: 916 tall; 338px title; filters + イベント on one row; cards 241 × 359 */
@@ -829,7 +829,7 @@
   /* shop: products block 867 wide, right-aligned; 3 × 275 with 21px gaps; 66 / 129 padding */
   .rd-shop { grid-template-columns: 1fr minmax(0, 60.2vw); gap: 40px; padding: clamp(40px, 4.6vw, 66px) var(--rd-gutter) clamp(64px, 9vw, 129px); }
   .rd-shop__jp { font-size: clamp(22px, 2.4vw, 34px); }
-  .rd-shop__title { font-size: clamp(32px, 3.05vw, 44px); line-height: 1.05; }
+  .rd-shop__title { font-size: clamp(44px, 4.21vw, 61px); line-height: 1.05; white-space: nowrap; }   /* proto: lines 411px wide at 1440; 'INSIDE AND' = 6.79em in TAN Nimbus */
   .rd-products { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(12px, 1.5vw, 21px); }
 
   /* save a seat: 770 tall; 240px title; phone from 51% to past the right edge */
