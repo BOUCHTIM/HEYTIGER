@@ -650,9 +650,10 @@
   }
 
   /* pillar strip: one column, four rows */
-  .rd-pillars { grid-template-columns: 1fr; }
+  /* Page 4: rows stacked, labels left-aligned beside the 28px rail column that continues from the hero */
+  .rd-pillars { grid-template-columns: 1fr; border-left: 28px solid var(--rd-ivory); box-shadow: inset 28px 0 0 -27px var(--rd-red); }
   .rd-pillars__lead, .rd-pillars__cap { display: none; }
-  .rd-pillar { border-right: 0; border-bottom: var(--rd-rule); min-height: clamp(100px, 34vw, 134px); padding: 26px 30px; justify-content: center; }
+  .rd-pillar { border-right: 0; border-bottom: var(--rd-rule); min-height: clamp(100px, 34vw, 134px); padding: 26px 20px; justify-items: start; text-align: left; }
   .rd-pillar:last-of-type { border-bottom: 0; }
   .rd-pillar .rd-label { font-size: 18px; }
   .rd-pillar .rd-jp { font-size: 13px; }
@@ -720,7 +721,7 @@
   .rd-location__title { order: 2; margin: 4px 0 0; font-size: clamp(49px, 17.7vw, 78px); line-height: 0.85; white-space: nowrap; }
   .rd-location__block { order: 3; margin-top: 16px; justify-items: center; }
   .rd-location__art { order: 4; position: relative; right: auto; top: auto; width: 150vw; max-width: none; margin: 8px 0 0; }
-  .rd-location__block + .rd-location__block { order: 5; margin: -6vw 0 0; }
+  .rd-location__block + .rd-location__block { order: 5; margin: 8vw 0 0; }
   .rd-location__lead { font-family: var(--rd-display); font-size: 15px; letter-spacing: 0.01em; }
 
   /* shop: title left, products in a horizontal row (overflows right) */
@@ -762,7 +763,13 @@
   .rd-menu__top { flex-direction: column; align-items: flex-start; }
   .rd-legend { justify-content: flex-start; }
   .rd-menu__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .rd-tabs { position: sticky; bottom: 0; z-index: 5; background: var(--rd-ivory); border-top: var(--rd-rule); }
+  /* HT_MENU_MOBILE: FOOD / DRINKS as a fixed bottom bar; name and price stack inside the tighter cards */
+  .rd-tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: var(--rd-ivory); border-top: var(--rd-rule); border-bottom: 0; padding-bottom: env(safe-area-inset-bottom); }
+  .rd-tabs__btn { padding: 16px 8px; font-size: 13px; }
+  .rd-menu__main { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  .rd-dish__row { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .rd-dish__name { font-size: 16px; line-height: 1.1; }
+  .rd-dish__body { padding: 10px 10px 12px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .rd-card__img, .rd-dish__media img, .rd-btn { transition: none; }
