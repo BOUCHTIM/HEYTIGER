@@ -21,14 +21,18 @@ const MUTE_KEY = 'ht_call_muted';
 
 export function useCallSound() {
   const pool = useRef<Partial<Record<Sfx, HTMLAudioElement>>>({});
-  const [muted, setMuted] = useState(false);
+  // Mute preference is read lazily on the client; SSR renders unmuted and the
+  // hook only ever runs inside client-only UI (the call modal), so no mismatch.
+  const [muted, setMuted] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try { return localStorage.getItem(MUTE_KEY) === '1'; } catch { return false; }
+  });
 
-  // Build the audio elements once on the client, restore mute preference.
+  // Build the audio elements once on the client.
   useEffect(() => {
     const saved = (() => {
       try { return localStorage.getItem(MUTE_KEY) === '1'; } catch { return false; }
     })();
-    setMuted(saved);
 
     (Object.keys(FILES) as Sfx[]).forEach((k) => {
       const a = new Audio(FILES[k]);

@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Non-project folders living in the repo root (python venvs, raw design drops):
+    "LTX-2/**",
+    "HEYTIGER NEW ASSETS/**",
+    "hey-tiger-video/**",
+    "moodboard/**",
+    "public/**",
   ]),
 ]);
 

@@ -613,7 +613,7 @@ function StepInfo({ form, setForm, errors }: {
       </div>
 
       <div>
-        <p style={fieldLabel}>What's the occasion?</p>
+        <p style={fieldLabel}>What&rsquo;s the occasion?</p>
         <select
           value={form.occasion}
           onChange={(e) => setForm({ ...form, occasion: e.target.value })}

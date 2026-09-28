@@ -3,9 +3,12 @@
 import { useEffect, useCallback } from 'react';
 import Lenis from 'lenis';
 
+/* Lenis ships its own (narrower) `win().lenis` typing; widen it locally. */
+const win = () => window as unknown as { lenis?: Lenis };
+
 export function useLenis() {
   const stop = useCallback(() => {
-    const lenis = (window as any).lenis;
+    const lenis = win().lenis;
     if (lenis) {
       lenis.stop();
       document.documentElement.classList.add('lenis-stopped');
@@ -13,7 +16,7 @@ export function useLenis() {
   }, []);
 
   const start = useCallback(() => {
-    const lenis = (window as any).lenis;
+    const lenis = win().lenis;
     if (lenis) {
       lenis.start();
       document.documentElement.classList.remove('lenis-stopped');
@@ -42,7 +45,7 @@ export default function SmoothScroll() {
     });
 
     // Expose on window for easy access
-    (window as any).lenis = lenis;
+    win().lenis = lenis;
 
     // Animation loop
     let rafId: number;
@@ -56,7 +59,7 @@ export default function SmoothScroll() {
     return () => {
       cancelAnimationFrame(rafId);
       lenis.destroy();
-      (window as any).lenis = undefined;
+      win().lenis = undefined;
       document.documentElement.classList.remove('lenis', 'lenis-smooth', 'lenis-stopped');
     };
   }, []);

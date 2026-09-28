@@ -65,7 +65,7 @@
 
 | Font | Weight/Variant | Role | File |
 |------|---------------|------|------|
-| **TAN Nimbus** | 900 | Display headlines (HEY, TIGER) | `TAN-NIMBUS.otf` |
+| **TAN Nimbus** | 900 | Display headlines (HEY, TIGER) | `TAN-Nimbus.woff2` |
 | **Jandus RD Regular** | 400 | Body text, captions, UI labels | `JandusRoadRegular.otf` |
 | **Jandus RD Oblique** | 400 italic | Emphasis / italics | `JandusRoadOblique.otf` |
 | **Jandus RD Depth** | 700 (bold) | Bold body / CTAs | `JandusRoadDepth.otf` |

@@ -5,6 +5,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,700;1,9..144,900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+JP:wght@400;700;900&family=Noto+Serif+JP:wght@600;700&family=Dela+Gothic+One&family=Bebas+Neue&family=Barlow+Condensed:wght@400;500;600;700&display=swap');
 
 @import "tailwindcss";
+@import "./redesign.css";
 
 /* ═══════════════════════════════════════════════════════════════════
    2. FONT FACES
@@ -14,8 +15,7 @@
 /* TAN NIMBUS — Primary Display / Headlines */
 @font-face {
   font-family: 'TAN Nimbus';
-  src: url('/fonts/TAN-NIMBUS.otf') format('opentype'),
-       url('/fonts/TAN-Nimbus.woff2') format('woff2'),
+  src: url('/fonts/TAN-Nimbus.woff2') format('woff2'),
        url('/fonts/TAN-Nimbus.woff')  format('woff');
   font-weight: 100 900;
   font-style: normal;
@@ -207,6 +207,12 @@
   --text-heading-xl:    clamp(56px,  8vw, 120px);
   --text-jp-display:    clamp(28px,  3.5vw, 48px);
   --text-heading-hero:  clamp(96px,  16vw, 230px);
+  /* DisplayHeading defaults — centred on the values already in use across
+     the site's hero/section/chapter headings, so adopting them doesn't
+     change anyone's visual weight beyond a few px. */
+  --text-heading-page:    clamp(46px, 8vw,   132px);
+  --text-heading-section: clamp(40px, 5.5vw,  84px);
+  --text-heading-chapter: clamp(38px, 6vw,    88px);
 
   /* ── Letter spacing ────────────────────────────────────────────── */
   --tracking-tight: -0.01em;
@@ -304,11 +310,14 @@ body {
   color: var(--clr-cream);
   font-family: var(--font-body);
   font-weight: 400;
-  overflow-x: hidden;
-  overflow-y: auto;
+  /* clip (not hidden) prevents horizontal scroll WITHOUT making <body> a
+     scroll container — `hidden` forces overflow-y to auto, which breaks
+     position: sticky for descendants (sticky pins to the scrollport). */
+  overflow-x: clip;
+  overflow-y: visible;
   overflow-wrap: break-word;
   text-rendering: optimizeLegibility;
-  cursor: url('/cursors/chopsticks-default.png') 12 40, auto;
+  cursor: url('/cursors/chopsticks.svg') 6 35, auto;
   position: relative;
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
@@ -335,7 +344,7 @@ input[type="radio"],
 input[type="range"],
 input[type="submit"],
 input[type="button"] {
-  cursor: url('/cursors/chopsticks-hover.png') 12 40, pointer !important;
+  cursor: url('/cursors/chopsticks.svg') 6 35, pointer !important;
 }
 
 /* Text cursor stays native on text inputs */
@@ -797,14 +806,24 @@ input, select, textarea {
     cursor: none;
   }
 
+  /* Desktop runs the JS chopsticks cursor — hide the native cursor on
+     interactive elements too, otherwise the system pointer shows under it
+     (the a/button rule above sets one with !important). */
+  a, button, [role="button"], [role="link"], summary, label, select,
+  input[type="checkbox"], input[type="radio"], input[type="range"],
+  input[type="submit"], input[type="button"] {
+    cursor: none !important;
+  }
+
   .custom-cursor {
     position: fixed;
-    width: 70px;
-    height: 70px;
+    width: 36px;
+    height: 36px;
     pointer-events: none;
     z-index: 9999;
     transition: transform 0.15s ease-out;
-    transform: translate(-35%, -55%);
+    /* hotspot ≈ chopstick tips (lower-left of the art) sits on the pointer */
+    transform: translate(-10%, -84%);
   }
 
   body:hover .custom-cursor {
@@ -1553,3 +1572,6 @@ textarea:focus-visible {
   .nav-overlay-item { padding-left: 36px; gap: 12px; flex-wrap: wrap; }
   .nav-overlay-jp { font-size: var(--text-micro); }
 }
+
+/* ═══ Sep-2026 redesign: page canvas is ivory, not void ═══ */
+html, body { background: var(--rd-ivory); }

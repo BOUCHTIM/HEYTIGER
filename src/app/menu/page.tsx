@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
-import KanbanMenu from '@/components/KanbanMenu';
+import MenuShell from './MenuShell';
 
 export const metadata: Metadata = {
-  title: 'Menu — 看板',
+  title: 'Menu — メニュー',
   description:
-    'The Hey Tiger menu as a wall of hanging izakaya sign boards — izakaya fare, the sake cellar, late nights, weekend brunch, cocktails and private events.',
+    'Starters, sushi, robata, ramen and late-night plates. Highballs, cocktails and sake. Hey Tiger, Motor City Dubai — kitchen until 2AM.',
 };
 
 export default function MenuPage() {
-  return <KanbanMenu />;
+  return <MenuShell />;
 }

@@ -22,9 +22,9 @@ export default function CustomCursor() {
     };
 
     const animate = () => {
-      // Fast cursor movement
-      cursorX += (mouseX - cursorX) * 0.35;
-      cursorY += (mouseY - cursorY) * 0.35;
+      // Fast cursor movement — snappy so a small cursor tracks tightly.
+      cursorX += (mouseX - cursorX) * 0.6;
+      cursorY += (mouseY - cursorY) * 0.6;
 
       cursor.style.left = `${cursorX}px`;
       cursor.style.top = `${cursorY}px`;
@@ -70,12 +70,12 @@ export default function CustomCursor() {
       }}
     >
       <Image
-        src={isHovering ? '/cursors/chopsticks-hover.png' : '/cursors/chopsticks-default.png'}
-        alt="Chopsticks Cursor"
-        width={52}
-        height={52}
+        src={isHovering ? '/cursors/chopsticks-hover.webp' : '/cursors/chopsticks-default.png'}
+        alt=""
+        width={36}
+        height={36}
         unoptimized
-        style={{ width: 'auto', height: 'auto' }}
+        style={{ width: '36px', height: '36px', display: 'block' }}
         loading="eager"
       />
     </div>

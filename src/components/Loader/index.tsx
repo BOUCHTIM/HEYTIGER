@@ -66,6 +66,9 @@ export default function Loader({ onComplete }: LoaderProps) {
       sessionStorage.setItem(SESSION_KEY, '1');
 
       const slowParam = Number(sp.get('loaderSlow'));
+      // One-time mount decision from the URL — intentionally synchronous so the
+      // cover never flashes for returning sessions.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (Number.isFinite(slowParam) && slowParam > 1) setSlow(Math.min(8, slowParam));
     } catch {
       /* sessionStorage blocked — fall through and show. */

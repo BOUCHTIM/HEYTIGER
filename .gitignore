@@ -54,3 +54,6 @@ LTX-2
 hey-tiger-video
 .agents
 skills-lock.json
+
+# macOS junk anywhere
+**/.DS_Store

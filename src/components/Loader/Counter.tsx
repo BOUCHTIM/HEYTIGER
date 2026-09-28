@@ -26,16 +26,21 @@ export default function Counter({ durationMs = 1800, reduceMotion = false, onCom
   const [value, setValue] = useState(0);
   const doneRef = useRef(false);
   const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete;
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
     if (reduceMotion) {
-      setValue(100);
-      if (!doneRef.current) {
-        doneRef.current = true;
-        onCompleteRef.current?.();
-      }
-      return;
+      // Jump straight to 100 on the next frame (keeps setState out of the effect body).
+      const id = requestAnimationFrame(() => {
+        setValue(100);
+        if (!doneRef.current) {
+          doneRef.current = true;
+          onCompleteRef.current?.();
+        }
+      });
+      return () => cancelAnimationFrame(id);
     }
 
     let raf = 0;

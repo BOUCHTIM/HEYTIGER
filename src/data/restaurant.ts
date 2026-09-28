@@ -2,8 +2,8 @@ import type { RestaurantInfo } from '@/types/restaurant';
 
 export const restaurantInfo: RestaurantInfo = {
   name: 'Hey Tiger',
-  tagline: 'FAMILY BY DAY. CHAOS BY NIGHT.',
-  description: 'Japanese bar & restaurant in Motor City Dubai. Brunch, ramen and coffee by day. Sake, cocktails and DJ sets by night. A Brass Monkey Hospitality venue.',
+  tagline: 'A SOCIAL HOUSE FOR THE UNCOMMON',
+  description: 'Hey Tiger is a social house in Motor City Dubai where good food, music and culture meet. Asian soul food made to share, highballs and sake, late-night plates and DJ sets until 2AM. A Brass Monkey Hospitality venue.',
   address: 'Motor City Club House',
   neighborhood: 'Motor City',
   city: 'Dubai',
