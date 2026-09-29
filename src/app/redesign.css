@@ -836,7 +836,9 @@
   .rd-teaser__cta { margin-top: clamp(28px, 3.8vw, 55px); }
   /* whole illustration inside the right gutter; at 40vw × 1.249 aspect from top 12vw its paws end ~1.2vw below the
      section (min-height 60.8vw), i.e. just under the poster band's torn edge */
-  .rd-teaser__art { position: absolute; right: var(--rd-gutter); left: auto; top: 12vw; width: 40vw; margin: 0; z-index: 1; }
+  /* capped at the 1440 geometry, like the section's own min-height (875px), so on wide screens the tiger doesn't
+     grow into the poster band — paws always tuck ~26px under the torn edge */
+  .rd-teaser__art { position: absolute; right: var(--rd-gutter); left: auto; top: min(12vw, 173px); width: min(40vw, 576px); margin: 0; z-index: 1; }
   .rd-teaser__art img, .rd-teaser__art video, .rd-teaser__illo { width: 100%; }
 
   /* what's on: 916 tall; 338px title; filters + イベント on one row; cards 241 × 359 */

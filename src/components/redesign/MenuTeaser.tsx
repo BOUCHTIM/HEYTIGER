@@ -21,7 +21,7 @@ export default function MenuTeaser() {
           <RdButton variant="outline-red" href="/menu">{MENU_TEASER.cta}</RdButton>
         </div>
       </div>
-      <div className="rd-teaser__art" aria-hidden="true" data-reveal="fade" data-parallax="-0.06">
+      <div className="rd-teaser__art" aria-hidden="true" data-reveal="fade">
         {/* Animated line-art from Figma (1.5 s loop) as VP9 WebM with alpha, so it sits on ivory with
             no baked background. Browsers without alpha-video support fall back to the transparent still. */}
         <video
