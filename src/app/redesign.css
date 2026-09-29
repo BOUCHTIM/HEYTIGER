@@ -405,7 +405,7 @@
   z-index: 2;   /* above the teaser illustration's overhang */
   display: grid;
   grid-template-columns: 1fr;
-  background: var(--rd-ivory);
+  background: transparent;   /* the torn bottom band is partly transparent — it must show the night below, not ivory */
   /* frame: the collage sits at its natural aspect, 1.5% wider than the frame so the torn corners pass both
      edges, a thin ivory sliver above, and the torn bottom edge lands straight on the night section */
   height: auto;
@@ -954,3 +954,11 @@
 .rd-motion .rd-menu__section { animation: rd-menu-in 0.5s var(--rd-ease) both; }
 .rd-motion .rd-menu__section .rd-dish { animation: rd-menu-in 0.6s var(--rd-ease) both; animation-delay: calc(var(--i, 0) * 45ms); }
 @keyframes rd-menu-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+/* Poster → What's On seam (frame: the torn bottom edge lands ON the night, no ivory strip).
+   The art's last 51/2400 of its height is a ragged band; at 101.5vw wide that is ≈2.2vw — slide the night up
+   under it and give the same amount back to What's On's top padding so the title keeps its place. */
+@media (min-width: 901px) {
+  .rd-poster { margin-bottom: -2.4vw; }
+  .rd-poster + .rd-whatson { padding-top: calc(clamp(40px, 4.9vw, 71px) + 2.4vw); }
+}
