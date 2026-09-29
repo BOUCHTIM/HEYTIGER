@@ -1,809 +1,522 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
-import PhoneSVG from '@/components/call/PhoneSVG';
-import { useCallSound } from '@/hooks/useCallSound';
+import { useEffect, useMemo, useRef, useState, type InputHTMLAttributes } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { Arrow } from '@/components/redesign/primitives';
+import { restaurantInfo } from '@/data/restaurant';
+import type {
+  AvailabilityResult, BookingConfig, BookingErrorBody, ReservationRequest, ReservationResult, Slot,
+} from '@/lib/booking/types';
+import { validateGuest, type FieldErrors } from '@/lib/booking/validation';
+
+/* Reservation form. Talks only to /api/booking/* — the server decides whether that is SevenRooms (live),
+   the mock (dev / previews) or offline (production without credentials). Steps: date → guests → time → details. */
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
-interface FormData {
-  date: string;
-  time: string;
-  guests: number;
-  name: string;
-  email: string;
-  phone: string;
-  dietary: string[];
-  occasion: string;
-  smsOpt: boolean;
-  agree: boolean;
-}
-
-const TIMES = [
-  '18:00','18:15','18:30','18:45',
-  '19:00','19:15','19:30','19:45',
-  '20:00','20:15','20:30','20:45',
-  '21:00','21:15','21:30','21:45',
-  '22:00','22:15','22:30','22:45',
-  '23:00','23:30','00:00','00:30',
-  '01:00','01:30','02:00',
+const STEPS: Array<{ n: Step; label: string; jp: string }> = [
+  { n: 1, label: 'Date', jp: '日付' },
+  { n: 2, label: 'Guests', jp: '人数' },
+  { n: 3, label: 'Time', jp: '時間' },
+  { n: 4, label: 'Details', jp: '詳細' },
 ];
 
-const PREMIUM_TIMES = ['21:00','21:15','21:30','21:45','22:00','22:15','22:30','22:45','23:00','23:30','00:00'];
+const DIETARY = ['Vegetarian', 'Vegan', 'Gluten-free', 'Nut allergy', 'Shellfish allergy', 'Halal'];
+const OCCASIONS = ['Birthday', 'Anniversary', 'Date night', 'Business dinner', 'Team outing', 'Just because'];
+const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-const DIETARY = ['Vegetarian','Vegan','Gluten-free','Nut allergy','Halal','No restrictions'];
-const OCCASIONS = ['','Birthday','Anniversary','Date night','Business dinner','Team outing','Just because — that\'s enough'];
-
-const defaultForm: FormData = {
-  date: '', time: '19:00', guests: 2,
-  name: '', email: '', phone: '',
-  dietary: [], occasion: '', smsOpt: false, agree: false,
+const DEFAULT_CONFIG: BookingConfig = {
+  mode: 'mock', fallbackUrl: null, minPartySize: 1, maxPartySize: 12, largePartyThreshold: 8, bookingWindowDays: 60,
 };
 
-/* ── Validation helpers ─────────────────────────────────────────── */
-// Stricter than the basic pattern: no leading/trailing dots, valid TLD ≥2 letters,
-// rejects spaces and stray characters like the trailing backtick bug.
-const EMAIL_RE = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-const isValidEmail = (v: string) => {
-  const e = v.trim();
-  return EMAIL_RE.test(e) && !e.includes('..') && !/^\.|\.$/.test(e.split('@')[0]);
+type Form = Omit<ReservationRequest, 'partySize'> & { partySize: number };
+
+const emptyForm: Form = {
+  date: '', time: '', slotId: '', partySize: 2,
+  firstName: '', lastName: '', email: '', phone: '',
+  dietary: [], occasion: '', notes: '', marketingOptIn: false, agreedToPolicy: false,
 };
-// Phone: strip spaces/dashes/parens; require optional + then 7–15 digits.
-const isValidPhone = (v: string) => {
-  const cleaned = v.replace(/[\s\-().]/g, '');
-  return /^\+?\d{7,15}$/.test(cleaned);
-};
-// Local record of reservations to prevent a double-booking for the same slot.
-type StoredReservation = { email: string; date: string; time: string; ref: string };
-const RES_KEY = 'ht_reservations';
-const readReservations = (): StoredReservation[] => {
-  try { return JSON.parse(localStorage.getItem(RES_KEY) || '[]'); } catch { return []; }
-};
-const hasDuplicate = (email: string, date: string, time: string) =>
-  readReservations().some(r => r.email.toLowerCase() === email.trim().toLowerCase() && r.date === date && r.time === time);
-const saveReservation = (r: StoredReservation) => {
-  try { localStorage.setItem(RES_KEY, JSON.stringify([...readReservations(), r])); } catch {}
-};
+
+/* ── Date helpers: ISO strings treated as UTC calendar days, so no time-zone drift ── */
+const venueToday = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Dubai' }).format(new Date());
+const parseISO = (iso: string) => new Date(`${iso}T00:00:00Z`);
+const toISO = (d: Date) => d.toISOString().slice(0, 10);
+const addDays = (iso: string, n: number) => { const d = parseISO(iso); d.setUTCDate(d.getUTCDate() + n); return toISO(d); };
+const fmt = (iso: string, o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('en-GB', { ...o, timeZone: 'UTC' }).format(parseISO(iso));
+const shortDate = (iso: string) => fmt(iso, { weekday: 'short', day: 'numeric', month: 'short' });
 
 export default function ReservationModal({ onClose }: { onClose: () => void }) {
-  const [step, setStep]   = useState<Step>(1);
-  const [maxUnlockedStep, setMaxUnlockedStep] = useState<Step>(1);
-  const [form, setForm]   = useState<FormData>(defaultForm);
-  const [errors, setErrors] = useState<Partial<FormData>>({});
-  const [confirmationNum, setConfirmationNum] = useState('');
+  const reduce = useReducedMotion();
+  const [config, setConfig] = useState<BookingConfig>(DEFAULT_CONFIG);
+  const [step, setStep] = useState<Step>(1);
+  const [maxStep, setMaxStep] = useState<Step>(1);
+  const [form, setForm] = useState<Form>(emptyForm);
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [banner, setBanner] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<ReservationResult | null>(null);
+  const [avail, setAvail] = useState<{ key: string; slots: Slot[] } | null>(null);
+  const [availError, setAvailError] = useState<{ key: string; message: string } | null>(null);
 
-  // ── "Call to book" concept ──
-  // The booking opens as an incoming call. The guest picks up the phone (which
-  // is also the gesture that unlocks audio), then the line connects to the form.
-  const [picked, setPicked] = useState(false);
-  const sound = useCallSound();
+  const [today] = useState(venueToday);
+  const lastDay = addDays(today, config.bookingWindowDays);
+  const availKey = `${form.date}|${form.partySize}`;
 
-  // Try to ring on open (we're inside the click that opened the modal, so most
-  // browsers allow it; if blocked, the phone still rings visually).
   useEffect(() => {
-    sound.play('ring');
-    return () => sound.stopAll();
-  }, [sound]);
-
-  const pickUp = useCallback(() => {
-    sound.stop('ring');
-    sound.play('pickup');
-    window.setTimeout(() => sound.play('connect'), 160);
-    setPicked(true);
-  }, [sound]);
-
-  const tone = useCallback(() => sound.play('key'), [sound]);
-
-  // Reset form state when modal closes
-  const handleClose = useCallback(() => {
-    setStep(1);
-    setMaxUnlockedStep(1);
-    setForm(defaultForm);
-    setErrors({});
-    setConfirmationNum('');
-    onClose();
-  }, [onClose]);
-
-  const resetReservation = useCallback(() => {
-    setStep(1);
-    setMaxUnlockedStep(1);
-    setForm(defaultForm);
-    setErrors({});
-    setConfirmationNum('');
+    const ctrl = new AbortController();
+    fetch('/api/booking/config', { signal: ctrl.signal })
+      .then(r => (r.ok ? r.json() : null))
+      .then((c: BookingConfig | null) => c && setConfig(c))
+      .catch(() => {});
+    return () => ctrl.abort();
   }, []);
 
-  const goToStep = (targetStep: Step) => {
-    if (targetStep <= maxUnlockedStep) {
-      setStep(targetStep);
-    }
+  // Availability for the chosen date + party, fetched when the guest reaches the time step.
+  useEffect(() => {
+    if (step !== 3 || !form.date || avail?.key === availKey || availError?.key === availKey) return;
+    const ctrl = new AbortController();
+    fetch(`/api/booking/availability?date=${form.date}&party=${form.partySize}`, { signal: ctrl.signal })
+      .then(async r => {
+        if (!r.ok) throw new Error(((await r.json().catch(() => null)) as BookingErrorBody | null)?.error.message ?? 'Couldn’t load times.');
+        return r.json() as Promise<AvailabilityResult>;
+      })
+      .then(a => setAvail({ key: availKey, slots: a.slots }))
+      .catch(e => { if (!ctrl.signal.aborted) setAvailError({ key: availKey, message: e instanceof Error ? e.message : 'Couldn’t load times.' }); });
+    return () => ctrl.abort();
+  }, [step, form.date, form.partySize, availKey, avail?.key, availError?.key]);
+
+  const update = (patch: Partial<Form>) => {
+    setForm(f => {
+      const next = { ...f, ...patch };
+      // A new date or party size can invalidate the chosen slot.
+      if ((patch.date && patch.date !== f.date) || (patch.partySize && patch.partySize !== f.partySize)) {
+        next.time = ''; next.slotId = '';
+        setMaxStep(m => (m > 3 ? 3 : m));
+      }
+      return next;
+    });
+    setErrors(e => { const n = { ...e }; for (const k of Object.keys(patch)) delete n[k as keyof FieldErrors]; return n; });
+    setBanner('');
   };
 
-  const today = new Date().toISOString().split('T')[0];
+  const go = (s: Step) => { setStep(s); setMaxStep(m => (s > m ? s : m)); setBanner(''); };
 
-  // ── A11y plumbing: focus trap, ESC, body-scroll lock, return focus ──
-  const modalRef     = useRef<HTMLDivElement>(null);
-  const returnFocusRef = useRef<HTMLElement | null>(null);
+  const canAdvance =
+    step === 1 ? !!form.date :
+    step === 2 ? form.partySize >= config.minPartySize :
+    step === 3 ? !!form.slotId : true;
 
-  useEffect(() => {
-    // Remember whoever opened the modal so we can return focus on close
-    returnFocusRef.current = document.activeElement as HTMLElement | null;
-
-    // Lock body scroll while the modal is open
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    // Focus the first focusable element inside the modal
-    const focusTimer = window.setTimeout(() => {
-      const root = modalRef.current;
-      if (!root) return;
-      const first = root.querySelector<HTMLElement>(
-        'input:not([disabled]), select:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      );
-      first?.focus();
-    }, 50);
-
-    // ESC closes, Tab cycles inside the modal
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        handleClose();
+  const submit = async () => {
+    const errs = validateGuest(form);
+    setErrors(errs);
+    if (Object.keys(errs).length) return;
+    setSubmitting(true);
+    setBanner('');
+    try {
+      const r = await fetch('/api/booking/reservations', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (r.ok) {
+        setResult(await r.json());
+        setStep(5);
         return;
       }
-      if (e.key !== 'Tab') return;
-      const root = modalRef.current;
-      if (!root) return;
-      const focusables = Array.from(
-        root.querySelectorAll<HTMLElement>(
-          'input:not([disabled]), select:not([disabled]), button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
-        )
-      ).filter(el => el.offsetParent !== null); // visible only
-      if (focusables.length === 0) return;
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      const active = document.activeElement as HTMLElement;
-      if (e.shiftKey && active === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && active === last) {
-        e.preventDefault();
-        first.focus();
+      const body = (await r.json().catch(() => null)) as BookingErrorBody | null;
+      const err = body?.error;
+      if (err?.code === 'slot_unavailable') {
+        setAvail(null);
+        update({ time: '', slotId: '' });
+        setStep(3);
+        setBanner(err.message);
+      } else {
+        if (err?.fields) setErrors(err.fields);
+        setBanner(err?.message ?? 'Something went wrong. Try again.');
       }
-    };
-    document.addEventListener('keydown', onKey);
-
-    return () => {
-      window.clearTimeout(focusTimer);
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = originalOverflow;
-      // Return focus to opener — if it still exists in the DOM
-      const el = returnFocusRef.current;
-      if (el && document.contains(el)) {
-        el.focus();
-      }
-    };
-  }, [handleClose]);
-
-  const validate = (): boolean => {
-    const errs: Partial<Record<keyof FormData, string>> = {};
-    if (step === 1 && !form.date) errs.date = 'Pick a date — we need to save your seat.';
-    if (step === 4) {
-      if (!form.name.trim())            errs.name  = 'We\'ll need a name for the reservation.';
-      if (!isValidEmail(form.email))    errs.email = 'That email doesn\'t look right. Try again.';
-      if (!isValidPhone(form.phone))    errs.phone = 'Phone number not recognised. Try +971 50 000 0000.';
-      if (!form.agree)                  errs.agree = 'You\'ll need to accept the terms to hold your seat.';
-      // Prevent the same guest double-booking the same date & time.
-      if (isValidEmail(form.email) && form.date && form.time && hasDuplicate(form.email, form.date, form.time)) {
-        errs.email = 'You already hold a table for this date & time. One booking per slot — pick another time or date.';
-      }
+    } catch {
+      setBanner('No connection. Check your signal and try again.');
+    } finally {
+      setSubmitting(false);
     }
-    setErrors(errs as Partial<FormData>);
-    return Object.keys(errs).length === 0;
   };
 
   const next = () => {
-    if (!validate()) return;
-    if (step === 4 && !confirmationNum) {
-      const ref = `HT-${Date.now().toString(36).toUpperCase().slice(-6)}`;
-      setConfirmationNum(ref);
-      // Record the booking so this guest can't re-book the same slot.
-      saveReservation({ email: form.email, date: form.date, time: form.time, ref });
-    }
-    const newStep = step < 5 ? (step + 1) as Step : step;
-    // Keypad blip stepping forward; warm "line connected" chime on confirm.
-    sound.play(newStep === 5 ? 'connect' : 'key');
-    setStep(newStep);
-    if (newStep > maxUnlockedStep && newStep < 5) {
-      setMaxUnlockedStep(newStep);
-    }
+    if (!canAdvance) return;
+    if (step === 4) void submit();
+    else go((step + 1) as Step);
   };
-  const back = () => setStep(s => (s > 1 ? (s - 1) as Step : s));
+
+  /* ── A11y plumbing: focus trap, ESC, body-scroll lock, return focus ── */
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const t = window.setTimeout(() => panelRef.current?.querySelector<HTMLElement>('[data-autofocus], button')?.focus(), 60);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { e.preventDefault(); onClose(); return; }
+      if (e.key !== 'Tab' || !panelRef.current) return;
+      const f = Array.from(panelRef.current.querySelectorAll<HTMLElement>(
+        'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), a[href]',
+      )).filter(el => el.offsetParent !== null);
+      if (!f.length) return;
+      const [first, last] = [f[0], f[f.length - 1]];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      window.clearTimeout(t);
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = overflow;
+      if (opener && document.contains(opener)) opener.focus();
+    };
+  }, [onClose]);
+
+  const summary = [
+    form.date && shortDate(form.date),
+    step > 1 && `${form.partySize} ${form.partySize === 1 ? 'guest' : 'guests'}`,
+    form.time,
+  ].filter(Boolean).join(' · ');
+
+  const slide = reduce ? {} : { initial: { opacity: 0, x: 16 }, animate: { opacity: 1, x: 0 }, exit: { opacity: 0, x: -16 } };
 
   return (
-    <AnimatePresence>
+    <motion.div className="rd-rsv" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <motion.div
-          key="backdrop"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={handleClose}
-        style={{
-          position: 'fixed', inset: 0,
-          background: 'rgba(21,13,17,0.88)',
-          backdropFilter: 'blur(6px)',
-          zIndex: 1000,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '20px',
-        }}
+        ref={panelRef}
+        className="rd-rsv__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="rsv-title"
+        onClick={e => e.stopPropagation()}
+        initial={reduce ? false : { opacity: 0, y: 28 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 280, damping: 30 }}
       >
-        <motion.div
-          ref={modalRef}
-          key="modal"
-          initial={{ opacity: 0, scale: 0.94, y: 24 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.94 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-          onClick={(e) => e.stopPropagation()}
-          style={{
-            background: 'var(--clr-dark)',
-            border: '2px solid var(--clr-amber)',
-            borderRadius: 0,
-            width: '100%',
-            maxWidth: '480px',
-            maxHeight: '90vh',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="reservation-modal-title"
-        >
-          {!picked ? (
-            <CallGate onPickUp={pickUp} onClose={handleClose} muted={sound.muted} onToggleMute={sound.toggleMute} />
-          ) : (
+        <header className="rd-rsv__head">
+          <div>
+            <p className="rd-rsv__jp rd-jp" lang="ja">席を予約する</p>
+            <h2 id="rsv-title" className="rd-rsv__title rd-groovy">{step === 5 ? 'You’re in.' : 'Save a seat.'}</h2>
+          </div>
+          <button type="button" className="rd-rsv__close" onClick={onClose} aria-label="Close reservation">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1.4" /></svg>
+          </button>
+        </header>
+
+        {config.mode === 'offline' ? (
+          <Offline config={config} />
+        ) : (
           <>
-          {/* Header */}
-          <div style={{
-            padding: '24px 28px 20px',
-            borderBottom: '1px solid rgba(250,175,63,0.15)',
-            display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-            flexShrink: 0,
-          }}>
-            <div>
-              <p lang="ja" style={{ fontFamily: 'var(--font-jp)', fontSize: 'var(--text-label)', letterSpacing: '0.22em', color: 'var(--clr-amber)', marginBottom: '4px' }}>おいトラ</p>
-              <h2 id="reservation-modal-title" style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '26px', color: 'var(--clr-cream)', letterSpacing: 'var(--tracking-tight)' }}>
-                You&apos;re on<br />the line.
-              </h2>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <MuteButton muted={sound.muted} onToggle={sound.toggleMute} />
-            <button
-              onClick={handleClose}
-              aria-label="Close reservation modal"
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: 'rgba(245,239,224,0.62)', fontSize: '22px', lineHeight: 1,
-                padding: '4px', transition: 'color var(--dur-fast) var(--ease-standard)',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--clr-red)')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(245,239,224,0.4)')}
-            >
-              ✕
-            </button>
-            </div>
-          </div>
-
-          {/* Step progress */}
-          {step < 5 && (
-            <div style={{ padding: '16px 28px 0', flexShrink: 0 }}>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                {[1,2,3,4].map(s => (
+            {step < 5 && (
+              <nav className="rd-rsv__steps" aria-label="Booking steps">
+                {STEPS.map(s => (
                   <button
-                    key={s}
-                    onClick={() => goToStep(s as Step)}
-                    aria-label={`Go to step ${s}`}
-                    disabled={s > maxUnlockedStep}
-                    style={{
-                      flex: 1, height: '3px', borderRadius: 0,
-                      background: s < step ? 'var(--clr-amber)' : s === step ? 'var(--clr-red)' : 'rgba(245,239,224,0.1)',
-                      transition: 'background 0.3s',
-                      border: 'none',
-                      cursor: s <= maxUnlockedStep ? 'pointer' : 'default',
-                    }}
-                  />
+                    key={s.n}
+                    type="button"
+                    className="rd-rsv__step"
+                    aria-current={s.n === step ? 'step' : undefined}
+                    data-done={s.n < step || undefined}
+                    disabled={s.n > maxStep}
+                    onClick={() => go(s.n)}
+                  >
+                    <span className="rd-rsv__step-n">0{s.n}</span>
+                    <span className="rd-rsv__step-l">{s.label}</span>
+                  </button>
                 ))}
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-micro)', letterSpacing: 'var(--tracking-wide)', color: 'rgba(245,239,224,0.62)' }}>
-                  STEP {step} OF 4
-                </p>
-                {step > 1 && (
-                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color: 'var(--clr-amber)', letterSpacing: '0.22em', textTransform: 'uppercase' }}>
-                    LINE {step - 1} CLEAR
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
+              </nav>
+            )}
 
-          {/* Body */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={step}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.25 }}
-              >
-                {step === 1 && <StepWhen form={form} setForm={setForm} today={today} errors={errors} />}
-                {step === 2 && <StepTime form={form} setForm={setForm} tone={tone} />}
-                {step === 3 && <StepGuests form={form} setForm={setForm} tone={tone} />}
-                {step === 4 && <StepInfo form={form} setForm={setForm} errors={errors} />}
-                {step === 5 && <StepConfirm form={form} confirmNum={confirmationNum || 'HT-……'} onClose={handleClose} onBookAnother={resetReservation} />}
-              </motion.div>
-            </AnimatePresence>
-          </div>
+            {config.mode === 'mock' && step < 5 && (
+              <p className="rd-rsv__test" role="note">Test mode — bookings are not sent to the venue.</p>
+            )}
 
-          {/* Footer buttons */}
-          {step < 5 && (
-            <div style={{
-              padding: '20px 28px 24px',
-              borderTop: '1px solid rgba(250,175,63,0.1)',
-              display: 'flex', gap: '12px',
-              flexShrink: 0,
-            }}>
-              {step > 1 && (
-                <button onClick={back} style={{
-                  flex: 1,
-                  fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', fontWeight: 700, letterSpacing: '0.18em',
-                  background: 'transparent', border: '1.5px solid rgba(245,239,224,0.25)',
-                  color: 'rgba(245,239,224,0.85)', padding: '14px', borderRadius: 0, cursor: 'pointer',
-                  transition: 'border-color 0.2s, color 0.2s, background 0.2s',
-                  minHeight: '44px',
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--clr-cream)'; e.currentTarget.style.color = 'var(--clr-cream)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(245,239,224,0.25)'; e.currentTarget.style.color = 'rgba(245,239,224,0.85)'; }}
-                >
-                  BACK
-                </button>
-              )}
-              <button onClick={next} style={{
-                flex: 2,
-                fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', fontWeight: 800, letterSpacing: '0.18em',
-                background: 'var(--clr-amber)', border: 'none',
-                color: 'var(--clr-void)', padding: '14px', borderRadius: 0, cursor: 'pointer',
-                transition: 'background 0.2s, color 0.2s, transform 0.15s',
-                boxShadow: '0 6px 18px rgba(250,175,63,0.34)',
-                minHeight: '44px',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--clr-red)'; e.currentTarget.style.color = 'var(--clr-cream)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--clr-amber)'; e.currentTarget.style.color = 'var(--clr-void)'; e.currentTarget.style.transform = 'none'; }}
-              >
-                {step === 4 ? 'CONFIRM BOOKING' : 'NEXT'}
-              </button>
+            <div className="rd-rsv__body">
+              {banner && <p className="rd-rsv__banner" role="alert">{banner}</p>}
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div key={step} {...slide} transition={{ duration: 0.2 }}>
+                  {step === 1 && <StepDate value={form.date} today={today} lastDay={lastDay} onPick={d => update({ date: d })} />}
+                  {step === 2 && <StepGuests value={form.partySize} config={config} onPick={n => update({ partySize: n })} />}
+                  {step === 3 && (
+                    <StepTime
+                      date={form.date}
+                      slots={avail?.key === availKey ? avail.slots : null}
+                      error={availError?.key === availKey ? availError.message : ''}
+                      selected={form.slotId}
+                      fallbackUrl={config.fallbackUrl}
+                      onPick={s => update({ time: s.time, slotId: s.slotId })}
+                      onChangeDate={() => go(1)}
+                    />
+                  )}
+                  {step === 4 && <StepDetails form={form} errors={errors} config={config} update={update} />}
+                  {step === 5 && result && <Confirmed form={form} result={result} mode={config.mode} onClose={onClose} />}
+                </motion.div>
+              </AnimatePresence>
             </div>
-          )}
+
+            {step < 5 && (
+              <footer className="rd-rsv__foot">
+                <p className="rd-rsv__summary" aria-live="polite">{summary || 'Pick a night to start.'}</p>
+                <div className="rd-rsv__actions">
+                  {step > 1 && (
+                    <button type="button" className="rd-btn rd-btn--outline-ivory rd-rsv__back" onClick={() => go((step - 1) as Step)}>
+                      <span>Back</span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="rd-btn rd-btn--red rd-rsv__next"
+                    onClick={next}
+                    disabled={!canAdvance || submitting}
+                    aria-busy={submitting || undefined}
+                  >
+                    <span>{step === 4 ? (submitting ? 'Booking…' : 'Confirm booking') : 'Continue'}</span>
+                    <Arrow />
+                  </button>
+                </div>
+              </footer>
+            )}
           </>
-          )}
-        </motion.div>
+        )}
       </motion.div>
-    </AnimatePresence>
+    </motion.div>
   );
 }
 
-/* ── Call gate — the incoming call, before the form ──────────────── */
+/* ── Step 1: month calendar ─────────────────────────────────────── */
+function StepDate({ value, today, lastDay, onPick }: { value: string; today: string; lastDay: string; onPick: (d: string) => void }) {
+  const [month, setMonth] = useState((value || today).slice(0, 7));
+  const first = `${month}-01`;
+  const offset = (parseISO(first).getUTCDay() + 6) % 7;   // Monday-first grid
+  const daysInMonth = new Date(Date.UTC(+month.slice(0, 4), +month.slice(5, 7), 0)).getUTCDate();
+  const cells = [...Array(offset).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => addDays(first, i))];
+  const shift = (n: number) => { const d = parseISO(first); d.setUTCMonth(d.getUTCMonth() + n); setMonth(toISO(d).slice(0, 7)); };
 
-function MuteButton({ muted, onToggle }: { muted: boolean; onToggle: () => void }) {
   return (
-    <button
-      onClick={onToggle}
-      aria-label={muted ? 'Unmute call sound' : 'Mute call sound'}
-      aria-pressed={muted}
-      style={{
-        background: 'none', border: 'none', cursor: 'pointer',
-        color: muted ? 'rgba(245,239,224,0.4)' : 'var(--clr-amber)',
-        fontSize: '16px', lineHeight: 1, padding: '4px',
-        transition: 'color var(--dur-fast) var(--ease-standard)',
-      }}
-    >
-      {muted ? '🔇' : '🔊'}
-    </button>
+    <div>
+      <h3 className="rd-rsv__h">Pick your night.</h3>
+      <p className="rd-rsv__sub">Tuesday to Sunday. Late seatings until 1AM.</p>
+      <div className="rd-rsv__cal">
+        <div className="rd-rsv__cal-head">
+          <button type="button" className="rd-rsv__cal-nav" onClick={() => shift(-1)} disabled={month <= today.slice(0, 7)} aria-label="Previous month">‹</button>
+          <p className="rd-rsv__cal-month" aria-live="polite">{fmt(first, { month: 'long', year: 'numeric' })}</p>
+          <button type="button" className="rd-rsv__cal-nav" onClick={() => shift(1)} disabled={month >= lastDay.slice(0, 7)} aria-label="Next month">›</button>
+        </div>
+        <div className="rd-rsv__cal-grid" role="grid">
+          {WEEKDAYS.map((d, i) => <span key={i} className="rd-rsv__cal-dow" aria-hidden="true">{d}</span>)}
+          {cells.map((iso, i) => iso ? (
+            <button
+              key={iso}
+              type="button"
+              className="rd-rsv__day"
+              aria-pressed={iso === value}
+              aria-label={fmt(iso, { weekday: 'long', day: 'numeric', month: 'long' })}
+              data-today={iso === today || undefined}
+              data-autofocus={iso === (value || today) || undefined}
+              disabled={iso < today || iso > lastDay}
+              onClick={() => onPick(iso)}
+            >
+              {+iso.slice(8)}
+            </button>
+          ) : <span key={`pad-${i}`} />)}
+        </div>
+      </div>
+    </div>
   );
 }
 
-function CallGate({ onPickUp, onClose, muted, onToggleMute }: {
-  onPickUp: () => void; onClose: () => void; muted: boolean; onToggleMute: () => void;
-}) {
+/* ── Step 2: party size ─────────────────────────────────────────── */
+function StepGuests({ value, config, onPick }: { value: number; config: BookingConfig; onPick: (n: number) => void }) {
+  const sizes = Array.from({ length: config.maxPartySize - config.minPartySize + 1 }, (_, i) => i + config.minPartySize);
   return (
-    <div style={{ position: 'relative', padding: '36px 28px 40px', textAlign: 'center' }}>
-      {/* top controls */}
-      <div style={{ position: 'absolute', top: '16px', right: '18px', display: 'flex', gap: '6px' }}>
-        <MuteButton muted={muted} onToggle={onToggleMute} />
-        <button
-          onClick={onClose}
-          aria-label="Decline call"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(245,239,224,0.5)', fontSize: '22px', lineHeight: 1, padding: '4px' }}
-        >
-          ✕
-        </button>
-      </div>
-
-      <motion.p
-        lang="ja"
-        animate={{ opacity: [0.5, 1, 0.5] }}
-        transition={{ duration: 1.4, repeat: Infinity }}
-        style={{ fontFamily: 'var(--font-jp)', fontSize: '12px', letterSpacing: '0.3em', color: 'var(--clr-amber)', marginBottom: '6px' }}
-      >
-        着信中 — INCOMING CALL
-      </motion.p>
-      <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '30px', color: 'var(--clr-cream)', letterSpacing: '-0.01em', lineHeight: 1, marginBottom: '20px' }}>
-        Hey Tiger is<br />calling.
-      </h2>
-
-      <div style={{ display: 'flex', justifyContent: 'center', margin: '4px 0 26px' }}>
-        <PhoneSVG ringing size={150} />
-      </div>
-
-      <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'rgba(245,239,224,0.6)', lineHeight: 1.6, maxWidth: '30ch', margin: '0 auto 24px' }}>
-        Pick up to hold your table. Sound on for the full experience.
+    <div>
+      <h3 className="rd-rsv__h">How many coming through?</h3>
+      <p className="rd-rsv__sub">
+        {value >= config.largePartyThreshold
+          ? `Big crew. Groups of ${config.largePartyThreshold}+ may need a deposit — we’ll be in touch.`
+          : value >= 4 ? 'A proper table. We’ll make room.' : 'Cosy. We know a booth.'}
       </p>
+      <p className="rd-rsv__count rd-groovy" aria-hidden="true">{value}</p>
+      <div className="rd-rsv__sizes" role="radiogroup" aria-label="Number of guests">
+        {sizes.map(n => (
+          <button key={n} type="button" role="radio" aria-checked={n === value} className="rd-rsv__chip rd-rsv__chip--size"
+            data-autofocus={n === value || undefined} onClick={() => onPick(n)}>
+            {n}
+          </button>
+        ))}
+      </div>
+      <p className="rd-rsv__fine">
+        More than {config.maxPartySize}? Email <a href={`mailto:${restaurantInfo.reservationsEmail}`}>{restaurantInfo.reservationsEmail}</a>
+      </p>
+    </div>
+  );
+}
 
-      <button
-        onClick={onPickUp}
-        style={{
-          width: '100%', maxWidth: '280px',
-          fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', fontWeight: 800, letterSpacing: '0.26em',
-          background: 'var(--clr-red)', border: 'none', color: 'var(--clr-cream)',
-          padding: '16px', borderRadius: 0, cursor: 'pointer', minHeight: '52px',
-          boxShadow: '0 8px 26px rgba(192,39,26,0.45)',
-          transition: 'transform 0.12s, box-shadow 0.2s',
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; }}
-      >
-        ANSWER THE CALL
+/* ── Step 3: live availability ──────────────────────────────────── */
+function StepTime({ date, slots, error, selected, fallbackUrl, onPick, onChangeDate }: {
+  date: string; slots: Slot[] | null; error: string; selected: string; fallbackUrl: string | null;
+  onPick: (s: Slot) => void; onChangeDate: () => void;
+}) {
+  const groups = useMemo(() => {
+    const m = new Map<string, Slot[]>();
+    for (const s of slots ?? []) { const k = s.area ?? ''; m.set(k, [...(m.get(k) ?? []), s]); }
+    return [...m.entries()];
+  }, [slots]);
+
+  return (
+    <div>
+      <h3 className="rd-rsv__h">When should we expect you?</h3>
+      <p className="rd-rsv__sub">{shortDate(date)} — times held for this party size.</p>
+      {error ? (
+        <div className="rd-rsv__empty" role="alert">
+          <p>{error}</p>
+          {fallbackUrl && <a className="rd-rsv__link" href={fallbackUrl} target="_blank" rel="noopener noreferrer">Book on SevenRooms instead</a>}
+        </div>
+      ) : !slots ? (
+        <div className="rd-rsv__times" aria-busy="true" aria-label="Loading times">
+          {Array.from({ length: 12 }, (_, i) => <span key={i} className="rd-rsv__skel" />)}
+        </div>
+      ) : slots.length === 0 ? (
+        <div className="rd-rsv__empty">
+          <p>Nothing open that night — we’re either closed or full.</p>
+          <button type="button" className="rd-rsv__link" onClick={onChangeDate}>Try another date</button>
+        </div>
+      ) : (
+        groups.map(([area, list]) => (
+          <div key={area || 'all'} className="rd-rsv__group">
+            {groups.length > 1 && <p className="rd-rsv__label">{area || 'Dining room'}</p>}
+            <div className="rd-rsv__times" role="radiogroup" aria-label={area || 'Available times'}>
+              {list.map(s => (
+                <button key={s.slotId} type="button" role="radio" aria-checked={s.slotId === selected}
+                  className="rd-rsv__chip" data-autofocus={s.slotId === selected || undefined} onClick={() => onPick(s)}>
+                  {s.time}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
+/* ── Step 4: guest details ──────────────────────────────────────── */
+function StepDetails({ form, errors, config, update }: {
+  form: Form; errors: FieldErrors; config: BookingConfig; update: (p: Partial<Form>) => void;
+}) {
+  const toggle = (d: string) => update({ dietary: form.dietary.includes(d) ? form.dietary.filter(x => x !== d) : [...form.dietary, d] });
+  return (
+    <div className="rd-rsv__fields">
+      <h3 className="rd-rsv__h">So we know who to look for.</h3>
+      <div className="rd-rsv__row">
+        <Field id="rsv-first" label="First name" autoComplete="given-name" value={form.firstName} error={errors.firstName}
+          onChange={v => update({ firstName: v })} autoFocus />
+        <Field id="rsv-last" label="Last name" autoComplete="family-name" value={form.lastName} error={errors.lastName}
+          onChange={v => update({ lastName: v })} />
+      </div>
+      <Field id="rsv-email" label="Email" type="email" autoComplete="email" inputMode="email" value={form.email}
+        error={errors.email} onChange={v => update({ email: v })} placeholder="you@email.com" />
+      <Field id="rsv-phone" label="Mobile" type="tel" autoComplete="tel" inputMode="tel" value={form.phone}
+        error={errors.phone} onChange={v => update({ phone: v })} placeholder="+971 50 000 0000" />
+
+      <fieldset className="rd-rsv__set">
+        <legend className="rd-rsv__label">Dietary needs</legend>
+        <div className="rd-rsv__tags">
+          {DIETARY.map(d => (
+            <button key={d} type="button" className="rd-rsv__chip rd-rsv__chip--tag" aria-pressed={form.dietary.includes(d)} onClick={() => toggle(d)}>{d}</button>
+          ))}
+        </div>
+      </fieldset>
+
+      <div className="rd-rsv__field">
+        <label className="rd-rsv__label" htmlFor="rsv-occasion">Occasion</label>
+        <select id="rsv-occasion" className="rd-rsv__input rd-rsv__select" value={form.occasion} onChange={e => update({ occasion: e.target.value })}>
+          <option value="">None</option>
+          {OCCASIONS.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      </div>
+      <div className="rd-rsv__field">
+        <label className="rd-rsv__label" htmlFor="rsv-notes">Anything else?</label>
+        <textarea id="rsv-notes" className="rd-rsv__input rd-rsv__textarea" rows={2} maxLength={500} value={form.notes}
+          onChange={e => update({ notes: e.target.value })} placeholder="High chair, surprise cake, seat by the DJ…" />
+      </div>
+
+      <label className="rd-rsv__check">
+        <input type="checkbox" checked={form.marketingOptIn} onChange={e => update({ marketingOptIn: e.target.checked })} />
+        <span>Send me late-night events and specials.</span>
+      </label>
+      <div>
+        <label className="rd-rsv__check">
+          <input type="checkbox" checked={form.agreedToPolicy} onChange={e => update({ agreedToPolicy: e.target.checked })}
+            aria-invalid={!!errors.agreedToPolicy || undefined} aria-describedby={errors.agreedToPolicy ? 'rsv-policy-err' : undefined} />
+          <span>Tables are held for 15 minutes. Groups of {config.largePartyThreshold}+ may need a deposit.<b aria-hidden="true"> *</b></span>
+        </label>
+        {errors.agreedToPolicy && <p id="rsv-policy-err" className="rd-rsv__err rd-rsv__err--check" role="alert">{errors.agreedToPolicy}</p>}
+      </div>
+    </div>
+  );
+}
+
+function Field({ id, label, error, onChange, ...input }: {
+  id: string; label: string; error?: string; onChange: (v: string) => void; value: string;
+} & Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value' | 'id'>) {
+  return (
+    <div className="rd-rsv__field">
+      <label className="rd-rsv__label" htmlFor={id}>{label}<b aria-hidden="true"> *</b></label>
+      <input id={id} className="rd-rsv__input" required aria-invalid={!!error || undefined}
+        aria-describedby={error ? `${id}-err` : undefined} onChange={e => onChange(e.target.value)} {...input} />
+      {error && <p id={`${id}-err`} className="rd-rsv__err" role="alert">{error}</p>}
+    </div>
+  );
+}
+
+/* ── Step 5: the ticket ─────────────────────────────────────────── */
+function Confirmed({ form, result, mode, onClose }: { form: Form; result: ReservationResult; mode: BookingConfig['mode']; onClose: () => void }) {
+  return (
+    <div className="rd-rsv__done">
+      <p className="rd-rsv__sub">
+        {result.status === 'pending' ? 'Request received — we’ll confirm shortly.' : 'See you on the other side of that door.'}
+      </p>
+      <div className="rd-rsv__ticket">
+        <p className="rd-rsv__label">Reservation</p>
+        <p className="rd-rsv__ref">{result.reference}</p>
+        <dl className="rd-rsv__ticket-rows">
+          <div><dt>Date</dt><dd>{fmt(result.date, { weekday: 'short', day: 'numeric', month: 'long' })}</dd></div>
+          <div><dt>Time</dt><dd>{result.time}</dd></div>
+          <div><dt>Guests</dt><dd>{result.partySize}</dd></div>
+          <div><dt>Name</dt><dd>{form.firstName} {form.lastName}</dd></div>
+        </dl>
+        <p className="rd-rsv__jp rd-jp rd-rsv__ticket-jp" lang="ja">ヘイ、タイガー</p>
+      </div>
+      <p className="rd-rsv__fine">
+        {mode === 'mock'
+          ? 'Test booking — nothing was sent to the venue.'
+          : <>Confirmation on its way to <b>{form.email}</b>. Plans change? <a href={`mailto:${restaurantInfo.reservationsEmail}`}>Drop us a line.</a></>}
+      </p>
+      <button type="button" className="rd-btn rd-btn--red rd-rsv__next" onClick={onClose} data-autofocus>
+        <span>Done</span><Arrow />
       </button>
     </div>
   );
 }
 
-/* ── Step components ─────────────────────────────────────────────── */
-
-function StepWhen({ form, setForm, today, errors }: {
-  form: FormData; setForm: (f: FormData) => void; today: string; errors: Partial<FormData>;
-}) {
+/* ── Production without SevenRooms credentials ──────────────────── */
+function Offline({ config }: { config: BookingConfig }) {
+  const phone = restaurantInfo.reservationsPhone ?? restaurantInfo.phone;
   return (
-    <div>
-      <h3 style={stepTitle}>Pick your night.</h3>
-      <p style={stepSub}>Open Tuesday → Sunday. Last seating at 2AM.</p>
-      <input
-        type="date"
-        min={today}
-        value={form.date}
-        onChange={(e) => setForm({ ...form, date: e.target.value })}
-        aria-label="Reservation date"
-        aria-invalid={errors.date ? true : undefined}
-        aria-describedby={errors.date ? 'reservation-date-error' : undefined}
-        style={{
-          ...inputBase,
-          border: errors.date ? '1.5px solid var(--clr-red)' : inputBase.border,
-        }}
-      />
-      {errors.date && <p id="reservation-date-error" role="alert" style={errorText}>{errors.date as string}</p>}
-    </div>
-  );
-}
-
-function StepTime({ form, setForm, tone }: { form: FormData; setForm: (f: FormData) => void; tone?: () => void }) {
-  return (
-    <div>
-      <h3 style={stepTitle}>When should we expect you?</h3>
-      <p style={stepSub}>Golden slots glow — rooftop opens at 21:00.</p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '16px' }}>
-        {TIMES.map(t => (
-          <button key={t} onClick={() => { tone?.(); setForm({ ...form, time: t }); }} style={{
-            padding: '10px 4px',
-            borderRadius: 0,
-            fontFamily: 'var(--font-body)',
-            fontSize: 'var(--text-label)',
-            letterSpacing: '0.08em',
-            fontWeight: 500,
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            background: form.time === t ? 'var(--clr-red)' : PREMIUM_TIMES.includes(t) ? 'rgba(250,175,63,0.08)' : 'rgba(245,239,224,0.04)',
-            color: form.time === t ? 'var(--clr-void)' : PREMIUM_TIMES.includes(t) ? 'var(--clr-amber)' : 'rgba(245,239,224,0.55)',
-            border: `1px solid ${form.time === t ? 'var(--clr-red)' : PREMIUM_TIMES.includes(t) ? 'rgba(250,175,63,0.2)' : 'rgba(245,239,224,0.08)'}`,
-          }}>
-            {t}
-          </button>
-        ))}
+    <div className="rd-rsv__body rd-rsv__offline">
+      <h3 className="rd-rsv__h">Book with us direct.</h3>
+      <p className="rd-rsv__sub">Online booking is on its way. Until then, we’ll hold your table by phone or email.</p>
+      <div className="rd-rsv__actions rd-rsv__actions--stack">
+        {config.fallbackUrl && (
+          <a className="rd-btn rd-btn--red" href={config.fallbackUrl} target="_blank" rel="noopener noreferrer"><span>Book on SevenRooms</span><Arrow /></a>
+        )}
+        {phone && (
+          <a className="rd-btn rd-btn--outline-ivory" href={`tel:${phone.replace(/[^\d+]/g, '')}`}><span>Call {phone}</span><Arrow /></a>
+        )}
+        <a className="rd-btn rd-btn--outline-ivory" href={`mailto:${restaurantInfo.reservationsEmail}`}><span>Email us</span><Arrow /></a>
       </div>
     </div>
   );
 }
-
-function StepGuests({ form, setForm, tone }: { form: FormData; setForm: (f: FormData) => void; tone?: () => void }) {
-  return (
-    <div>
-      <h3 style={stepTitle}>How many coming through?</h3>
-      <p style={stepSub}>{form.guests >= 7 ? 'Big crew. We\'ll confirm rooftop availability within 24 hours.' : form.guests >= 4 ? 'A proper table. We\'ll make room.' : 'Just the two of you — we know a booth.'}</p>
-      <div style={{ margin: '32px 0 16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '28px', marginBottom: '24px' }}>
-          <button
-            onClick={() => { tone?.(); setForm({ ...form, guests: Math.max(1, form.guests - 1) }); }}
-            aria-label="Decrease guests"
-            disabled={form.guests <= 1}
-            style={guestBtn}
-          >−</button>
-          <span
-            aria-live="polite"
-            aria-label={`${form.guests} ${form.guests === 1 ? 'guest' : 'guests'}`}
-            style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '64px', color: 'var(--clr-cream)', lineHeight: 1, minWidth: '80px', textAlign: 'center' }}
-          >
-            {form.guests}
-          </span>
-          <button
-            onClick={() => { tone?.(); setForm({ ...form, guests: Math.min(12, form.guests + 1) }); }}
-            aria-label="Increase guests"
-            disabled={form.guests >= 12}
-            style={guestBtn}
-          >+</button>
-        </div>
-        <input
-          type="range" min="1" max="12" value={form.guests}
-          onChange={(e) => setForm({ ...form, guests: Number(e.target.value) })}
-          aria-label="Number of guests"
-          style={{ width: '100%', accentColor: 'var(--clr-red)', cursor: 'pointer' }}
-        />
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px' }}>
-          <span style={rangeLabel}>1</span>
-          <span style={rangeLabel}>12</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function StepInfo({ form, setForm, errors }: {
-  form: FormData; setForm: (f: FormData) => void; errors: Partial<FormData>;
-}) {
-  const toggleDietary = (item: string) => {
-    const next = form.dietary.includes(item)
-      ? form.dietary.filter(d => d !== item)
-      : [...form.dietary, item];
-    setForm({ ...form, dietary: next });
-  };
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <h3 style={stepTitle}>So we know who to look for.</h3>
-
-      <LabeledInput id="reserve-name" label="Your Name" required type="text" value={form.name}
-        onChange={(v) => setForm({ ...form, name: v })} error={errors.name as string} placeholder="First & last name" />
-
-      <LabeledInput id="reserve-email" label="Email Address" required type="email" value={form.email}
-        onChange={(v) => setForm({ ...form, email: v })} error={errors.email as string} placeholder="your@email.com" />
-
-      <LabeledInput id="reserve-phone" label="Phone Number" required type="tel" value={form.phone}
-        onChange={(v) => setForm({ ...form, phone: v })} error={errors.phone as string} placeholder="+971 50 000 0000" />
-
-      <div>
-        <p style={fieldLabel}>Anything we should know about?</p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
-          {DIETARY.map(d => (
-            <button key={d} onClick={() => toggleDietary(d)} style={{
-              padding: '6px 12px',
-              borderRadius: 0,
-              fontFamily: 'var(--font-body)',
-              fontSize: 'var(--text-micro)',
-              letterSpacing: '0.1em',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              background: form.dietary.includes(d) ? 'var(--clr-amber)' : 'transparent',
-              color: form.dietary.includes(d) ? 'var(--clr-void)' : 'rgba(245,239,224,0.5)',
-              border: `1px solid ${form.dietary.includes(d) ? 'var(--clr-amber)' : 'rgba(245,239,224,0.12)'}`,
-            }}>
-              {d}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <p style={fieldLabel}>What&rsquo;s the occasion?</p>
-        <select
-          value={form.occasion}
-          onChange={(e) => setForm({ ...form, occasion: e.target.value })}
-          style={{ ...inputBase, appearance: 'none', cursor: 'pointer' }}
-          aria-label="Special occasion"
-        >
-          {OCCASIONS.map(o => <option key={o} value={o} style={{ background: 'var(--clr-void)' }}>{o || 'None'}</option>)}
-        </select>
-      </div>
-
-      <label style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', cursor: 'pointer' }}>
-        <input
-          type="checkbox"
-          checked={form.smsOpt}
-          onChange={(e) => setForm({ ...form, smsOpt: e.target.checked })}
-          style={{ marginTop: '2px', accentColor: 'var(--clr-red)', width: '14px', height: '14px' }}
-        />
-        <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-label)', color: 'rgba(245,239,224,0.62)', lineHeight: 1.5 }}>
-          Text me about late-night events and specials — I&apos;m in.
-        </span>
-      </label>
-
-      {/* Reservation terms — required */}
-      <div>
-        <label style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', cursor: 'pointer' }}>
-          <input
-            type="checkbox"
-            checked={form.agree}
-            onChange={(e) => setForm({ ...form, agree: e.target.checked })}
-            aria-required="true"
-            aria-invalid={errors.agree ? true : undefined}
-            style={{ marginTop: '2px', accentColor: 'var(--clr-red)', width: '14px', height: '14px' }}
-          />
-          <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-label)', color: 'rgba(245,239,224,0.72)', lineHeight: 1.5 }}>
-            I understand tables are held for 15 minutes. Groups of 7+ may require a deposit.
-            <span aria-hidden="true" style={{ color: 'var(--clr-red)', marginLeft: '4px' }}>*</span>
-          </span>
-        </label>
-        {errors.agree && <p role="alert" style={{ ...errorText, marginLeft: '26px' }}>{errors.agree as unknown as string}</p>}
-      </div>
-    </div>
-  );
-}
-
-function StepConfirm({ form, confirmNum, onClose, onBookAnother }: {
-  form: FormData; confirmNum: string; onClose: () => void; onBookAnother: () => void;
-}) {
-  return (
-    <div style={{ textAlign: 'center', padding: '16px 0' }}>
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ type: 'spring', stiffness: 200, damping: 16 }}
-        style={{
-          width: '84px', height: '84px',
-          borderRadius: 0,
-          background: 'rgba(232,52,26,0.15)',
-          border: '2px solid var(--clr-red)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          margin: '0 auto 24px',
-        }}
-        aria-hidden="true"
-      >
-        <Image
-          src="/heytiger-logo.png"
-          alt="Hey Tiger"
-          width={120}
-          height={48}
-          unoptimized
-          style={{ height: '40px', width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
-        />
-      </motion.div>
-
-      <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '32px', color: 'var(--clr-cream)', marginBottom: '6px', letterSpacing: '-0.02em', lineHeight: 1 }}>
-        You&apos;re in.
-      </h3>
-
-      <p style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', color: 'rgba(245,239,224,0.62)', marginBottom: '4px', letterSpacing: '0.04em' }}>
-        See you on the other side of that door.
-      </p>
-
-      <p lang="ja" style={{ fontFamily: 'var(--font-jp)', fontSize: 'var(--text-body)', letterSpacing: 'var(--tracking-wide)', color: 'var(--clr-amber)', marginBottom: '24px', opacity: 0.7 }}>
-        ヘイ、タイガー
-      </p>
-
-      <div style={{
-        background: 'rgba(232,52,26,0.08)',
-        border: '1px solid rgba(232,52,26,0.3)',
-        borderRadius: 0,
-        padding: '20px',
-        marginBottom: '20px',
-      }}>
-        <p style={{ fontFamily: 'var(--font-body)', fontSize: '9px', letterSpacing: '0.38em', color: 'rgba(245,239,224,0.45)', marginBottom: '8px' }}>YOUR RESERVATION</p>
-        <p style={{ fontFamily: 'var(--font-body)', fontSize: '28px', color: 'var(--clr-amber)', letterSpacing: '0.1em', marginBottom: '16px' }}>
-          {confirmNum}
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
-          {[
-            ['Date',   form.date],
-            ['Time',   form.time],
-            ['Guests', String(form.guests)],
-            ['Name',   form.name],
-          ].map(([k, v]) => (
-            <div key={k} style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-label)', color: 'rgba(245,239,224,0.62)', letterSpacing: '0.1em' }}>{k}</span>
-              <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-label)', color: 'var(--clr-cream)', fontWeight: 500 }}>{v}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <p style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', color: 'rgba(245,239,224,0.55)', marginBottom: '28px', lineHeight: 1.65 }}>
-        Confirmation is on its way to{' '}
-        <strong style={{ color: 'var(--clr-amber)', fontWeight: 600 }}>{form.email}</strong>.
-        <br />
-        Plans change?{' '}
-        <a href="mailto:hello@heytigerdubai.com" style={{ color: 'var(--clr-cream-70)', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
-          Drop us a line.
-        </a>
-      </p>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <button onClick={onBookAnother} style={{
-          width: '100%',
-          fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', fontWeight: 700, letterSpacing: '0.26em',
-          background: 'transparent', border: '1.5px solid var(--clr-amber)',
-          color: 'var(--clr-amber)', padding: '16px', borderRadius: 0, cursor: 'pointer',
-          transition: 'background 0.25s, color 0.25s, border-color 0.25s',
-          minHeight: '44px',
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(250,175,63,0.08)'; e.currentTarget.style.color = 'var(--clr-amber)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--clr-amber)'; }}
-        >
-          BOOK ANOTHER TABLE
-        </button>
-        <button onClick={onClose} style={{
-          width: '100%',
-          fontFamily: 'var(--font-body)', fontSize: 'var(--text-body)', fontWeight: 800, letterSpacing: '0.26em',
-          background: 'var(--clr-amber)', border: 'none',
-          color: 'var(--clr-void)', padding: '16px', borderRadius: 0, cursor: 'pointer',
-          transition: 'background 0.25s, color 0.25s, box-shadow 0.25s',
-          minHeight: '44px',
-          boxShadow: '0 6px 20px rgba(201,162,39,0.38)',
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = '#0d0d0d'; e.currentTarget.style.color = '#faaf3f'; e.currentTarget.style.boxShadow = '0 0 0 1px rgba(250,175,63,0.5)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--clr-amber)'; e.currentTarget.style.color = 'var(--clr-void)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(201,162,39,0.38)'; }}
-        >
-          CLOSE
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function LabeledInput({ label, type, value, onChange, error, placeholder, required, id }: {
-  label: string; type: string; value: string;
-  onChange: (v: string) => void; error?: string; placeholder?: string;
-  required?: boolean; id?: string;
-}) {
-  // Derive a stable id from the label if none supplied — keeps htmlFor consistent
-  const inputId = id ?? `field-${label.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`;
-  const errorId = `${inputId}-error`;
-  return (
-    <div>
-      <label htmlFor={inputId} style={fieldLabel}>
-        {label}
-        {required && <span aria-hidden="true" style={{ color: 'var(--clr-red)', marginLeft: '4px' }}>*</span>}
-      </label>
-      <input
-        id={inputId}
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        required={required}
-        aria-required={required || undefined}
-        aria-invalid={!!error || undefined}
-        aria-describedby={error ? errorId : undefined}
-        style={{ ...inputBase, border: error ? '1.5px solid var(--clr-red)' : inputBase.border }}
-      />
-      {error && <p id={errorId} role="alert" style={errorText}>{error}</p>}
-    </div>
-  );
-}
-
-/* ── Shared styles — cast to avoid cross-package csstype conflicts ── */
-const stepTitle  = { fontFamily:'var(--font-body)', fontSize:'22px', letterSpacing:'0.06em', color:'var(--clr-cream)', marginBottom:'6px' } as React.CSSProperties;
-const stepSub    = { fontFamily:'var(--font-body)', fontSize:'12px', color:'rgba(245,239,224,0.62)', marginBottom:'20px', lineHeight:1.5 } as React.CSSProperties;
-const inputBase  = { width:'100%', padding:'12px 16px', background:'rgba(245,239,224,0.04)', border:'1px solid rgba(250,175,63,0.2)', borderRadius: 0, color:'var(--clr-cream)', fontFamily:'var(--font-body)', fontSize:'13px', transition:'border-color 0.2s, box-shadow 0.2s', colorScheme:'dark' } as React.CSSProperties;
-const fieldLabel = { fontFamily:'var(--font-body)', fontSize:'9px', letterSpacing:'0.2em', color:'rgba(245,239,224,0.62)', marginBottom:'8px', textTransform:'uppercase' as const } as React.CSSProperties;
-const errorText  = { fontFamily:'var(--font-body)', fontSize:'11px', color:'var(--clr-red)', marginTop:'4px' } as React.CSSProperties;
-const guestBtn   = { width:'44px', height:'44px', borderRadius:'50%', border:'1.5px solid rgba(250,175,63,0.3)', background:'transparent', color:'var(--clr-amber)', fontSize:'22px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'var(--font-body)', transition:'border-color 0.2s, background 0.2s' } as React.CSSProperties;
-const rangeLabel = { fontFamily:'var(--font-body)', fontSize:'10px', color:'rgba(245,239,224,0.62)', letterSpacing:'0.1em' } as React.CSSProperties;
