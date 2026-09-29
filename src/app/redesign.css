@@ -822,8 +822,8 @@
   .rd-about__body { font-size: clamp(13px, 1.1vw, 16px); max-width: 24ch; }
   /* Sticker boxes measured off HT_HOMEPAGE_DESKTOP with a min-area rotated-rectangle fit, expressed as % of the
      section box (1440 × 834): barcode 178 × 363 centred (648, 190) at −6.25°; night 275 × 481 at +4.5°, rotated box ends ~15px before the first face's hair at every desktop width (checked by cover-crop math, not by eye). */
-  .rd-sticker--barcode { left: 38.8%; top: 1%; width: 12.4%; --rot: -6.25deg; transform: rotate(var(--rot)) scale(var(--s, 1)); }
-  .rd-sticker--night   { left: 37.6%; top: 45%; width: 19.1%; --rot: 4.5deg; transform: rotate(var(--rot)) scale(var(--s, 1)); }   /* bottom edge overhangs the section by ~23px, as in the frame */
+  .rd-sticker--barcode { left: 38.8%; top: 1%; width: min(12.4%, 178px); --rot: -6.25deg; transform: rotate(var(--rot)) scale(var(--s, 1)); }
+  .rd-sticker--night   { left: 37.6%; top: 45%; width: min(19.1%, 275px);   /* capped at the 1440 size — the section height is capped too */ --rot: 4.5deg; transform: rotate(var(--rot)) scale(var(--s, 1)); }   /* bottom edge overhangs the section by ~23px, as in the frame */
 
   /* menu teaser: 875 tall; illustration 516 wide at (839, 112), inside the section, no overhang */
   /* proto: the illustration bleeds off the right edge and its paws run UNDER the poster band's torn top edge —
