@@ -841,16 +841,20 @@
 
   /* what's on: 916 tall; 338px title; filters + イベント on one row; cards 241 × 359 */
   .rd-whatson { padding: clamp(40px, 4.9vw, 71px) 0 clamp(36px, 5.3vw, 77px); }
-  .rd-whatson__title { font-size: clamp(144px, 28.3vw, 407px); line-height: 0.78; white-space: nowrap; }   /* 1328px wide at 1440 = frame */
+  /* full bleed at every width, as in the frame: 'WHAT’S ON' renders 3.08em wide in Jandus Condensed (−2%, measured glyph run),
+     so the size is the space between the gutters divided by 3.1 (a hair of slack for the scrollbar) — no cap */
+  .rd-whatson__title { font-size: calc((100vw - 2 * var(--rd-gutter)) / 3.1); line-height: 0.78; white-space: nowrap; }
   .rd-whatson__bar { margin-top: clamp(12px, 1.6vw, 24px); }
-  .rd-whatson__jp { font-size: clamp(24px, 3vw, 43px); padding-bottom: 6px; }
+  .rd-whatson__jp { font-size: 3vw; padding-bottom: 6px; }
+  .rd-whatson .rd-filter__btn { font-size: clamp(12px, 0.95vw, 18px); }
   .rd-filter { padding: 0 0 10px; }
   .rd-card { flex-basis: clamp(200px, 16.7vw, 241px); aspect-ratio: 241 / 359; }
 
   /* location: 1325 tall; 288px title; blocks at 471 / 789; collage 1194 wide bleeding right */
   .rd-location { min-height: clamp(700px, 92vw, 1325px); padding: clamp(40px, 4.8vw, 69px) var(--rd-gutter) 0; }
   .rd-location__jp { font-size: clamp(22px, 2.4vw, 34px); }
-  .rd-location__title { font-size: clamp(132px, 23.4vw, 337px); line-height: 0.78; }   /* 1340px wide at 1440 = frame */
+  /* same rule: 'WHERE WE AT' renders 3.86em wide */
+  .rd-location__title { font-size: calc((100vw - 2 * var(--rd-gutter)) / 3.88); line-height: 0.78; }
   .rd-location__block { margin-top: clamp(40px, 8.2vw, 118px); }
   .rd-location__block + .rd-location__block { margin-top: clamp(80px, 15.9vw, 229px); }
   .rd-location__art { left: 17%; right: auto; top: clamp(140px, 19.7vw, 284px); width: 83vw; max-width: none; }
